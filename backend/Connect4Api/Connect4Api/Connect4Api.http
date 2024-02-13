@@ -1,0 +1,6 @@
+@Connect4Api_HostAddress = http://localhost:5122
+
+GET {{Connect4Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
