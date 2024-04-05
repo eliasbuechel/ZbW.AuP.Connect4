@@ -1,14 +1,20 @@
 <template>
-  <h1>R4D4</h1>
+  <div id="App">
+    <LoginForm />
+  </div>
 </template>
 
 <script>
+import LoginForm from './components/LoginForm.vue';
 
 export default {
   name: 'App',
   components: {
+    LoginForm
   }
 }
 </script>
 
-<style></style>
+<style>
+@import './assets/global.css'
+</style>
