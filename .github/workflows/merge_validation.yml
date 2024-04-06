@@ -3,14 +3,14 @@ name: Merge Validation
 on:
   pull_request:
     branches:
-      - dev
+      - main
 
 jobs:
   merge_validation:
     runs-on: ubuntu-latest
     steps:
       - name: Check base branch
-        if: github.event.pull_request.base.ref != 'main'
+        if: github.event.pull_request.base.ref != 'dev'
         run: |
-          echo "Only merge from dev to main"
+          echo "Only allowed to merge from dev to main"
           exit 1
