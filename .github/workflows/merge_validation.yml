@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check base branch
-        if: github.event.pull_request.base.ref != 'dev'
+        if: github.event.pull_request.head.ref != 'dev'
         run: |
           echo "Only allowed to merge from dev to main"
           exit 1
