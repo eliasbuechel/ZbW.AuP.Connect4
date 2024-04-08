@@ -11,7 +11,7 @@
                 <input type="password" id="password" v-model="credentials.password" required>
             </div>
             <button type="submit">Anmelden</button>
-            <router-link to="/register" class="button">Registrieren</router-link>
+            <button type="submit">Registrieren</button>
         </form>
     </div>
 </template>

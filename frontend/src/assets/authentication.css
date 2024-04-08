@@ -1,0 +1,38 @@
+.login-form {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #df9500;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+}
+
+button[type="submit"] {
+    width: 100%;
+    margin: 5px;
+    padding: 10px;
+    background-color: #01172c;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #2980b9;
+}
