@@ -1,7 +1,7 @@
 <template>
     <img id="logo-login" src="" alt="r4d4-logo">
     <div class="login-form">
-        <form @submit.prevent="login">
+        <form>
             <div class="form-group">
                 <label for="username">Benutzername / Email</label>
                 <input type="text" id="username" v-model="credentials.username" required>
@@ -10,7 +10,7 @@
                 <label for="password">Passwort</label>
                 <input type="password" id="password" v-model="credentials.password" required>
             </div>
-            <button class="auth-button" type="submit">Anmelden</button>
+            <button class="auth-button" type="button" @click="login">Anmelden</button>
             <router-link to="/register" class="auth-button">Registrieren</router-link>
         </form>
     </div>
@@ -28,10 +28,10 @@ export default {
     },
     methods: {
         login() {
-            this.$axios.post('/api/login', this.credentials)
+            this.$axios.post('localhost/api/login', this.credentials)
                 .then(response => {
-                    console.log("Anmeldeversuch mit:", this.credentials);
-                    console.log("Server-Antwort:", response.data);
+                    localStorage.setItem('authToken', response.data.token);
+                    this.$router.push({ name: 'Home' })
                 })
                 .catch(error => {
                     console.error("Fehler beim Einloggen:", error);
