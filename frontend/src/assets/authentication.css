@@ -1,38 +1,36 @@
 .login-form {
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-content: center;
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
+    padding: 1.5em;
+    width: 25%;
     background-color: #df9500;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-label {
-    display: block;
+    border-radius: 1em;
 }
 
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 8px;
-    margin-top: 5px;
+    padding: 0.5em;
+    margin: 0.5em;
 }
 
-button[type="submit"] {
+.auth-button  {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    margin: 5px;
-    padding: 10px;
+    margin: 0.6em;
+    padding: 0.5em;
     background-color: #01172c;
     color: white;
     border: none;
+    border-radius: 0.6em;
     cursor: pointer;
+    text-decoration: none;
+    font-size: medium;
 }
 
-button[type="submit"]:hover {
+.auth-button:hover {
     background-color: #2980b9;
 }

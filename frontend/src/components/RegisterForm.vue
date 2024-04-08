@@ -3,15 +3,18 @@
     <div class="login-form">
         <form @submit.prevent="login">
             <div class="form-group">
-                <label for="username">Benutzername / Email</label>
+                <label for="username">Benutzername</label>
+                <input type="text" id="username" v-model="credentials.username" required>
+            </div>
+            <div class="form-group">
+                <label for="username">Email</label>
                 <input type="text" id="username" v-model="credentials.username" required>
             </div>
             <div class="form-group">
                 <label for="password">Passwort</label>
                 <input type="password" id="password" v-model="credentials.password" required>
             </div>
-            <button type="submit">Anmelden</button>
-            <button type="submit">Registrieren</button>
+            <button class="auth-button" type="submit">Registrieren</button>
         </form>
     </div>
 </template>

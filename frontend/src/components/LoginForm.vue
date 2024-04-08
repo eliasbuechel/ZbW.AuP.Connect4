@@ -1,5 +1,5 @@
 <template>
-    <img id="logo" src="" alt="r4d4-logo">
+    <img id="logo-login" src="" alt="r4d4-logo">
     <div class="login-form">
         <form @submit.prevent="login">
             <div class="form-group">
@@ -10,8 +10,8 @@
                 <label for="password">Passwort</label>
                 <input type="password" id="password" v-model="credentials.password" required>
             </div>
-            <button type="submit">Anmelden</button>
-            <router-link to="/register" class="button">Registrieren</router-link>
+            <button class="auth-button" type="submit">Anmelden</button>
+            <router-link to="/register" class="auth-button">Registrieren</router-link>
         </form>
     </div>
 </template>
