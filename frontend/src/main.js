@@ -1,13 +1,18 @@
-import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
-import App from './App.vue'
-import HomeView from '@/views/HomeView'
-import Login from '@/components/LoginForm.vue'
-import Register from '@/components/RegisterForm.vue'
-import EmailVerification from '@/components/EmailVerifactionForm.vue'
+// Externe Bibliotheken/Frameworks
+import { createRouter, createWebHistory } from 'vue-router';
+import axios from 'axios';
 
+// Interne Module
+import { createApp } from 'vue';
+import App from './App.vue';
 
-import '@/assets/global.css'
+// Lokale Dateien/Komponenten
+import HomeView from '@/views/HomeView';
+import Login from '@/components/LoginForm.vue';
+import Register from '@/components/RegisterForm.vue';
+import EmailVerification from '@/components/EmailVerifactionForm.vue';
+
+import '@/assets/global.css';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -17,8 +22,11 @@ const router = createRouter({
         {path: '/register', name: 'Register', component: Register},
         {path: '/email-verification', name: 'EmailVerification', component: EmailVerification},
     ]
-})
+});
 
-createApp(App)
-.use(router)
-.mount('#app')
+const app = createApp(App)
+
+app.config.globalProperties.$axios = axios;
+
+app.use(router)
+app.mount('#app');

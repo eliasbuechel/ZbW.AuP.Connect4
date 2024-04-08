@@ -28,7 +28,14 @@ export default {
     },
     methods: {
         login() {
-            console.log("Anmeldeversuch mit:", this.credentials);
+            this.$axios.post('/api/login', this.credentials)
+                .then(response => {
+                    console.log("Anmeldeversuch mit:", this.credentials);
+                    console.log("Server-Antwort:", response.data);
+                })
+                .catch(error => {
+                    console.error("Fehler beim Einloggen:", error);
+                });
         },
     },
 };
