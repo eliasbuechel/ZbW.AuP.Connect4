@@ -1,36 +1,10 @@
-.login-form {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5em;
-    width: 25%;
-    background-color: #df9500;
-    border-radius: 1em;
-}
-
 input[type="text"],
 input[type="password"] {
-    width: 100%;
-    padding: 0.5em;
-    margin: 0.5em;
-}
-
-.auth-button  {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin: 0.6em;
-    padding: 0.5em;
-    background-color: #01172c;
-    color: white;
-    border: none;
-    border-radius: 0.6em;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: medium;
+  width: 100%;
+  padding: 0.5em;
+  margin: 0.5em;
 }
 
 .auth-button:hover {
-    background-color: #2980b9;
+  background-color: #2980b9;
 }

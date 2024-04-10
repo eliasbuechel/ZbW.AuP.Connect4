@@ -1,10 +1,56 @@
 html {
-    font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
+* {
+  box-sizing: border-box;
+}
 
 body {
-    margin: 0;
-    padding: 0;
-    background-color: #01172c;
+  margin: 0;
+  padding: 0;
+  background-color: #01172c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
+
+.login-container {
+  background-color: tomato;
+  padding: 2rem;
+  border-radius: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.login-container > form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 1.5em;
+  background-color: #df9500;
+  border-radius: 1em;
+}
+
+button {
+}
+
+/* .auth-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0.6em;
+    padding: 0.5em;
+    background-color: #01172c;
+    color: white;
+    border: none;
+    border-radius: 0.6em;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: medium;
+  } */
