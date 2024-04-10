@@ -8,7 +8,6 @@ namespace backendTests
         [Test]
         public void Sample_BaseOperation_True()
         {
-            Assert.True(true);
         }
     }
 }
