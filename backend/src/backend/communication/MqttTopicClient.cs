@@ -85,23 +85,21 @@ namespace backend.communication
         }
         public void SubscribeTo(string topic, Action<string> callback)
         {
-            if (!_topicCallbackMappings.ContainsKey(topic))
-            {
-                _topicCallbackMappings.Add(topic, new List<Action<string>>());
+            if (_topicCallbackMappings.TryAdd(topic, new List<Action<string>>()))
                 _mqttClient.Subscribe([topic], [MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE]);
-            }
 
             _topicCallbackMappings[topic].Add(callback);
         }
         public void UnsubscribeFrom(string topic, Action<string> callback)
         {
-            if (!_topicCallbackMappings.ContainsKey(topic))
+            ICollection<Action<string>>? callbacks;
+
+            if (!_topicCallbackMappings.TryGetValue(topic, out callbacks))
             {
                 Debug.Assert(false);
                 return;
             }
 
-            ICollection<Action<string>> callbacks = _topicCallbackMappings[topic];
             if (!callbacks.Contains(callback))
             {
                 Debug.Assert(false);
@@ -154,8 +152,8 @@ namespace backend.communication
                 return;
             }
 
-            ICollection<string> topics = new List<string>();
-            ICollection<byte> qosLevels = new List<byte>();
+            List<string> topics = new List<string>();
+            List<byte> qosLevels = new List<byte>();
 
             foreach (var topicCallbackMapping in _topicCallbackMappings)
             {
@@ -170,7 +168,7 @@ namespace backend.communication
         {
             Log("Unsubscribing from topics...");
 
-            ICollection<string> topics = new List<string>();
+            List<string> topics = new List<string>();
 
             foreach (var topicCallbackMapping in _topicCallbackMappings)
             {
@@ -179,7 +177,7 @@ namespace backend.communication
 
             Log("Unsubscribed from topics");
         }
-        private void Log(string message)
+        private static void Log(string message)
         {
             Console.WriteLine($"MQTT-CLIENT: {message}");
         }

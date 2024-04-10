@@ -3,7 +3,7 @@ using MQTTnet.Server;
 using System.Diagnostics;
 using System.Net;
 
-namespace backendTests.helperClasses
+namespace backendTests.communication.helper
 {
     internal class MqttTopicBroker : IDisposable
     {
@@ -82,7 +82,6 @@ namespace backendTests.helperClasses
 
             if (_mqttServer.IsStarted)
             {
-                Debug.Assert(false);
                 _mqttServer.StopAsync();
             }
 
