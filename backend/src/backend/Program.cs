@@ -3,7 +3,7 @@ using System.Net;
 
 namespace backend
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
