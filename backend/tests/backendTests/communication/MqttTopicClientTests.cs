@@ -1,8 +1,8 @@
 using backend.communication;
-using backendTests.helperClasses;
+using backendTests.communication.helper;
 using System.Net;
 
-namespace backendTests
+namespace backendTests.communication
 {
     [TestFixture]
     public class MqttTopicClientTests
