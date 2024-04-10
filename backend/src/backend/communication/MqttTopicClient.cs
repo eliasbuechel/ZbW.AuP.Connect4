@@ -6,9 +6,10 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace backend.communication
 {
-    public class MqttTopicClient
+    internal class MqttTopicClient
     {
-        public event Func<Task>? OnConnected;
+        public event Action? OnConnected;
+        public event Action? OnDisconnected;
 
         public MqttTopicClient(IPAddress brokerIpAddress, int serverPort)
         {
@@ -26,6 +27,8 @@ namespace backend.communication
             if (_mqttClient.IsConnected)
                 Disconnect();
         }
+
+        public bool IsConnected => _mqttClient.IsConnected;
 
         public bool Connect()
         {
@@ -50,6 +53,9 @@ namespace backend.communication
                 Log($"Not able to connect to server. Error: {e.Message}");
                 return false;
             }
+
+            if (_mqttClient.IsConnected)
+                OnConnected?.Invoke();
 
             return _mqttClient.IsConnected;
         }
@@ -109,6 +115,7 @@ namespace backend.communication
                 _topicCallbackMappings.Remove(topic);
             }
         }
+
         private void OnMessageRecived(object sender, MqttMsgPublishEventArgs e)
         {
             string topic = e.Topic;
@@ -136,6 +143,7 @@ namespace backend.communication
         }
         private void OnConnectionClosed(object sender, EventArgs e)
         {
+            OnDisconnected?.Invoke();
             Log($"Connection closed");
         }
         private void SubscribeToAllTopics()
