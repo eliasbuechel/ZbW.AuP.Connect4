@@ -13,11 +13,11 @@ COPY ["temp.csproj", "."]
 RUN dotnet restore "./temp.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "./temp.csproj" -c "$BUILD_CONFIGURATION" -o /app/build
+RUN dotnet build "./temp.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./temp.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./temp.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
