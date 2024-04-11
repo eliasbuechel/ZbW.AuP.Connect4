@@ -15,14 +15,8 @@ namespace backend
         }
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup(builder => new Startup(builder.Configuration));
-                    webBuilder.UseUrls("http://localhost:7136");
-                });
             var builder = WebApplication.CreateBuilder(args);
-            builder.Configuration.AddJsonFile("appsettings.json");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
@@ -32,7 +26,6 @@ namespace backend
 
             ConfigurationManager config = builder.Configuration;
             string environment = builder.Environment.EnvironmentName;
-
 
             IConfiguration mqttConfig = config.GetSection($"{environment}:MqttClient");
             string? mqttIpAddressString = mqttConfig["IpAddress"];
@@ -45,12 +38,15 @@ namespace backend
             int mqttPort = mqttConfig.GetValue<int>("Port");
             builder.Services.AddSingleton(s => new MqttTopicClient(mqttIpAddress, mqttPort));
 
-
             var app = builder.Build();
-
-            app.MapGet("/", () => "Hello World!");
-
             app.Run();
+
+            return Host.CreateDefaultBuilder(args)
+              .ConfigureWebHostDefaults(webBuilder =>
+              {
+                  webBuilder.UseStartup(builder => new Startup(builder.Configuration));
+                  webBuilder.UseUrls("http://localhost:5000");
+              });
         }
     }
 }
