@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <img id="logo-login" src="" alt="r4d4-logo" />
-    <form>
+    <form @submit.prevent="login"> <!-- Blocks default behavior of form, this case: reloading the page. -->
       <div class="form-group">
         <label for="username">Benutzername / Email</label>
         <input
@@ -39,16 +39,20 @@ export default {
     };
   },
   methods: {
-    login() {
-      this.$axios
-        .post("localhost/api/login", this.credentials)
-        .then((response) => {
+      async login() {
+      try {
+        const response = await this.$axios.post("http://localhost:5000/api/login", this.credentials);
+      
+        if (response.data.token) {
           localStorage.setItem("authToken", response.data.token);
+          
           this.$router.push({ name: "Home" });
-        })
-        .catch((error) => {
-          console.error("Fehler beim Einloggen:", error);
-        });
+        } else {
+          console.error("Ungültige Anmeldeinformationen");
+        }
+      } catch (error) {
+        console.error("Fehler beim Einloggen:", error);
+      }
     },
   },
 };
