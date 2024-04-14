@@ -10,7 +10,7 @@ using backend.database;
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240408164507_Initial")]
+    [Migration("20240414123627_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -18,7 +18,7 @@ namespace backend.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("backend.database.User", b =>

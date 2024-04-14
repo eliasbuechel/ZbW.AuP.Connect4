@@ -2,11 +2,8 @@
 
 namespace backend.database
 {
-    internal class BackendDbContext : DbContext
+    internal class BackendDbContext(DbContextOptions options) : DbContext(options)
     {
-        public BackendDbContext(DbContextOptions options) : base(options)
-        { }
-
         public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
