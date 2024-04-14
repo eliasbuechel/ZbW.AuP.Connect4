@@ -27,7 +27,8 @@ namespace backend
             int mqttPort = mqttConfig.GetValue<int>("Port");
             services.AddSingleton(s => new MqttTopicClient(mqttIpAddress, mqttPort));
 
-            services.AddSingleton(s => new BackendDbContextFacory(new DbContextOptionsBuilder().UseMySQL("Server=127.0.0.1;Port=3307;Database=R4D4_Dev;Uid=EntityFW;Pwd=PwEF54762-@R4D4lul;").Options));
+            string connectionString = _configuration[$"{_environment.EnvironmentName}:ConnectionString"] ?? throw new Exception("Connection string not found in configuration.");
+            services.AddSingleton(s => new BackendDbContextFacory(new DbContextOptionsBuilder().UseMySQL(connectionString).Options));
         }
         public void Configure(IApplicationBuilder app)
         {
