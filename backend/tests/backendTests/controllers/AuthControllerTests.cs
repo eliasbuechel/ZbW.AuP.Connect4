@@ -1,8 +1,9 @@
 ﻿using backend;
+using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Text;
 
-namespace backendTests
+namespace backendTests.controllers
 {
     [TestFixture]
     public class AuthControllerTests
@@ -26,7 +27,7 @@ namespace backendTests
             var response = await _client.PostAsync("/api/auth/login", content);
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.That(HttpStatusCode.OK, Is.EqualTo(response.StatusCode));
             var token = await response.Content.ReadAsStringAsync();
             Assert.NotNull(token);
             Assert.IsNotEmpty(token);
@@ -42,7 +43,7 @@ namespace backendTests
             var response = await _client.PostAsync("/api/auth/login", content);
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
     }
 }
