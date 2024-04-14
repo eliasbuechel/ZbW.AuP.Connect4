@@ -13,7 +13,7 @@ namespace backend
               .ConfigureWebHostDefaults(webBuilder =>
               {
                   webBuilder.UseStartup(builder => new Startup(builder.Configuration, builder.HostingEnvironment));
-                  webBuilder.UseUrls("http://localhost:7136");
+                  webBuilder.UseUrls("http://localhost:5000");
               });
         }
     }

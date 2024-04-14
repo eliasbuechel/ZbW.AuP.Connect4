@@ -17,7 +17,6 @@ body {
 }
 
 .login-container {
-  background-color: tomato;
   padding: 2rem;
   border-radius: 1rem;
   display: flex;
@@ -36,21 +35,31 @@ body {
   border-radius: 1em;
 }
 
-button {
+.login-container > form > .input-field {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 0.5rem;
 }
 
-/* .auth-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin: 0.6em;
-    padding: 0.5em;
-    background-color: #01172c;
-    color: white;
-    border: none;
-    border-radius: 0.6em;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: medium;
-  } */
+.login-container > form > .input-field > label {
+  font-size: 0.8rem;
+}
+
+.login-container > form > .input-field > input {
+  border: none;
+  background: none;
+  border-bottom: 1px solid black;
+  padding: 0.2rem;
+}
+
+button {
+  padding: 0.3rem 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-width: 2px;
+  border-radius: 3px;
+  border-color: white;
+  background-color: #f44336;
+  margin: 0.5rem;
+}

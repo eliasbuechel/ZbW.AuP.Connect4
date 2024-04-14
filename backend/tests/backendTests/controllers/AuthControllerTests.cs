@@ -27,10 +27,9 @@ namespace backendTests.controllers
             var response = await _client.PostAsync("/api/auth/login", content);
 
             // Assert
-            Assert.That(HttpStatusCode.OK, Is.EqualTo(response.StatusCode));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             var token = await response.Content.ReadAsStringAsync();
-            Assert.NotNull(token);
-            Assert.IsNotEmpty(token);
+            Assert.That(token, Is.Not.Null.Or.Empty);
         }
 
         [Test]

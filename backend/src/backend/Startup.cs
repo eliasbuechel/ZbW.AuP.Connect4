@@ -1,5 +1,6 @@
 using backend.communication;
 using backend.database;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
@@ -21,7 +22,25 @@ namespace backend
             services.AddMicrosoftIdentityWebAppAuthentication(_configuration);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApi(_configuration.GetSection("AzureAd"));
+                .AddJwtBearer("JwtBearerScheme", options =>
+                {
+                    _configuration.Bind("JwtSettings", options);
+                });
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie("CookieScheme", options =>
+                {
+                    _configuration.Bind("CookieSettings", options);
+                });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = "JwtBearerScheme";
+                options.DefaultChallengeScheme = "JwtBearerScheme";
+            });
+
+            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //    .AddMicrosoftIdentityWebApi(_configuration.GetSection("AzureAd"));
 
             //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             //    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
@@ -35,7 +54,8 @@ namespace backend
                 {
                     builder.WithOrigins("http://localhost:3000")
                            .AllowAnyHeader()
-                           .AllowAnyMethod();
+                           .AllowAnyMethod()
+                           .AllowCredentials();
                 });
             });
 
