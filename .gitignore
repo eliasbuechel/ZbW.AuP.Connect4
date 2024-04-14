@@ -398,3 +398,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Ignore bin and obj directories in the backend project
+backend/bin/
+backend/obj/
