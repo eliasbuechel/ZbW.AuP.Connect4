@@ -1,7 +1,3 @@
-using backend.communication;
-using System.Diagnostics;
-using System.Net;
-
 namespace backend
 {
     public static class Program
@@ -16,7 +12,7 @@ namespace backend
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup(builder => new Startup(builder.Configuration));
+                    webBuilder.UseStartup(builder => new Startup(builder.Configuration, builder.HostingEnvironment));
                     webBuilder.UseUrls("http://localhost:7136");
                 });
         }
