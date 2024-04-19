@@ -20,9 +20,9 @@
           required
         />
       </div>
-      <button class="auth-button" type="submit" @click="login">Login</button>
-      <button class="auth-button" type="button" @click="register">
-        Register
+      <button class="button-submit" type="submit" @click="login">Login</button>
+      <button class="button-link" type="button" @click="redirectToRegister">
+        Switch to registration
       </button>
     </form>
   </div>
@@ -42,22 +42,20 @@ export default {
     async login() {
       try {
         const response = await this.$axios.post(
-          "http://localhost:5000/api/login",
+          "http://localhost:5000/Account/Login",
           this.credentials
         );
 
-        if (response.data.token) {
-          localStorage.setItem("authToken", response.data.token);
-
+        if (response.status >= 200 && response.status < 300) {
           this.$router.push({ name: "Home" });
         } else {
-          console.error("Ungültige Anmeldeinformationen");
+          console.error("Login failed:", response.statusText);
         }
       } catch (error) {
-        console.error("Fehler beim Einloggen:", error);
+        console.error("An error occured during login: ", error.message);
       }
     },
-    register() {
+    redirectToRegister() {
       this.$router.push({ name: "Register" });
     },
   },

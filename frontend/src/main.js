@@ -10,7 +10,6 @@ import App from "./App.vue";
 import HomeView from "@/views/HomeView";
 import Login from "@/components/LoginForm.vue";
 import Register from "@/components/RegisterForm.vue";
-import EmailVerification from "@/components/EmailVerifactionForm.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -18,11 +17,6 @@ const router = createRouter({
     { path: "/", name: "Home", component: HomeView },
     { path: "/login", name: "Login", component: Login },
     { path: "/register", name: "Register", component: Register },
-    {
-      path: "/email-verification",
-      name: "EmailVerification",
-      component: EmailVerification,
-    },
   ],
 });
 

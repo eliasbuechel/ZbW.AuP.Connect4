@@ -63,3 +63,15 @@ button {
   background-color: #f44336;
   margin: 0.5rem;
 }
+
+.button-link {
+  background: none;
+  border: none;
+  color: black;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.button-link:hover {
+  color: blue;
+}

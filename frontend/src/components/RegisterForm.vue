@@ -4,7 +4,7 @@
     <div class="login-container">
       <form @submit.prevent="login">
         <div class="input-field">
-          <label for="username">Benutzername</label>
+          <label for="username">Username</label>
           <input
             type="text"
             id="register-username"
@@ -17,12 +17,12 @@
           <input
             type="text"
             id="register-email"
-            v-model="credentials.username"
+            v-model="credentials.email"
             required
           />
         </div>
         <div class="input-field">
-          <label for="password">Passwort</label>
+          <label for="password">Password</label>
           <input
             type="password"
             id="register-password"
@@ -30,7 +30,12 @@
             required
           />
         </div>
-        <button type="submit">Registrieren</button>
+        <button class="button-submit" type="submit" @click="register">
+          Register
+        </button>
+        <button class="button-link" type="button" @click="redirectToLogin">
+          Switch to login
+        </button>
       </form>
     </div>
   </div>
@@ -42,13 +47,30 @@ export default {
     return {
       credentials: {
         username: "",
+        email: "",
         password: "",
       },
     };
   },
   methods: {
-    login() {
-      console.log("Anmeldeversuch mit:", this.credentials);
+    async register() {
+      try {
+        const response = await this.$axios.post(
+          "http://localhost:5000/Account/Register",
+          this.credentials
+        );
+
+        if (response.status >= 200 && response.status < 300) {
+          this.$router.push({ name: "Home" });
+        } else {
+          console.error("Registration failed:", response.statusText);
+        }
+      } catch (error) {
+        console.error("An error occured during registration: ", error.message);
+      }
+    },
+    redirectToLogin() {
+      this.$router.push({ name: "Login" });
     },
   },
 };
