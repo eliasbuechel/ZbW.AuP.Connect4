@@ -1,5 +1,6 @@
 html {
   font-family: Arial, Helvetica, sans-serif;
+  color: white;
 }
 
 * {
@@ -78,6 +79,17 @@ button:focus {
 
 button:active {
   transform: translateY(1px);
+}
+
+.button-light {
+  color: #df9500aa;
+  border-color: #df9500aa;
+}
+
+.button-light:hover,
+.button-light:focus {
+  background-color: #df9500aa;
+  color: #01172c;
 }
 
 .button-link:hover,

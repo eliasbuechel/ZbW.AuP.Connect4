@@ -2,11 +2,11 @@
 {
     internal class WrongPlayerPlayingMoveException : Exception
     {
-        public WrongPlayerPlayingMoveException(string message, Player player) : base(message)
+        public WrongPlayerPlayingMoveException(string message, IPlayer player) : base(message)
         {
             Player = player;
         }
 
-        public Player Player { get; }
+        public IPlayer Player { get; }
     }
 }

@@ -3,7 +3,7 @@ namespace backend.game
 {
     internal class Game
     {
-        public Game(Player player1, Player player2)
+        public Game(IPlayer player1, IPlayer player2)
         {
             _player1 = player1;
             _player2 = player2;
@@ -14,10 +14,15 @@ namespace backend.game
                 _field[i] = new Player?[ROWS];
         }
 
-        public event Action<Player, int>? OnMovePlayed;
+        public event Action<IPlayer, int>? OnMovePlayed;
         public event Action<Connect4Line>? OnConnect4;
 
-        public void PlayMove(Player player, int column)
+        public bool GamesHasStarted { get; set; }
+        public IPlayer Player1 => _player1;
+        public IPlayer Player2 => _player2;
+
+
+        public void PlayMove(IPlayer player, int column)
         {
             if (_lastPlayer != null && _lastPlayer == player)
                 throw new WrongPlayerPlayingMoveException("Its the other players turn.", player);
@@ -49,7 +54,7 @@ namespace backend.game
             CheckForWin(player, column, nextFreeRow);
         }
 
-        private void CheckForWin(Player player, int column, int row)
+        private void CheckForWin(IPlayer player, int column, int row)
         {
             if (CheckForWinInColumn(player, column, row))
                 return;
@@ -60,7 +65,7 @@ namespace backend.game
             if (CheckForWinDiagonally(player, column, row))
                 return;
         }
-        private bool CheckForWinInColumn(Player player, int column, int row)
+        private bool CheckForWinInColumn(IPlayer player, int column, int row)
         {
             Connect4Line connect4Line = new Connect4Line();
             int count = 4;
@@ -87,7 +92,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinInRow(Player player, int column, int row)
+        private bool CheckForWinInRow(IPlayer player, int column, int row)
         {
             Connect4Line connect4Line = new Connect4Line();
             int count = 0;
@@ -112,7 +117,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonally(Player player, int column, int row)
+        private bool CheckForWinDiagonally(IPlayer player, int column, int row)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = column;
@@ -152,10 +157,10 @@ namespace backend.game
             return false;
         }
 
-        private Player? _lastPlayer;
-        private readonly Player _player1;
-        private readonly Player _player2;
-        private Player?[][] _field;
+        private IPlayer? _lastPlayer;
+        private readonly IPlayer _player1;
+        private readonly IPlayer _player2;
+        private IPlayer?[][] _field;
         private const int ROWS = 7;
         private const int COLUMNS = 6;
     }

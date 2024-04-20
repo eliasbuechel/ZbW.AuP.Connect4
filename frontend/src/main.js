@@ -10,6 +10,7 @@ import App from "./App.vue";
 import HomeView from "@/views/HomeView";
 import Login from "@/components/LoginForm.vue";
 import Register from "@/components/RegisterForm.vue";
+import GameView from "./views/GameView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: "/", name: "Home", component: HomeView },
     { path: "/login", name: "Login", component: Login },
     { path: "/register", name: "Register", component: Register },
+    { path: "/game", name: "Game", component: GameView },
   ],
 });
 

@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using backend.database;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RegistrationController : ControllerBase
+    internal class RegistrationController : ControllerBase
     {
 
-        public RegistrationController(UserManager<IdentityUser> userManager)
+        public RegistrationController(UserManager<PlayerIdentity> userManager)
         {
             _userManager = userManager;
         }
@@ -22,6 +23,6 @@ namespace backend.controllers
             return Ok();
         }
 
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<PlayerIdentity> _userManager;
     }
 }

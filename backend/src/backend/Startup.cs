@@ -1,7 +1,6 @@
 using backend.communication;
 using backend.database;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
+using backend.signalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -55,6 +54,7 @@ namespace backend
             services.AddScoped<BackendDbContext>(s => s.GetRequiredService<BackendDbContextFacory>().GetDbContext());
 
             ConfigureIdentity(services);
+            services.AddSignalR();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -77,7 +77,9 @@ namespace backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapIdentityApi<IdentityUser>();
+                endpoints.MapIdentityApi<PlayerIdentity>();
+                endpoints.MapHub<PlayerHub>("/playerHub")
+                    .RequireAuthorization();
             });
 
             BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();
@@ -96,7 +98,7 @@ namespace backend
         {
             services.AddAuthorization();
 
-            services.AddIdentityCore<IdentityUser>(options =>
+            services.AddIdentityCore<PlayerIdentity>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
@@ -130,17 +132,17 @@ namespace backend
                 options.Cookie.Path = "/";
             });
 
-            services.AddIdentityApiEndpoints<IdentityUser>();
+            services.AddIdentityApiEndpoints<PlayerIdentity>();
 
-            services.AddTransient<IEmailSender<IdentityUser>, EmailSender>();
+            services.AddTransient<IEmailSender<PlayerIdentity>, EmailSender>();
 
             services.AddSingleton<TimeProvider>(s => TimeProvider.System);
 
-            services.AddScoped<SignInManager<IdentityUser>>();
-            services.AddScoped<UserManager<IdentityUser>>();
+            services.AddScoped<SignInManager<PlayerIdentity>>();
+            services.AddScoped<UserManager<PlayerIdentity>>();
 
-            services.AddScoped<SignInManager<IdentityUser>>();
-            services.AddScoped<UserManager<IdentityUser>>();
+            services.AddScoped<SignInManager<PlayerIdentity>>();
+            services.AddScoped<UserManager<PlayerIdentity>>();
         }
 
         private readonly IConfiguration _configuration;

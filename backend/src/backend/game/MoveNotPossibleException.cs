@@ -2,13 +2,13 @@
 {
     internal class MoveNotPossibleException : Exception
     {
-        public MoveNotPossibleException(string message, Player player, int column) : base(message)
+        public MoveNotPossibleException(string message, IPlayer player, int column) : base(message)
         {
             Player = player;
             Column = column;
         }
 
-        public Player Player { get; }
+        public IPlayer Player { get; }
         public int Column { get; }
     }
 }

@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using backend.game;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.database
 {
-    internal class BackendDbContext : IdentityDbContext<IdentityUser>
+    internal class BackendDbContext : IdentityDbContext<PlayerIdentity>
     {
         public BackendDbContext(DbContextOptions options) : base(options)
         { }
@@ -18,5 +19,10 @@ namespace backend.database
         {
             base.OnModelCreating(builder);
         }
+    }
+
+    internal class PlayerIdentity : IdentityUser
+    {
+        public Guid PlayerId { get; }
     }
 }

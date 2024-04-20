@@ -6,5 +6,4 @@
 <script></script>
 <style>
 @import "@/assets/global.css";
-@import "@/assets/authentication.css";
 </style>
