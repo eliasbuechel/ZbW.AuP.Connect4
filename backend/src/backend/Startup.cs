@@ -92,7 +92,7 @@ namespace backend
             }
         }
 
-        private void ConfigureIdentity(IServiceCollection services)
+        private static void ConfigureIdentity(IServiceCollection services)
         {
             services.AddAuthorization();
 
