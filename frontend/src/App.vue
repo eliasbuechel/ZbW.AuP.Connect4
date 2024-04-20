@@ -1,14 +1,10 @@
 <template>
-  <h1>R4D4</h1>
+  <body>
+    <router-view></router-view>
+  </body>
 </template>
-
-<script>
-
-export default {
-  name: 'App',
-  components: {
-  }
-}
-</script>
-
-<style></style>
+<script></script>
+<style>
+@import "@/assets/global.css";
+@import "@/assets/authentication.css";
+</style>
