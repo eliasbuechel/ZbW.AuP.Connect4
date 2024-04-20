@@ -3,26 +3,33 @@
     <img id="logo-login" src="" alt="r4d4-logo" />
     <form @submit.prevent="login">
       <div class="input-field">
-        <label for="username">Benutzername / Email</label>
+        <label for="email">Email</label>
         <input
-          type="text"
-          id="username"
-          v-model="credentials.username"
+          type="email"
+          id="email"
+          v-model="credentials.email"
+          @focusout="validateEmail"
           required
         />
+        <span v-if="errors.email" class="error">{{ errors.email }}</span>
       </div>
       <div class="input-field">
-        <label for="password">Passwort</label>
+        <label for="password">Password</label>
         <input
           type="password"
           id="password"
           v-model="credentials.password"
+          @focusout="validatePassword"
           required
         />
+        <span v-if="errors.password" class="error">{{ errors.password }}</span>
       </div>
-      <button class="button-submit" type="submit" @click="login">Login</button>
+      <span v-if="errors.login" class="error">{{ errors.login }}</span>
+      <button class="button-submit" :disabled="!allowLogin" type="submit">
+        Login
+      </button>
       <button class="button-link" type="button" @click="redirectToRegister">
-        Switch to registration
+        Registration
       </button>
     </form>
   </div>
@@ -33,35 +40,63 @@ export default {
   data() {
     return {
       credentials: {
-        username: "",
+        email: "",
         password: "",
+      },
+      errors: {
+        email: "",
+        password: "",
+        login: "",
       },
     };
   },
   methods: {
     async login() {
       try {
-        const response = await this.$axios.post(
-          "http://localhost:5000/Account/Login",
-          this.credentials
+        await this.$axios.post(
+          "http://localhost:5000/login?useCookies=true",
+          this.credentials,
+          {
+            withCredentials: true,
+          }
         );
-
-        if (response.status >= 200 && response.status < 300) {
-          this.$router.push({ name: "Home" });
-        } else {
-          console.error("Login failed:", response.statusText);
-        }
+        this.errors.login = "";
+        this.$router.push({ name: "Home" });
       } catch (error) {
-        console.error("An error occured during login: ", error.message);
+        this.errors.login = error.message;
       }
     },
+    async validateEmail() {
+      const emailInput = document.getElementById("email");
+      if (!emailInput.checkValidity()) {
+        this.errors.email = emailInput.validationMessage;
+        return;
+      }
+      this.errors.email = "";
+    },
+    async validatePassword() {
+      const passwordInput = document.getElementById("password");
+      if (!passwordInput.checkValidity()) {
+        this.errors.password = passwordInput.validationMessage;
+        return;
+      }
+      this.errors.password = "";
+      // missing validation logic for password
+    },
+
     redirectToRegister() {
       this.$router.push({ name: "Register" });
     },
   },
+  computed: {
+    allowLogin() {
+      return (
+        this.credentials.email &&
+        !this.errors.email &&
+        this.credentials.password &&
+        !this.errors.password
+      );
+    },
+  },
 };
 </script>
-
-<style scoped>
-@import "/src/assets/authentication.css";
-</style>

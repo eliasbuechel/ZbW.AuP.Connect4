@@ -1,7 +1,10 @@
 using backend.communication;
 using backend.database;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Diagnostics;
 using System.Net;
 
@@ -29,7 +32,11 @@ namespace backend
                 });
             });
 
-            services.AddSwaggerGen();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API Name", Version = "v1" });
+            });
             services.AddControllers();
 
             IConfiguration mqttConfig = _configuration.GetSection($"{_environment.EnvironmentName}:MqttClient");
@@ -55,18 +62,21 @@ namespace backend
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Name v1");
+                });
             }
 
             app.UseRouting();
             app.UseCors("MyCorsPolicy");
 
-            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapIdentityApi<IdentityUser>();
             });
 
@@ -84,6 +94,8 @@ namespace backend
 
         private void ConfigureIdentity(IServiceCollection services)
         {
+            services.AddAuthorization();
+
             services.AddIdentityCore<IdentityUser>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
@@ -110,9 +122,18 @@ namespace backend
             })
             .AddEntityFrameworkStores<BackendDbContext>();
 
+            services.AddHttpContextAccessor();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = false;
+                options.Cookie.Path = "/";
+            });
+
+            services.AddIdentityApiEndpoints<IdentityUser>();
+
             services.AddTransient<IEmailSender<IdentityUser>, EmailSender>();
 
-            services.AddHttpContextAccessor();
             services.AddSingleton<TimeProvider>(s => TimeProvider.System);
 
             services.AddScoped<SignInManager<IdentityUser>>();
@@ -120,17 +141,6 @@ namespace backend
 
             services.AddScoped<SignInManager<IdentityUser>>();
             services.AddScoped<UserManager<IdentityUser>>();
-
-            services.ConfigureApplicationCookie(options =>
-            {
-                // Cookie settings
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-
-                options.LoginPath = "/login";
-                //options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                options.SlidingExpiration = true;
-            });
         }
 
         private readonly IConfiguration _configuration;

@@ -31,7 +31,7 @@ body {
   justify-content: center;
   flex-direction: column;
   padding: 1.5em;
-  background-color: #df9500;
+  background-color: #df9500aa;
   border-radius: 1em;
 }
 
@@ -51,27 +51,52 @@ body {
   background: none;
   border-bottom: 1px solid black;
   padding: 0.2rem;
+  width: 13rem;
+}
+
+.login-container > form > .input-field > span {
+  max-width: 13rem;
+  margin-top: 0.2rem;
 }
 
 button {
-  padding: 0.3rem 0.5rem;
+  padding: 0.4rem 1rem;
+  color: #01172c;
   font-size: 1rem;
-  font-weight: bold;
-  border-width: 2px;
-  border-radius: 3px;
-  border-color: white;
-  background-color: #f44336;
+  font-weight: bolder;
+  border: 2px solid #01172c;
+  border-radius: 1.2rem;
+  background-color: transparent;
   margin: 0.5rem;
+}
+
+button:hover,
+button:focus {
+  background-color: #01172c;
+  color: #df9500aa;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.button-link:hover,
+.button-link:focus {
+  color: #21374c;
+  text-decoration: underline;
+  background-color: transparent;
 }
 
 .button-link {
   background: none;
   border: none;
-  color: black;
+  color: #01172c;
   font-style: italic;
   font-size: 0.9rem;
+  padding: 0;
 }
 
-.button-link:hover {
-  color: blue;
+.error {
+  color: red;
+  font-size: 0.8rem;
 }

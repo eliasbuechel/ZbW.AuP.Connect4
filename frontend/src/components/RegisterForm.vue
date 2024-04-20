@@ -4,37 +4,42 @@
     <div class="login-container">
       <form @submit.prevent="login">
         <div class="input-field">
-          <label for="username">Username</label>
+          <label for="email">Email</label>
           <input
-            type="text"
-            id="register-username"
-            v-model="credentials.username"
-            required
-          />
-        </div>
-        <div class="input-field">
-          <label for="username">Email</label>
-          <input
-            type="text"
-            id="register-email"
+            type="email"
+            id="email"
             v-model="credentials.email"
+            @focusout="validateEmail"
             required
           />
+          <span v-if="errors.email" class="error">{{ errors.email }}</span>
         </div>
         <div class="input-field">
           <label for="password">Password</label>
           <input
             type="password"
-            id="register-password"
+            id="password"
             v-model="credentials.password"
+            @focusout="validatePassword"
             required
           />
+          <span v-if="errors.password" class="error">{{
+            errors.password
+          }}</span>
         </div>
-        <button class="button-submit" type="submit" @click="register">
+        <span v-if="errors.registration" class="error">{{
+          errors.registration
+        }}</span>
+        <button
+          class="button-submit"
+          type="submit"
+          :disabled="!allowRegistration"
+          @click="register"
+        >
           Register
         </button>
         <button class="button-link" type="button" @click="redirectToLogin">
-          Switch to login
+          Login
         </button>
       </form>
     </div>
@@ -46,36 +51,75 @@ export default {
   data() {
     return {
       credentials: {
-        username: "",
         email: "",
         password: "",
+      },
+      errors: {
+        email: "",
+        password: "",
+        registration: "",
       },
     };
   },
   methods: {
     async register() {
       try {
-        const response = await this.$axios.post(
-          "http://localhost:5000/Account/Register",
+        await this.$axios.post(
+          "http://localhost:5000/register",
           this.credentials
         );
-
-        if (response.status >= 200 && response.status < 300) {
-          this.$router.push({ name: "Home" });
-        } else {
-          console.error("Registration failed:", response.statusText);
-        }
+        this.errors.registration = "";
+        this.$router.push({ name: "Login" });
       } catch (error) {
-        console.error("An error occured during registration: ", error.message);
+        this.errors.registration = error.message;
+        console.log(error);
       }
+    },
+    async validateEmail() {
+      const emailInput = document.getElementById("email");
+      if (!emailInput.checkValidity()) {
+        this.errors.email = emailInput.validationMessage;
+        return;
+      }
+
+      try {
+        await this.$axios.get(
+          "http://localhost:5000/Registration/email-taken",
+          {
+            params: {
+              email: this.credentials.email,
+            },
+          }
+        );
+        // missing validation logic for email
+        this.errors.email = "";
+      } catch (error) {
+        this.errors.email = error.response.data;
+      }
+    },
+    async validatePassword() {
+      const passwordInput = document.getElementById("password");
+      if (!passwordInput.checkValidity()) {
+        this.errors.password = passwordInput.validationMessage;
+        return;
+      }
+
+      this.errors.password = "";
+      // missing validation logic for password
     },
     redirectToLogin() {
       this.$router.push({ name: "Login" });
     },
   },
+  computed: {
+    allowRegistration() {
+      return (
+        this.credentials.email &&
+        !this.errors.email &&
+        this.credentials.password &&
+        !this.errors.password
+      );
+    },
+  },
 };
 </script>
-
-<style scoped>
-@import "/src/assets/authentication.css";
-</style>
