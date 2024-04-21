@@ -18,10 +18,17 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 
-export default {
+interface Cell {
+  color: string;
+}
+
+export default defineComponent({
+  name: "GameView",
+  components: {},
   mounted() {
     signalRHub.start();
   },
@@ -36,7 +43,7 @@ export default {
     };
   },
   methods: {
-    placeStone(column) {
+    placeStone(column: Cell[]) {
       if (column[column.length - 1].color != "t") return;
 
       for (let i = 0; i < column.length; i++) {
@@ -50,7 +57,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

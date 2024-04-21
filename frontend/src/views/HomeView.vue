@@ -4,17 +4,17 @@
   <GamePlan />
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import OnlinePlayersListing from "@/components/OnlinePlayersListing.vue";
 import GamePlan from "../components/GamePlan.vue";
 // import signalRHub from "../services/signalRHub.js";
 
-export default {
+export default defineComponent({
+  name: "HomeView",
   components: {
     OnlinePlayersListing,
     GamePlan,
   },
-};
+});
 </script>
-
-<style></style>

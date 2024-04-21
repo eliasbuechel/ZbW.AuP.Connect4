@@ -2,9 +2,9 @@
   <div class="listing-container">
     <h2>Online players</h2>
     <ul>
-      <span v-if="errosr.players" class="error">{{ errors.players }}</span>
+      <span v-if="errors.players" class="error">{{ errors.players }}</span>
       <li v-else v-for="player in players" :key="player.id">
-        {{ player.name }}
+        {{ player.email }}
         <button
           v-if="!player.requestedMatch"
           class="button-light"
@@ -24,42 +24,49 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 
-export default {
-  async mounted() {
-    signalRHub.invoke("GetPlayers");
+interface Player {
+  id: string;
+  email: string;
+  requestedMatch: boolean;
+}
 
-    // try {
-    //   await this.$axios.get("http://localhost:5000/Player/get-online-players", {
-    //     params: {
-    //       email: "test",
-    //     },
-    //   });
-    // } catch (error) {
-    //   this.errors.players = "Not able to load players.";
-    // }
+interface Errors {
+  players: string;
+}
+
+export default defineComponent({
+  name: "OnlinePlayerListing",
+  components: {},
+  async mounted(): Promise<void> {
+    try {
+      signalRHub.invoke("GetPlayers");
+    } catch {
+      this.errors.players = "Not able to load players.";
+    }
   },
-  data() {
+  data(): { players: Player[]; errors: Errors } {
     return {
       players: [
-        { id: 1, name: "Player 1", requestedMatch: false },
-        { id: 2, name: "Player 2", requestedMatch: false },
-        { id: 3, name: "Player 3", requestedMatch: false },
+        { id: "1", email: "Player 1", requestedMatch: false },
+        { id: "2", email: "Player 2", requestedMatch: false },
+        { id: "3", email: "Player 3", requestedMatch: false },
       ],
       errors: { players: "" },
     };
   },
   methods: {
-    async requestGame(player) {
+    async requestGame(player: Player): Promise<void> {
       console.log("Requesting game with player " + player.id);
       player.requestedMatch = true;
     },
-    async acceptMatching(player) {
+    async acceptMatching(player: Player): Promise<void> {
       console.log("Accepted matching with player " + player.id);
       player.requestedMatch = false;
     },
   },
-};
+});
 </script>

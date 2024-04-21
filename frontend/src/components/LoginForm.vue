@@ -35,9 +35,24 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+interface Credentials {
+  email: String;
+  password: String;
+}
+
+interface Errors {
+  email: String;
+  password: String;
+  login: String;
+}
+
+export default defineComponent({
+  name: "LoginForm",
+  components: {},
+  data(): { credentials: Credentials; errors: Errors } {
     return {
       credentials: {
         email: "",
@@ -51,7 +66,7 @@ export default {
     };
   },
   methods: {
-    async login() {
+    async login(): Promise<void> {
       try {
         await this.$axios.post(
           "http://localhost:5000/login?useCookies=true",
@@ -62,20 +77,24 @@ export default {
         );
         this.errors.login = "";
         this.$router.push({ name: "Home" });
-      } catch (error) {
+      } catch (error: any) {
         this.errors.login = error.message;
       }
     },
-    async validateEmail() {
-      const emailInput = document.getElementById("email");
+    async validateEmail(): Promise<void> {
+      const emailInput: HTMLInputElement = document.getElementById(
+        "email"
+      ) as HTMLInputElement;
       if (!emailInput.checkValidity()) {
         this.errors.email = emailInput.validationMessage;
         return;
       }
       this.errors.email = "";
     },
-    async validatePassword() {
-      const passwordInput = document.getElementById("password");
+    validatePassword(): void {
+      const passwordInput: HTMLInputElement = document.getElementById(
+        "password"
+      ) as HTMLInputElement;
       if (!passwordInput.checkValidity()) {
         this.errors.password = passwordInput.validationMessage;
         return;
@@ -98,5 +117,5 @@ export default {
       );
     },
   },
-};
+});
 </script>

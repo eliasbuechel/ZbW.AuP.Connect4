@@ -2,7 +2,7 @@
   <div class="login-container">
     <img id="logo" src="" alt="r4d4-logo" />
     <div class="login-container">
-      <form @submit.prevent="login">
+      <form @submit.prevent="register">
         <div class="input-field">
           <label for="email">Email</label>
           <input
@@ -34,7 +34,6 @@
           class="button-submit"
           type="submit"
           :disabled="!allowRegistration"
-          @click="register"
         >
           Register
         </button>
@@ -46,9 +45,24 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+interface Credentials {
+  email: String;
+  password: String;
+}
+
+interface Errors {
+  email: String;
+  password: String;
+  registration: String;
+}
+
+export default defineComponent({
+  name: "RegisterFrom",
+  components: {},
+  data(): { credentials: Credentials; errors: Errors } {
     return {
       credentials: {
         email: "",
@@ -70,13 +84,15 @@ export default {
         );
         this.errors.registration = "";
         this.$router.push({ name: "Login" });
-      } catch (error) {
+      } catch (error: any) {
         this.errors.registration = error.message;
         console.log(error);
       }
     },
     async validateEmail() {
-      const emailInput = document.getElementById("email");
+      const emailInput: HTMLInputElement = document.getElementById(
+        "email"
+      ) as HTMLInputElement;
       if (!emailInput.checkValidity()) {
         this.errors.email = emailInput.validationMessage;
         return;
@@ -93,12 +109,14 @@ export default {
         );
         // missing validation logic for email
         this.errors.email = "";
-      } catch (error) {
+      } catch (error: any) {
         this.errors.email = error.response.data;
       }
     },
     async validatePassword() {
-      const passwordInput = document.getElementById("password");
+      const passwordInput: HTMLInputElement = document.getElementById(
+        "password"
+      ) as HTMLInputElement;
       if (!passwordInput.checkValidity()) {
         this.errors.password = passwordInput.validationMessage;
         return;
@@ -121,5 +139,5 @@ export default {
       );
     },
   },
-};
+});
 </script>
