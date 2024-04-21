@@ -1,16 +1,16 @@
 // Externe Bibliotheken/Frameworks
 import { Router, createRouter, createWebHistory } from "vue-router";
-import axios, { Axios, AxiosInstance } from "axios";
+import axios, { AxiosStatic } from "axios";
 
 // Interne Module
-import { createApp, App, provide } from "vue";
+import { App, createApp } from "vue";
 import AppVue from "./App.vue";
 
 // Lokale Dateien/Komponenten
-import HomeView from "./views/HomeView.vue";
-import Login from "components/LoginForm.vue";
-import Register from "components/RegisterForm.vue";
-import GameView from "views/GameView.vue";
+import HomeView from "@/views/HomeView.vue";
+import Login from "@/components/LoginForm.vue";
+import Register from "@/components/RegisterForm.vue";
+import GameView from "./views/GameView.vue";
 
 const router: Router = createRouter({
   history: createWebHistory(),
@@ -26,15 +26,11 @@ const app: App = createApp(AppVue);
 
 declare module "@vue/runtime-core" {
   interface ComponentCustomProperties {
-    $router: Router;
-    $axios: AxiosInstance;
+    $axios: AxiosStatic;
   }
 }
 
-provide(Axios, axios);
-
-app.config.globalProperties.$router = router;
-app.config.globalProperties.$axios = axios as AxiosInstance;
+app.config.globalProperties.$axios = axios;
 
 app.use(router);
 app.mount("#app");

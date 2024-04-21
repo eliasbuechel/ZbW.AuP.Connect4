@@ -1,40 +1,36 @@
-type Listener = (...args: any[]) => void;
+type Callback = (...args: any[]) => void;
 
 class EventBus {
-  private listeners: Map<string, Set<Listener>>;
+  public emit(event: string, ...args: any[]): void {
+    const callbacks: Set<Callback> | undefined = this.eventCallbackMap.get(event);
 
-  constructor() {
-    this.listeners = new Map();
+    if (!callbacks) return;
+
+    callbacks.forEach((listener: Callback) => {
+      listener(...args);
+    });
   }
 
-  emit(event: string, ...args: any[]): void {
-    const eventListeners: Set<Listener> = this.listeners.get(event);
-
-    if (eventListeners) {
-      eventListeners.forEach((listener: Listener) => {
-        listener(...args);
-      });
+  public on(event: string, callback: Callback): void {
+    let callbacks: Set<Callback> | undefined = this.eventCallbackMap.get(event);
+    if (!callbacks) {
+      callbacks = new Set();
+      this.eventCallbackMap.set(event, callbacks);
     }
+    callbacks.add(callback);
   }
 
-  on(event: string, callback: Listener): void {
-    let eventListeners: Set<Listener> = this.listeners.get(event);
-    if (!eventListeners) {
-      eventListeners = new Set();
-      this.listeners.set(event, eventListeners);
-    }
-    eventListeners.add(callback);
-  }
-
-  off(event: string, callback: Listener): void {
-    const eventListeners: Set<Listener> = this.listeners.get(event);
+  public off(event: string, callback: Callback): void {
+    const eventListeners: Set<Callback> | undefined = this.eventCallbackMap.get(event);
     if (eventListeners) {
       eventListeners.delete(callback);
       if (eventListeners.size === 0) {
-        this.listeners.delete(event);
+        this.eventCallbackMap.delete(event);
       }
     }
   }
+
+  private eventCallbackMap: Map<string, Set<Callback>> = new Map<string, Set<Callback>>();
 }
 
 const eventBus = new EventBus();

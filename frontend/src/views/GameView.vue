@@ -2,17 +2,8 @@
   <div class="connect4-game">
     <h2>Connect Four</h2>
     <div class="board">
-      <div
-        v-for="(column, colIdx) in board"
-        :key="colIdx"
-        class="column"
-        @click="placeStone(column)"
-      >
-        <div
-          v-for="(cell, rowIdx) in column"
-          :key="rowIdx"
-          :class="{ cell: true, [cell.color]: cell }"
-        ></div>
+      <div v-for="(column, colIdx) in connect4Board" :key="colIdx" class="column" @click="placeStone(column)">
+        <div v-for="(cell, rowIdx) in column" :key="rowIdx" :class="{ cell: true, [cell.color]: cell }"></div>
       </div>
     </div>
   </div>
@@ -27,23 +18,18 @@ interface Cell {
 }
 
 export default defineComponent({
-  name: "GameView",
-  components: {},
   mounted() {
     signalRHub.start();
   },
-  data() {
+  data(): { currentPlayer: string; connect4Board: Cell[][]; gameOver: boolean } {
     return {
       currentPlayer: "g",
-      board: Array.from({ length: 6 }, () =>
-        Array.from({ length: 7 }, () => ({ color: "t" }))
-      ),
-      winner: null,
+      connect4Board: Array.from({ length: 6 }, () => Array.from({ length: 7 }, () => ({ color: "t" }))),
       gameOver: false,
     };
   },
   methods: {
-    placeStone(column: Cell[]) {
+    placeStone(column: Cell[]): void {
       if (column[column.length - 1].color != "t") return;
 
       for (let i = 0; i < column.length; i++) {

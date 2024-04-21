@@ -1,69 +1,68 @@
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import eventBus from "./eventBus";
 
-class SignalRHub {
-  private client: HubConnection;
-  private isConnected: boolean;
+type Callback = (...arg: any[]) => void;
 
+class SignalRHub {
   constructor() {
-    this.client = new HubConnectionBuilder()
-      .withUrl("http://localhost:7136/playerHub")
-      .build();
+    this.client = new HubConnectionBuilder().withUrl("http://localhost:7136/playerHub").build();
 
     this.client.onreconnected(this.onReconnected.bind(this));
     this.client.onclose(this.onDisconnected.bind(this));
-    this.isConnected = false;
   }
 
-  start(): void {
+  public start(): void {
     this.client
       .start()
       .then(() => this.onConnected())
-      .catch((error: Error) => {
+      .catch((error) => {
         console.error("Error starting SignalR connection: ", error);
         setTimeout(() => this.start(), 5000);
       });
   }
 
-  stop(): void {
+  public stop(): void {
     this.client
       .stop()
       .then(() => this.onDisconnected())
-      .catch((error: Error) => {
+      .catch((error) => {
         console.error("Error stopping SignalR connection: ", error);
       });
   }
 
-  invoke(methodeName: string, ...argument: any[]): void {
+  public invoke(methodeName: string, ...argument: any[]): void {
     if (this.isConnected) this.client.invoke(methodeName, ...argument);
   }
 
-  on(methodeName: string, callback: (...args: any[]) => void): void {
+  public on(methodeName: string, callback: Callback): void {
     this.client.on(methodeName, callback);
   }
 
-  invokeWithNoData(methodeName: string): void {
+  public invokeWithNoData(methodeName: string): void {
     this.client.invoke(methodeName);
   }
 
-  onReconnected(connectionId: string): void {
+  private onReconnected(connectionId?: string | undefined): void {
     this.isConnected = true;
     eventBus.emit("signalr-connected", true);
     console.log("SignalR reconneected to server ", connectionId);
   }
 
-  onConnected(): void {
+  private onConnected(): void {
     this.isConnected = true;
     eventBus.emit("signalr-connected", true);
     console.log("SignalR connected to server");
   }
 
-  onDisconnected(): void {
+  private onDisconnected(error?: Error | undefined): void {
     this.isConnected = false;
     console.log("SignalR disconnected");
     eventBus.emit("signalr-connected", false);
     this.start();
   }
+
+  private isConnected: boolean = false;
+  private client: HubConnection;
 }
 
 export default new SignalRHub();

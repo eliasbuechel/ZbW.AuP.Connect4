@@ -1,4 +1,5 @@
 <template>
+  <img id="logo-home" src="@/assets/images/Logo.png" alt="r4d4-logo" />
   <div class="home">Die Hauptseite von R4D4</div>
   <OnlinePlayersListing />
   <GamePlan />
@@ -11,10 +12,11 @@ import GamePlan from "../components/GamePlan.vue";
 // import signalRHub from "../services/signalRHub.js";
 
 export default defineComponent({
-  name: "HomeView",
   components: {
     OnlinePlayersListing,
     GamePlan,
   },
 });
 </script>
+
+<style></style>
