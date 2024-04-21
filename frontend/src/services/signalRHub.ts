@@ -5,7 +5,9 @@ type Callback = (...arg: any[]) => void;
 
 class SignalRHub {
   constructor() {
-    this.client = new HubConnectionBuilder().withUrl("http://localhost:7136/playerHub").build();
+    this.client = new HubConnectionBuilder()
+      .withUrl("http://localhost:5000/playerHub", { withCredentials: true })
+      .build();
 
     this.client.onreconnected(this.onReconnected.bind(this));
     this.client.onclose(this.onDisconnected.bind(this));

@@ -10,34 +10,49 @@ namespace backend.services
 {
     internal class PlayerManager
     {
-        public PlayerManager(UserManager<IdentityUser> usermanager, GameManager gameManager, IHubContext<PlayerHub> playerHubContext)
+        public PlayerManager(GameManager gameManager, IHubContext<PlayerHub> playerHubContext)
         {
-            _usermanager = usermanager;
+
             _gameManager = gameManager;
             _playerHubContext = playerHubContext;
-            IList<IdentityUser> users = _usermanager.Users.ToList();
         }
 
-        public IEnumerable<IPlayer> Players => _identityToPlayerMapping.Values.ToList();
+        public IEnumerable<IPlayer> Players => _identityToPlayerMap.Values.ToList();
 
-        public IPlayer GetPlayerByUserId(string userId)
+        public void OnConnected(PlayerIdentity identity)
         {
-            IdentityUser? identity = _usermanager.FindByIdAsync(userId).Result;
-            Debug.Assert(identity != null);
-
-            IPlayer? player = _identityToPlayerMapping.GetValueOrDefault(identity);
-
-            if (player == null)
+            if (_identityToPlayerMap.ContainsKey(identity.Id))
             {
-                player = new Player(_gameManager, _playerHubContext);
+                _playerConnectionCounterMap[identity.Id]++;
+                return;
             }
 
+            _playerConnectionCounterMap.Add(identity.Id, 1);
+
+            IPlayer player = new Player(_gameManager, _playerHubContext);
+            _identityToPlayerMap.Add(identity.Id, player);
+        }
+        public void OnDisconnected(PlayerIdentity identity)
+        {
+            _playerConnectionCounterMap[identity.Id]--;
+
+            if (_playerConnectionCounterMap[identity.Id] > 0)
+                return;
+
+            _playerConnectionCounterMap.Remove(identity.Id);
+            _identityToPlayerMap.Remove(identity.Id);
+        }
+
+        public IPlayer GetPlayer(PlayerIdentity identity)
+        {
+            IPlayer? player = _identityToPlayerMap.GetValueOrDefault(identity.Id);
+            Debug.Assert(player != null);
             return player;
         }
 
-        private readonly UserManager<IdentityUser> _usermanager;
         private readonly GameManager _gameManager;
         private readonly IHubContext<PlayerHub> _playerHubContext;
-        private readonly Dictionary<IdentityUser, IPlayer> _identityToPlayerMapping = new Dictionary<IdentityUser, IPlayer>();
+        private readonly Dictionary<string, IPlayer> _identityToPlayerMap = new Dictionary<string, IPlayer>();
+        private readonly Dictionary<string, int> _playerConnectionCounterMap = new Dictionary<string, int>();
     }
 }

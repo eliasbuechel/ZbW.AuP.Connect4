@@ -24,15 +24,12 @@ interface Player {
 
 export default defineComponent({
   async mounted() {
+    signalRHub.on("get-players", (players: Player[]) => (this.players = players));
     signalRHub.invoke("GetPlayers");
   },
-  data(): { players: Player[]; errors: { players: string } } {
+  data(): { players: Player[] | undefined; errors: { players: string } } {
     return {
-      players: [
-        { id: 1, name: "Player 1", requestedMatch: false },
-        { id: 2, name: "Player 2", requestedMatch: false },
-        { id: 3, name: "Player 3", requestedMatch: false },
-      ],
+      players: undefined,
       errors: { players: "" },
     };
   },

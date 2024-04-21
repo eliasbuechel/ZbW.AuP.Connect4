@@ -1,6 +1,9 @@
 using backend.communication;
 using backend.database;
+using backend.game;
+using backend.services;
 using backend.signalR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -55,6 +58,9 @@ namespace backend
 
             ConfigureIdentity(services);
             services.AddSignalR();
+
+            services.AddSingleton<services.PlayerManager>();
+            services.AddSingleton<GameManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -71,15 +77,14 @@ namespace backend
             app.UseRouting();
             app.UseCors("MyCorsPolicy");
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapIdentityApi<PlayerIdentity>();
-                endpoints.MapHub<PlayerHub>("/playerHub")
-                    .RequireAuthorization();
+                endpoints.MapHub<PlayerHub>("/playerHub");
             });
 
             BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();
@@ -97,6 +102,7 @@ namespace backend
         private static void ConfigureIdentity(IServiceCollection services)
         {
             services.AddAuthorization();
+            services.AddAuthentication();
 
             services.AddIdentityCore<PlayerIdentity>(options =>
             {
@@ -141,8 +147,7 @@ namespace backend
             services.AddScoped<SignInManager<PlayerIdentity>>();
             services.AddScoped<UserManager<PlayerIdentity>>();
 
-            services.AddScoped<SignInManager<PlayerIdentity>>();
-            services.AddScoped<UserManager<PlayerIdentity>>();
+            services.AddScoped<Func<UserManager<PlayerIdentity>>>(s => () => s.GetRequiredService<UserManager<PlayerIdentity>>());
         }
 
         private readonly IConfiguration _configuration;

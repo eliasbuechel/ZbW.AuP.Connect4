@@ -1,6 +1,8 @@
-﻿using backend.game;
+﻿using backend.database;
+using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -11,15 +13,17 @@ namespace backend.signalR
     [Authorize]
     internal class PlayerHub : Hub, IPlayerApi 
     {
-        public PlayerHub(PlayerManager playerManager, GameManager gameManager)
+        public PlayerHub(services.PlayerManager playerManager, GameManager gameManager, UserManager<PlayerIdentity> userManager)
         {
             _playerManager = playerManager;
             _gameManager = gameManager;
+            _userManager = userManager;
         }
 
         public void MakeMove(int column)
         {
-            IPlayer player = GetPlayer();
+            PlayerIdentity identity = GetIdentity();
+            IPlayer player = _playerManager.GetPlayer(identity);
             player.MakeMove(column);
         }
 
@@ -30,34 +34,41 @@ namespace backend.signalR
             await Clients.Caller.SendAsync("get-players", jsonPlayers);
         }
 
-        private IPlayer GetPlayer()
-        {
-            ClaimsPrincipal? claimsPrincipal = Context.User;
-            Debug.Assert(claimsPrincipal != null);
-            string? userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
-            Debug.Assert(userId != null);
-
-            return _playerManager.GetPlayerByUserId(userId);
-        }
         public void ConfirmGameStart()
         {
-            IPlayer player = GetPlayer();
-            player.ConfirmGameStart();
+            //IPlayer player = GetPlayer();
+            //player.ConfirmGameStart();
         }
         public override Task OnConnectedAsync()
         {
-            IPlayer player = GetPlayer();
-            _gameManager.AddPlayer(player);
+            PlayerIdentity identity = GetIdentity();
+            _playerManager.OnConnected(identity);
             return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            IPlayer player = GetPlayer();
-            _gameManager.RemovePlayer(player);
+            PlayerIdentity identity = GetIdentity();
+            _playerManager.OnDisconnected(identity);
             return Task.CompletedTask;
         }
 
-        private readonly PlayerManager _playerManager;
+
+        private PlayerIdentity GetIdentity()
+        {
+            ClaimsPrincipal? claimsPrincipal = Context.User;
+            Debug.Assert(claimsPrincipal != null);
+
+            string? userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+            Debug.Assert(userId != null);
+
+            PlayerIdentity? identity = _userManager.FindByIdAsync(userId).Result;
+            Debug.Assert(identity != null);
+
+            return identity;
+        }
+
+        private readonly services.PlayerManager _playerManager;
         private readonly GameManager _gameManager;
+        private readonly UserManager<PlayerIdentity> _userManager;
     }
 }

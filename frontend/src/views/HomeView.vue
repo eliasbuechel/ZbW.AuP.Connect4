@@ -8,10 +8,16 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import OnlinePlayersListing from "@/components/OnlinePlayersListing.vue";
-import GamePlan from "../components/GamePlan.vue";
-// import signalRHub from "../services/signalRHub.js";
+import GamePlan from "@/components/GamePlan.vue";
+import signalRHub from "@/services/signalRHub";
 
 export default defineComponent({
+  mounted(): void {
+    signalRHub.start();
+  },
+  // unmounted() {
+  //   signalRHub.stop();
+  // },
   components: {
     OnlinePlayersListing,
     GamePlan,

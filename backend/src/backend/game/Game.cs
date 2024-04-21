@@ -25,10 +25,10 @@ namespace backend.game
         public void PlayMove(IPlayer player, int column)
         {
             if (_lastPlayer != null && _lastPlayer == player)
-                throw new WrongPlayerPlayingMoveException("Its the other players turn.", player);
+                throw new PlayerManager("Its the other players turn.", player);
 
             if (player != _player1 && player != _player2)
-                throw new WrongPlayerPlayingMoveException("Player is not in the current game.", player);
+                throw new PlayerManager("Player is not in the current game.", player);
 
             if (column < 0 || column >= COLUMNS)
                 throw new MoveNotPossibleException("Provided column is not valid", player, column);
