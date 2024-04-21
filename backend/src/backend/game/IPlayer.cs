@@ -1,12 +1,12 @@
-﻿using System.Diagnostics.Tracing;
-
-namespace backend.game
+﻿namespace backend.game
 {
     internal interface IPlayer
     {
         event Action<IPlayer, int>? OnMovePlayed;
         event Action<IPlayer, IPlayer>? OnMatch;
 
+        string Id { get; }
+        string Username { get; }
         bool HasConfirmedGameStart { get; }
 
         void ConfirmGameStart();

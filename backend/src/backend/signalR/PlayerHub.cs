@@ -4,6 +4,7 @@ using backend.services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
@@ -30,8 +31,9 @@ namespace backend.signalR
         public async void GetPlayers()
         {
             IEnumerable<IPlayer> players = _playerManager.Players;
-            string jsonPlayers = JsonSerializer.Serialize(players);
-            await Clients.Caller.SendAsync("get-players", jsonPlayers);
+            IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = players.Select(p => new OnlinePlayerDTO(p));
+            string jsonPlayers = JsonSerializer.Serialize(onlinePlayersDTO);
+            await Clients.Caller.SendAsync("get-online-players", onlinePlayersDTO);
         }
 
         public void ConfirmGameStart()
@@ -42,13 +44,13 @@ namespace backend.signalR
         public override Task OnConnectedAsync()
         {
             PlayerIdentity identity = GetIdentity();
-            _playerManager.OnConnected(identity);
+            _playerManager.OnPlayerConnected(identity);
             return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
             PlayerIdentity identity = GetIdentity();
-            _playerManager.OnDisconnected(identity);
+            _playerManager.OnPlayerDisconnected(identity);
             return Task.CompletedTask;
         }
 
@@ -70,5 +72,20 @@ namespace backend.signalR
         private readonly services.PlayerManager _playerManager;
         private readonly GameManager _gameManager;
         private readonly UserManager<PlayerIdentity> _userManager;
+    }
+
+    internal class OnlinePlayerDTO
+    {
+        public OnlinePlayerDTO(IPlayer player)
+        {
+            id = player.Id;
+            string? username = player.Username;
+            Debug.Assert(username != null);
+            this.username = username;
+            requestedMatch = false;
+        }
+        public string id { get; set; } = string.Empty;
+        public string username { get; set; } = string.Empty;
+        public bool requestedMatch { get; set; }
     }
 }

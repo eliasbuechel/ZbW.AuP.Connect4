@@ -1,4 +1,5 @@
 ﻿
+using backend.database;
 using backend.signalR;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
@@ -7,13 +8,22 @@ namespace backend.game
 {
     internal class Player : IPlayer
     {
-        public Player(GameManager gameManager, IHubContext<PlayerHub> playerHubContext)
+        public Player(PlayerIdentity identity, GameManager gameManager, IHubContext<PlayerHub> playerHubContext)
         {
+            Id = identity.Id;
+            string? username = identity.UserName;
+            Debug.Assert(username != null);
+            Username = username;
+
             _gameManager = gameManager;
             _playerHubContext = playerHubContext;
         }
 
         public bool HasConfirmedGameStart { get; private set; }
+
+        public string Id { get; }
+
+        public string Username { get; }
 
         public event Action<IPlayer, int>? OnMovePlayed;
         public event Action<IPlayer, IPlayer>? OnMatch;

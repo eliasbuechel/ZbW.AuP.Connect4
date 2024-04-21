@@ -15,9 +15,9 @@ export default defineComponent({
   mounted(): void {
     signalRHub.start();
   },
-  // unmounted() {
-  //   signalRHub.stop();
-  // },
+  unmounted() {
+    signalRHub.stop();
+  },
   components: {
     OnlinePlayersListing,
     GamePlan,
