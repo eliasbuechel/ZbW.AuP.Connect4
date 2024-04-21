@@ -2,7 +2,7 @@
   <div class="login-container">
     <img id="logo-register" src="@/assets/images/Logo.png" alt="r4d4-logo" />
     <div class="login-container">
-      <form @submit.prevent="login">
+      <form @submit.prevent="register">
         <div class="input-field">
           <label for="email">Email</label>
           <input type="email" id="email" v-model="credentials.email" @focusout="validateEmail" required />
