@@ -8,10 +8,10 @@ namespace backend.game
             _player1 = player1;
             _player2 = player2;
 
-            _field = new Player?[COLUMNS][];
+            _field = new SignalRPlayer?[COLUMNS][];
 
             for (int i = 0; i < _field.Length; i++)
-                _field[i] = new Player?[ROWS];
+                _field[i] = new SignalRPlayer?[ROWS];
         }
 
         public event Action<IPlayer, int>? OnMovePlayed;

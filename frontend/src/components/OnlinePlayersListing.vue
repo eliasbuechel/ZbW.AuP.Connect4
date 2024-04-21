@@ -1,12 +1,12 @@
 <template>
   <div class="listing-container">
     <h2>Online players</h2>
-    <span class="error">{{ errors.players }}</span>
-    <ul>
-      <li v-for="player in players" :key="player.id">
-        <span>{{ player.username }}</span>
-        <button v-if="!player.requestedMatch" class="button-light" @click="requestGame(player)">Request Game</button>
-        <button v-if="player.requestedMatch" class="button-light" @click="acceptMatching(player)">Accept match</button>
+    <span v-if="errors.players" class="error">{{ errors.players }}</span>
+    <ul v-else>
+      <li v-for="player in players" :key="player.Id">
+        <span>{{ player.Username }}</span>
+        <button v-if="!player.RequestedMatch" class="button-light" @click="requestGame(player)">Request Game</button>
+        <button v-if="player.RequestedMatch" class="button-light" @click="acceptMatching(player)">Accept match</button>
       </li>
     </ul>
     <button class="button-light" @click="reload">Reload</button>
@@ -19,21 +19,21 @@ import signalRHub from "@/services/signalRHub";
 import eventBus from "@/services/eventBus";
 
 interface OnlinePlayer {
-  id: string;
-  username: string;
-  requestedMatch: boolean;
+  Id: string;
+  Username: string;
+  RequestedMatch: boolean;
 }
 
 export default defineComponent({
   mounted() {
     if (!signalRHub.isConnected()) eventBus.on("signalr-connected", this.onSignalRConnected);
 
-    signalRHub.on("get-online-players", this.onUdatePlayers);
+    signalRHub.on("send-online-players", this.onUdatePlayers);
     signalRHub.on("player-connected", this.onPlayerConnected);
     signalRHub.on("player-disconnected", this.onPlayerDisconnected);
   },
   unmounted() {
-    signalRHub.off("get-online-players", this.onUdatePlayers);
+    signalRHub.off("send-online-players", this.onUdatePlayers);
     signalRHub.off("player-connected", this.onPlayerConnected);
     signalRHub.off("player-disconnected", this.onPlayerDisconnected);
   },
@@ -45,33 +45,37 @@ export default defineComponent({
   },
   methods: {
     async requestGame(player: OnlinePlayer): Promise<void> {
-      console.log("Requesting game with player " + player.id);
-      player.requestedMatch = true;
+      console.log("Requesting game with player " + player.Id);
+      player.RequestedMatch = true;
     },
     async acceptMatching(player: OnlinePlayer): Promise<void> {
-      console.log("Accepted matching with player " + player.id);
-      player.requestedMatch = false;
+      console.log("Accepted matching with player " + player.Id);
+      player.RequestedMatch = false;
     },
     reload(): void {
-      signalRHub.invoke("GetPlayers");
+      signalRHub.invoke("GetOnlinePlayers");
     },
     onUdatePlayers(players: OnlinePlayer[]): void {
+      console.log(players);
       this.players.clear();
       players.forEach((p) => this.players.add(p));
+      console.log(this.players);
     },
     onPlayerConnected(player: OnlinePlayer): void {
+      console.log(player);
       this.players.add(player);
     },
     onPlayerDisconnected(playerId: string): void {
+      console.log(playerId);
       this.players.forEach((player) => {
-        if (player.id === playerId) {
+        if (player.Id === playerId) {
           this.players.delete(player);
           return;
         }
       });
     },
     onSignalRConnected(): void {
-      signalRHub.invoke("GetPlayers");
+      signalRHub.invoke("GetOnlinePlayers");
       eventBus.off("signalr-connected", this.onSignalRConnected);
     },
   },

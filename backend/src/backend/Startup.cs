@@ -84,7 +84,7 @@ namespace backend
             {
                 endpoints.MapControllers();
                 endpoints.MapIdentityApi<PlayerIdentity>();
-                endpoints.MapHub<PlayerHub>("/playerHub");
+                endpoints.MapHub<SignalRPlayerHub>("/playerHub");
             });
 
             BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();

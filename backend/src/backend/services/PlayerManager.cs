@@ -1,61 +1,70 @@
 ﻿using backend.database;
 using backend.game;
 using backend.signalR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using System.Collections;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace backend.services
 {
     internal class PlayerManager
     {
-        public PlayerManager(GameManager gameManager, IHubContext<PlayerHub> playerHubContext)
+        public PlayerManager(GameManager gameManager, IHubContext<SignalRPlayerHub> playerHubContext)
         {
 
             _gameManager = gameManager;
             _playerHubContext = playerHubContext;
         }
 
-        public IEnumerable<IPlayer> Players => _identityToPlayerMap.Values.ToList();
+        public IEnumerable<IPlayer> OnlinePlayers => _onlinePlayers;
 
-        public void OnPlayerConnected(PlayerIdentity identity)
+        public void OnPlayerConnected(IPlayer player)
         {
-            if (_identityToPlayerMap.ContainsKey(identity.Id))
+            if (_onlinePlayers.Contains(player))
             {
-                _playerConnectionCounterMap[identity.Id]++;
+                _playerConnectionCounterMap[player.Id]++;
                 return;
             }
 
-            _playerConnectionCounterMap.Add(identity.Id, 1);
+            _playerConnectionCounterMap.Add(player.Id, 1);
 
-            IPlayer player = new Player(identity, _gameManager, _playerHubContext);
-            _identityToPlayerMap.Add(identity.Id, player);
-            _playerHubContext.Clients.AllExcept(identity.Id).SendAsync("player-connected", new OnlinePlayerDTO(player));
+            foreach (var onlinePlayer in _onlinePlayers)
+                onlinePlayer.PlayerConnected(player);
+
+            _onlinePlayers.Add(player);
         }
-        public void OnPlayerDisconnected(PlayerIdentity identity)
+        public void OnPlayerDisconnected(IPlayer player)
         {
-            _playerConnectionCounterMap[identity.Id]--;
+            _playerConnectionCounterMap[player.Id]--;
 
-            if (_playerConnectionCounterMap[identity.Id] > 0)
+            if (_playerConnectionCounterMap[player.Id] > 0)
                 return;
 
-            _playerConnectionCounterMap.Remove(identity.Id);
-            _identityToPlayerMap.Remove(identity.Id);
-            _playerHubContext.Clients.AllExcept(identity.Id).SendAsync("player-disconnected", identity.Id);
+            _playerConnectionCounterMap.Remove(player.Id);
+            _onlinePlayers.Remove(player);
+
+            foreach (var onlinePlayer in _onlinePlayers)
+                onlinePlayer.PlayerDisconnected(player);
         }
 
         public IPlayer GetPlayer(PlayerIdentity identity)
         {
-            IPlayer? player = _identityToPlayerMap.GetValueOrDefault(identity.Id);
+            return GetPlayer(identity.Id);
+        }
+        public IPlayer GetPlayer(string playerId)
+        {
+            IPlayer? player = _onlinePlayers.FirstOrDefault(p => p.Id == playerId);
             Debug.Assert(player != null);
             return player;
         }
+        public IPlayer? GetPlayerOrDefault(PlayerIdentity identity)
+        {
+            return _onlinePlayers.FirstOrDefault(p => p.Id == identity.Id);
+        }
 
         private readonly GameManager _gameManager;
-        private readonly IHubContext<PlayerHub> _playerHubContext;
-        private readonly Dictionary<string, IPlayer> _identityToPlayerMap = new Dictionary<string, IPlayer>();
+        private readonly IHubContext<SignalRPlayerHub> _playerHubContext;
+
+        private readonly ICollection<IPlayer> _onlinePlayers = new List<IPlayer>();
         private readonly Dictionary<string, int> _playerConnectionCounterMap = new Dictionary<string, int>();
     }
 }
