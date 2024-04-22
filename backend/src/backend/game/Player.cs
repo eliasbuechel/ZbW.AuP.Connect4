@@ -56,10 +56,31 @@ namespace backend.game
         }
 
         public abstract void RequestedMatch(IPlayer player);
-        public abstract void DeclineMatch(IPlayer player);
+        public abstract void RejectedMatch(IPlayer player);
         public abstract void PlayerConnected(IPlayer player);
         public abstract void PlayerDisconnected(IPlayer player);
 
+        public bool HasRequestedMatch(IPlayer you)
+        {
+            return _gameManager.HasRequestedMatch(this, you);
+        }
+
+        public bool HasMatched(IPlayer player)
+        {
+            return _gameManager.HasMatched(this, player);
+        }
+
+        public void AcceptMatch(IPlayer player)
+        {
+            _gameManager.AcceptMatch(this, player);
+        }
+
+        public abstract void Matched(IPlayer requester);
+
+        public void RejectMatch(IPlayer player)
+        {
+            _gameManager.RejectMatch(this, player);
+        }
 
         private readonly GameManager _gameManager;
         private readonly backend.services.PlayerManager _playerManager;

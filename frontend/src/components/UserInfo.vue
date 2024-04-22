@@ -19,26 +19,42 @@ interface UserIdentity {
 
 export default defineComponent({
   mounted() {
-    signalRHub.on("send-user-data", this.updateUserIdentity);
+    if (!signalRHub.isConnected()) {
+      this.subscribe();
+      signalRHub.invoke("GetUserData");
+    }
 
-    if (!signalRHub.isConnected()) eventBus.on("signalr-connected", this.onSignalRConnected);
-    else signalRHub.invoke("GetUserData");
+    eventBus.on("signalr-connected", this.onSignalRConnected);
+    eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
   },
   unmounted() {
-    signalRHub.off("send-user-data", this.updateUserIdentity);
+    eventBus.off("signalr-connected", this.onSignalRConnected);
+    eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
   },
-  data(): { identity: UserIdentity } {
+  data(): { identity: UserIdentity; isSubscribed: boolean } {
     return {
       identity: { id: "", username: "" },
+      isSubscribed: false,
     };
   },
   methods: {
+    subscribe(): void {
+      if (this.isSubscribed) return;
+      signalRHub.on("send-user-data", this.updateUserIdentity);
+    },
+    unsubscribe(): void {
+      if (!this.isSubscribed) return;
+      signalRHub.off("send-user-data", this.updateUserIdentity);
+    },
     updateUserIdentity(identity: UserIdentity): void {
       this.identity = identity;
     },
     onSignalRConnected(): void {
+      this.subscribe();
       signalRHub.invoke("GetUserData");
-      eventBus.off("signalr-connected", this.onSignalRConnected);
+    },
+    onSignalRDisconnected(): void {
+      this.unsubscribe();
     },
   },
 });

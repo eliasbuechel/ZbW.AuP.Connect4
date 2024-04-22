@@ -13,12 +13,17 @@
         //void MakeMove(int column);
         void RequestMatch(IPlayer player);
         void RequestedMatch(IPlayer player);
-        void DeclineMatch(IPlayer opponent);
+        void RejectedMatch(IPlayer opponent);
         void PlayerConnected(IPlayer player);
         void PlayerDisconnected(IPlayer player);
         IEnumerable<IPlayer> GetOnlinePlayers();
         void Connected(string connectionId);
         void Disconnected(string connectionId);
+        bool HasRequestedMatch(IPlayer you);
+        bool HasMatched(IPlayer player);
+        void AcceptMatch(IPlayer player);
+        void Matched(IPlayer requester);
+        void RejectMatch(IPlayer player);
 
         //void OnOpponentConfirmedGameStart();
         //void OnOpponentMadeMove(int column);

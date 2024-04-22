@@ -1,25 +1,21 @@
 ﻿using backend.database;
 using backend.game;
-using backend.signalR;
-using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 
 namespace backend.services
 {
     internal class PlayerManager
     {
-        public PlayerManager(GameManager gameManager, IHubContext<SignalRPlayerHub> playerHubContext)
+        public PlayerManager(GameManager gameManager)
         {
-
             _gameManager = gameManager;
-            _playerHubContext = playerHubContext;
         }
 
         public IEnumerable<IPlayer> OnlinePlayers => _onlinePlayers;
 
         public void OnPlayerConnected(IPlayer player)
         {
-            if (_onlinePlayers.Contains(player))
+            if (_playerConnectionCounterMap.ContainsKey(player.Id))
             {
                 _playerConnectionCounterMap[player.Id]++;
                 return;
@@ -32,18 +28,32 @@ namespace backend.services
 
             _onlinePlayers.Add(player);
         }
-        public void OnPlayerDisconnected(IPlayer player)
+        public async void OnPlayerDisconnected(IPlayer player)
         {
             _playerConnectionCounterMap[player.Id]--;
 
             if (_playerConnectionCounterMap[player.Id] > 0)
                 return;
 
-            _playerConnectionCounterMap.Remove(player.Id);
-            _onlinePlayers.Remove(player);
+            await Task.Run(async () =>
+            {
+                await Task.Delay(5000);
 
-            foreach (var onlinePlayer in _onlinePlayers)
-                onlinePlayer.PlayerDisconnected(player);
+                int activeConnectionCount;
+
+                if (!_playerConnectionCounterMap.TryGetValue(player.Id, out activeConnectionCount))
+                    return;
+
+                if (activeConnectionCount > 0)
+                    return;
+
+                _playerConnectionCounterMap.Remove(player.Id);
+                _onlinePlayers.Remove(player);
+                _gameManager.PlayerQuit(player);
+
+                foreach (var onlinePlayer in _onlinePlayers)
+                    onlinePlayer.PlayerDisconnected(player);
+            });
         }
 
         public IPlayer GetPlayer(PlayerIdentity identity)
@@ -62,7 +72,6 @@ namespace backend.services
         }
 
         private readonly GameManager _gameManager;
-        private readonly IHubContext<SignalRPlayerHub> _playerHubContext;
 
         private readonly ICollection<IPlayer> _onlinePlayers = new List<IPlayer>();
         private readonly Dictionary<string, int> _playerConnectionCounterMap = new Dictionary<string, int>();

@@ -25,7 +25,7 @@ namespace backend.signalR
         public async void GetOnlinePlayers()
         {
             IEnumerable<IPlayer> onlinePlayers = CurrentPlayer.GetOnlinePlayers();
-            IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = onlinePlayers.Select(p => new OnlinePlayerDTO(p)).ToArray();
+            IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = onlinePlayers.Select(p => new OnlinePlayerDTO(p, CurrentPlayer)).ToArray();
             await Clients.Caller.SendAsync("send-online-players", onlinePlayersDTO);
         }
         public async void GetUserData()
@@ -37,6 +37,16 @@ namespace backend.signalR
         {
             IPlayer player = _playerManager.GetPlayer(playerId);
             CurrentPlayer.RequestMatch(player);
+        }
+        public void AcceptMatch(string playerId)
+        {
+            IPlayer player = _playerManager.GetPlayer(playerId);
+            CurrentPlayer.AcceptMatch(player);
+        }
+        public void RejectMatch(string playerId)
+        {
+            IPlayer player = _playerManager.GetPlayer(playerId);
+            CurrentPlayer.RejectMatch(player);
         }
 
         //public void MakeMove(int column)
@@ -57,7 +67,11 @@ namespace backend.signalR
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            CurrentPlayer.Disconnected(Context.ConnectionId);
+            IPlayer? player = _playerManager.GetPlayerOrDefault(Identity);
+            
+            if (player != null)
+                CurrentPlayer.Disconnected(Context.ConnectionId);
+
             return Task.CompletedTask;
         }
 

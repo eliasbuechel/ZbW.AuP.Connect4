@@ -5,8 +5,15 @@
     <ul v-else>
       <li v-for="player in players" :key="player.id">
         <span>{{ player.username }}</span>
-        <button v-if="!player.requestedMatch" class="button-light" @click="requestGame(player)">Request Game</button>
-        <button v-if="player.requestedMatch" class="button-light" @click="acceptMatching(player)">Accept match</button>
+        <span v-if="player.matched">Matched</span>
+        <span v-else-if="player.youRequestedMatch">Matching pending...</span>
+        <div v-else-if="player.requestedMatch">
+          <button class="button-light" @click="acceptMatch(player)">Accept match</button>
+          <button class="button-light" @click="rejectMatch(player)">Reject match</button>
+        </div>
+        <button v-else class="button-light" @click="requestMatch(player)" :disabled="hasPendingRequest">
+          Request Game
+        </button>
       </li>
     </ul>
     <button class="button-light" @click="reload">Reload</button>
@@ -22,35 +29,61 @@ interface OnlinePlayer {
   id: string;
   username: string;
   requestedMatch: boolean;
+  youRequestedMatch: boolean;
+  matched: boolean;
 }
 
 export default defineComponent({
   mounted() {
-    signalRHub.on("send-online-players", this.onUdatePlayers);
-    signalRHub.on("player-connected", this.onPlayerConnected);
-    signalRHub.on("player-disconnected", this.onPlayerDisconnected);
+    if (signalRHub.isConnected()) {
+      this.subscribe();
+      signalRHub.invoke("GetOnlinePlayers");
+    }
 
-    if (!signalRHub.isConnected()) eventBus.on("signalr-connected", this.onSignalRConnected);
-    else signalRHub.invoke("GetOnlinePlayers");
+    eventBus.on("signalr-connected", this.onSignalRConnected);
+    eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
   },
   unmounted() {
-    signalRHub.off("send-online-players", this.onUdatePlayers);
-    signalRHub.off("player-connected", this.onPlayerConnected);
-    signalRHub.off("player-disconnected", this.onPlayerDisconnected);
+    eventBus.off("signalr-connected", this.onSignalRConnected);
+    eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
+
+    this.unsubscribe();
   },
-  data(): { players: Set<OnlinePlayer>; errors: { players: string } } {
+  data(): { players: Set<OnlinePlayer>; errors: { players: string }; isSubscribed: boolean } {
     return {
       players: new Set<OnlinePlayer>(),
       errors: { players: "" },
+      isSubscribed: false,
     };
   },
   methods: {
-    async requestGame(player: OnlinePlayer): Promise<void> {
-      console.log("Requesting game with player " + player.id);
-      player.requestedMatch = true;
+    subscribe(): void {
+      if (this.isSubscribed) return;
+      signalRHub.on("send-online-players", this.onUdatePlayers);
+      signalRHub.on("player-connected", this.onPlayerConnected);
+      signalRHub.on("player-disconnected", this.onPlayerDisconnected);
+      signalRHub.on("player-requested-match", this.onPlayerRequestedMatch);
+      signalRHub.on("player-rejected-match", this.onPlayerRejectedMatch);
+      signalRHub.on("matched", this.onMatched);
     },
-    async acceptMatching(player: OnlinePlayer): Promise<void> {
-      console.log("Accepted matching with player " + player.id);
+    unsubscribe(): void {
+      if (!this.isSubscribed) return;
+      signalRHub.off("send-online-players", this.onUdatePlayers);
+      signalRHub.off("player-connected", this.onPlayerConnected);
+      signalRHub.off("player-disconnected", this.onPlayerDisconnected);
+      signalRHub.off("player-requested-match", this.onPlayerRequestedMatch);
+      signalRHub.off("player-rejected-match", this.onPlayerRejectedMatch);
+      signalRHub.off("matched", this.onMatched);
+    },
+    requestMatch(player: OnlinePlayer): void {
+      signalRHub.invoke("RequestMatch", player.id);
+      player.youRequestedMatch = true;
+    },
+    acceptMatch(player: OnlinePlayer): void {
+      signalRHub.invoke("AcceptMatch", player.id);
+    },
+    rejectMatch(player: OnlinePlayer): void {
+      signalRHub.invoke("RejectMatch", player.id);
       player.requestedMatch = false;
     },
     reload(): void {
@@ -73,9 +106,47 @@ export default defineComponent({
         }
       });
     },
+    onPlayerRequestedMatch(playerId: string): void {
+      this.players.forEach((p) => {
+        if (p.id === playerId) {
+          p.requestedMatch = true;
+          return;
+        }
+      });
+    },
+    onPlayerRejectedMatch(playerId: string): void {
+      this.players.forEach((p) => {
+        if (p.id === playerId) {
+          p.youRequestedMatch = false;
+          return;
+        }
+      });
+    },
+    onMatched(playerId: string) {
+      this.players.forEach((p) => {
+        if (p.id == playerId) {
+          p.matched = true;
+          p.requestedMatch = false;
+          p.youRequestedMatch = false;
+          return;
+        }
+      });
+    },
     onSignalRConnected(): void {
+      this.subscribe();
       signalRHub.invoke("GetOnlinePlayers");
-      eventBus.off("signalr-connected", this.onSignalRConnected);
+    },
+    onSignalRDisconnected(): void {
+      this.unsubscribe();
+    },
+  },
+  computed: {
+    hasPendingRequest(): boolean {
+      let doesHavePendingRequest: boolean = false;
+      this.players.forEach((p) => {
+        if (p.youRequestedMatch) doesHavePendingRequest = true;
+      });
+      return doesHavePendingRequest;
     },
   },
 });

@@ -96,6 +96,11 @@ button:active {
   color: #01172c;
 }
 
+.button-light:disabled {
+  color: #df950055;
+  border-color: #df950055;
+}
+
 .button-link:hover,
 .button-link:focus {
   color: #21374c;
