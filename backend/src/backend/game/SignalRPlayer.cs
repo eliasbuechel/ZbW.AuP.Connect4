@@ -16,19 +16,23 @@ namespace backend.game
         public override async void PlayerConnected(IPlayer player)
         {
             OnlinePlayerDTO onlinePlayer = new OnlinePlayerDTO(player);
-            await _playerHubContext.Clients.Client(Id).SendAsync("player-connected", onlinePlayer);
+            foreach (string connection in Connections)
+                await _playerHubContext.Clients.Client(connection).SendAsync("player-connected", onlinePlayer);
         }
         public override async void PlayerDisconnected(IPlayer player)
         {
-            await _playerHubContext.Clients.Client(Id).SendAsync("player-disconnected", player.Id);
+            foreach (string connection in Connections)
+                await _playerHubContext.Clients.Client(connection).SendAsync("player-disconnected", player.Id);
         }
         public override async void RequestedMatch(IPlayer player)
         {
-            await _playerHubContext.Clients.Client(Id).SendAsync("requested-game", player.Id);
+            foreach (string connection in Connections)
+                await _playerHubContext.Clients.Client(connection).SendAsync("requested-game", player.Id);
         }
         public override async void DeclineMatch(IPlayer player)
         {
-            await _playerHubContext.Clients.Client(Id).SendAsync("decline-game", player.Id);
+            foreach (string connection in Connections)
+                await _playerHubContext.Clients.Client(connection).SendAsync("decline-game", player.Id);
         }
 
         private readonly IHubContext<SignalRPlayerHub> _playerHubContext;

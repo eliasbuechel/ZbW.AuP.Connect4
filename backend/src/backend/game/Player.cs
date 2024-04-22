@@ -22,6 +22,7 @@ namespace backend.game
         public string Id { get; }
 
         public string Username { get; }
+        public IEnumerable<string> Connections => _connections;
 
         public event Action<IPlayer, int>? OnMovePlayed;
         public event Action<IPlayer, IPlayer>? OnMatch;
@@ -30,12 +31,14 @@ namespace backend.game
         {
             return _playerManager.OnlinePlayers.Where(p => p.Id != Id);
         }
-        public void Connected()
+        public void Connected(string connectionId)
         {
+            _connections.Add(connectionId);
             _playerManager.OnPlayerConnected(this);
         }
-        public void Disconnected()
+        public void Disconnected(string onnectionId)
         {
+            _connections.Remove(onnectionId);
             _playerManager.OnPlayerDisconnected(this);
         }
         public void RequestMatch(IPlayer player)
@@ -60,5 +63,6 @@ namespace backend.game
 
         private readonly GameManager _gameManager;
         private readonly backend.services.PlayerManager _playerManager;
+        private readonly ICollection<string> _connections = new List<string>();
     }
 }

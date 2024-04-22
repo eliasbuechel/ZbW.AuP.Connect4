@@ -26,14 +26,12 @@ namespace backend.signalR
         {
             IEnumerable<IPlayer> onlinePlayers = CurrentPlayer.GetOnlinePlayers();
             IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = onlinePlayers.Select(p => new OnlinePlayerDTO(p)).ToArray();
-            string data = JsonSerializer.Serialize(onlinePlayersDTO);
-            await Clients.Caller.SendAsync("send-online-players", data);
+            await Clients.Caller.SendAsync("send-online-players", onlinePlayersDTO);
         }
         public async void GetUserData()
         {
             UserIdentityDTO userData = new UserIdentityDTO(CurrentPlayer);
-            string data = JsonSerializer.Serialize(userData);
-            await Clients.Caller.SendAsync("send-user-data", data);
+            await Clients.Caller.SendAsync("send-user-data", userData);
         }
         public void RequestMatch(string playerId)
         {
@@ -54,12 +52,12 @@ namespace backend.signalR
             if (player == null)
                 player = new SignalRPlayer(Identity, _gameManager, _playerManager, _playerHubContext);
 
-            player.Connected();
+            player.Connected(Context.ConnectionId);
             return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            CurrentPlayer.Disconnected();
+            CurrentPlayer.Disconnected(Context.ConnectionId);
             return Task.CompletedTask;
         }
 

@@ -17,8 +17,8 @@
         void PlayerConnected(IPlayer player);
         void PlayerDisconnected(IPlayer player);
         IEnumerable<IPlayer> GetOnlinePlayers();
-        void Connected();
-        void Disconnected();
+        void Connected(string connectionId);
+        void Disconnected(string connectionId);
 
         //void OnOpponentConfirmedGameStart();
         //void OnOpponentMadeMove(int column);
