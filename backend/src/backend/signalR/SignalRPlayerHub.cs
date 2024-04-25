@@ -4,18 +4,15 @@ using backend.services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace backend.signalR
 {
     [Authorize]
     internal class SignalRPlayerHub : Hub 
     {
-        public SignalRPlayerHub(services.PlayerManager playerManager, GameManager gameManager, UserManager<PlayerIdentity> userManager, IHubContext<SignalRPlayerHub> playerHubContext, PlayerRequestLock playerRequestLock)
+        public SignalRPlayerHub(PlayerManager playerManager, GameManager gameManager, UserManager<PlayerIdentity> userManager, IHubContext<SignalRPlayerHub> playerHubContext, PlayerRequestLock playerRequestLock)
         {
             _playerManager = playerManager;
             _gameManager = gameManager;
@@ -24,21 +21,30 @@ namespace backend.signalR
             _playerRequestLock = playerRequestLock;
         }
 
-        public void GetOnlinePlayers()
-        {
-            lock (_playerRequestLock[Identity])
-            {
-                IEnumerable<IPlayer> onlinePlayers = CurrentPlayer.GetOnlinePlayers();
-                IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = onlinePlayers.Select(p => new OnlinePlayerDTO(p, CurrentPlayer)).ToArray();
-                Clients.Caller.SendAsync("send-online-players", onlinePlayersDTO).Wait();
-            }
-        }
         public void GetUserData()
         {
             lock (_playerRequestLock[Identity])
             {
-                UserIdentityDTO userData = new UserIdentityDTO(CurrentPlayer);
+                PlayerIdentityDTO userData = new PlayerIdentityDTO(ThisPlayer);
                 Clients.Caller.SendAsync("send-user-data", userData).Wait();
+            }
+        }
+        public void GetOnlinePlayers()
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                IEnumerable<IPlayer> onlinePlayers = ThisPlayer.GetOnlinePlayers();
+                IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = onlinePlayers.Select(p => new OnlinePlayerDTO(p, ThisPlayer)).ToArray();
+                Clients.Caller.SendAsync("send-online-players", onlinePlayersDTO).Wait();
+            }
+        }
+        public void GetGamePlan()
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                IEnumerable<Match> gamePlan = ThisPlayer.GetGamePlan();
+                IEnumerable<MatchDTO> gamePlanDTO = gamePlan.Select(m => new MatchDTO(m)).ToList();
+                Clients.Caller.SendAsync("send-game-plan", gamePlanDTO).Wait();
             }
         }
         public void RequestMatch(string playerId)
@@ -46,7 +52,7 @@ namespace backend.signalR
             lock (_playerRequestLock[Identity])
             {
                 IPlayer player = _playerManager.GetPlayer(playerId);
-                CurrentPlayer.RequestMatch(player);
+                ThisPlayer.RequestMatch(player);
             }
         }
         public void AcceptMatch(string playerId)
@@ -54,7 +60,7 @@ namespace backend.signalR
             lock (_playerRequestLock[Identity])
             {
                 IPlayer player = _playerManager.GetPlayer(playerId);
-                CurrentPlayer.AcceptMatch(player);
+                ThisPlayer.AcceptMatch(player);
             }
         }
         public void RejectMatch(string playerId)
@@ -62,7 +68,7 @@ namespace backend.signalR
             lock (_playerRequestLock[Identity])
             {
                 IPlayer player = _playerManager.GetPlayer(playerId);
-                CurrentPlayer.RejectMatch(player);
+                ThisPlayer.RejectMatch(player);
             }
         }
 
@@ -72,7 +78,7 @@ namespace backend.signalR
             {
                 IPlayer? player = _playerManager.GetPlayerOrDefault(Identity);
                 if (player == null)
-                    player = new SignalRPlayer(Identity, _gameManager, _playerManager, _playerHubContext);
+                    player = new SignalRPlayer(Identity, _gameManager, _playerHubContext);
 
                 player.Connected(Context.ConnectionId);
                 return Task.CompletedTask;
@@ -85,7 +91,7 @@ namespace backend.signalR
                 IPlayer? player = _playerManager.GetPlayerOrDefault(Identity);
 
                 if (player != null)
-                    CurrentPlayer.Disconnected(Context.ConnectionId);
+                    ThisPlayer.Disconnected(Context.ConnectionId);
 
                 return Task.CompletedTask;
             }
@@ -107,9 +113,9 @@ namespace backend.signalR
                 return identity;
             }
         }
-        private IPlayer CurrentPlayer => _playerManager.GetPlayer(Identity);
+        private IPlayer ThisPlayer => _playerManager.GetPlayer(Identity);
 
-        private readonly services.PlayerManager _playerManager;
+        private readonly PlayerManager _playerManager;
         private readonly GameManager _gameManager;
         private readonly UserManager<PlayerIdentity> _userManager;
         private readonly IHubContext<SignalRPlayerHub> _playerHubContext;

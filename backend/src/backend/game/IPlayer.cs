@@ -22,8 +22,9 @@
         bool HasRequestedMatch(IPlayer you);
         bool HasMatched(IPlayer player);
         void AcceptMatch(IPlayer player);
-        void Matched(IPlayer requester);
+        void Matched(Match match);
         void RejectMatch(IPlayer player);
+        IEnumerable<Match> GetGamePlan();
 
         //void OnOpponentConfirmedGameStart();
         //void OnOpponentMadeMove(int column);

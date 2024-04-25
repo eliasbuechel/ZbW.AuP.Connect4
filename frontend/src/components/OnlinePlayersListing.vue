@@ -3,7 +3,7 @@
     <h2>Online players</h2>
     <span v-if="errors.players" class="error">{{ errors.players }}</span>
     <ul v-else>
-      <li v-for="player in players" :key="player.id">
+      <li v-for="player in onlinePlayers" :key="player.id">
         <span>{{ player.username }}</span>
         <span v-if="player.matched">Matched</span>
         <span v-else-if="player.youRequestedMatch">Matching pending...</span>
@@ -16,7 +16,6 @@
         </button>
       </li>
     </ul>
-    <button class="button-light" @click="reload">Reload</button>
   </div>
 </template>
 
@@ -24,14 +23,7 @@
 import { defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 import eventBus from "@/services/eventBus";
-
-interface OnlinePlayer {
-  id: string;
-  username: string;
-  requestedMatch: boolean;
-  youRequestedMatch: boolean;
-  matched: boolean;
-}
+import { Match, OnlinePlayer } from "@/DataTransferObjects";
 
 export default defineComponent({
   mounted() {
@@ -49,9 +41,9 @@ export default defineComponent({
 
     this.unsubscribe();
   },
-  data(): { players: Set<OnlinePlayer>; errors: { players: string }; isSubscribed: boolean } {
+  data(): { onlinePlayers: Set<OnlinePlayer>; errors: { players: string }; isSubscribed: boolean } {
     return {
-      players: new Set<OnlinePlayer>(),
+      onlinePlayers: new Set<OnlinePlayer>(),
       errors: { players: "" },
       isSubscribed: false,
     };
@@ -59,7 +51,7 @@ export default defineComponent({
   methods: {
     subscribe(): void {
       if (this.isSubscribed) return;
-      signalRHub.on("send-online-players", this.onUdatePlayers);
+      signalRHub.on("send-online-players", this.onUdateOnlinePlayers);
       signalRHub.on("player-connected", this.onPlayerConnected);
       signalRHub.on("player-disconnected", this.onPlayerDisconnected);
       signalRHub.on("player-requested-match", this.onPlayerRequestedMatch);
@@ -68,7 +60,7 @@ export default defineComponent({
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
-      signalRHub.off("send-online-players", this.onUdatePlayers);
+      signalRHub.off("send-online-players", this.onUdateOnlinePlayers);
       signalRHub.off("player-connected", this.onPlayerConnected);
       signalRHub.off("player-disconnected", this.onPlayerDisconnected);
       signalRHub.off("player-requested-match", this.onPlayerRequestedMatch);
@@ -86,28 +78,24 @@ export default defineComponent({
       signalRHub.invoke("RejectMatch", player.id);
       player.requestedMatch = false;
     },
-    reload(): void {
-      console.log("Manual reload...");
-      signalRHub.invoke("GetOnlinePlayers");
-    },
-    onUdatePlayers(players: OnlinePlayer[]): void {
-      this.players.clear();
-      players.forEach((p) => this.players.add(p));
+    onUdateOnlinePlayers(onlinePlayers: OnlinePlayer[]): void {
+      this.onlinePlayers.clear();
+      onlinePlayers.forEach((p) => this.onlinePlayers.add(p));
     },
     onPlayerConnected(player: OnlinePlayer): void {
       console.log(player);
-      this.players.add(player);
+      this.onlinePlayers.add(player);
     },
     onPlayerDisconnected(playerId: string): void {
-      this.players.forEach((player) => {
+      this.onlinePlayers.forEach((player) => {
         if (player.id === playerId) {
-          this.players.delete(player);
+          this.onlinePlayers.delete(player);
           return;
         }
       });
     },
     onPlayerRequestedMatch(playerId: string): void {
-      this.players.forEach((p) => {
+      this.onlinePlayers.forEach((p) => {
         if (p.id === playerId) {
           p.requestedMatch = true;
           return;
@@ -115,16 +103,16 @@ export default defineComponent({
       });
     },
     onPlayerRejectedMatch(playerId: string): void {
-      this.players.forEach((p) => {
+      this.onlinePlayers.forEach((p) => {
         if (p.id === playerId) {
           p.youRequestedMatch = false;
           return;
         }
       });
     },
-    onMatched(playerId: string) {
-      this.players.forEach((p) => {
-        if (p.id == playerId) {
+    onMatched(match: Match) {
+      this.onlinePlayers.forEach((p) => {
+        if (p.id == match.player1.id || p.id == match.player2.id) {
           p.matched = true;
           p.requestedMatch = false;
           p.youRequestedMatch = false;
@@ -143,7 +131,7 @@ export default defineComponent({
   computed: {
     hasPendingRequest(): boolean {
       let doesHavePendingRequest: boolean = false;
-      this.players.forEach((p) => {
+      this.onlinePlayers.forEach((p) => {
         if (p.youRequestedMatch) doesHavePendingRequest = true;
       });
       return doesHavePendingRequest;

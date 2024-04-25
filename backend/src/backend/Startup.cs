@@ -60,7 +60,7 @@ namespace backend
             services.AddSignalR();
 
             services.AddSingleton<PlayerRequestLock>();
-            services.AddSingleton<services.PlayerManager>();
+            services.AddSingleton<PlayerManager>();
             services.AddSingleton<GameManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)

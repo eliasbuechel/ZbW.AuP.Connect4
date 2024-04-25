@@ -6,10 +6,8 @@ namespace backend.services
 {
     internal class PlayerManager
     {
-        public PlayerManager(GameManager gameManager)
-        {
-            _gameManager = gameManager;
-        }
+        public PlayerManager()
+        { }
 
         public IEnumerable<IPlayer> OnlinePlayers
         {
@@ -22,7 +20,7 @@ namespace backend.services
             }
         }
 
-        public void OnPlayerConnected(IPlayer player)
+        public void ConnectPlayer(IPlayer player)
         {
             lock (_playerConnectionCounterMapLock)
             {
@@ -43,7 +41,7 @@ namespace backend.services
                 _onlinePlayers.Add(player);
             }
         }
-        public async void OnPlayerDisconnected(IPlayer player)
+        public async void DisconnectPlayer(IPlayer player, Action<IPlayer>? playerQuitCallback)
         {
             lock (_playerConnectionCounterMapLock)
             { 
@@ -73,7 +71,7 @@ namespace backend.services
                 lock (_onlinePlayersLock)
                 {
                     _onlinePlayers.Remove(player);
-                    _gameManager.PlayerQuit(player);
+                    playerQuitCallback?.Invoke(player);
 
                     foreach (var onlinePlayer in _onlinePlayers)
                         onlinePlayer.PlayerDisconnected(player);
@@ -104,7 +102,6 @@ namespace backend.services
 
         private readonly object _onlinePlayersLock = new object();
         private readonly object _playerConnectionCounterMapLock = new object();
-        private readonly GameManager _gameManager;
         private readonly ICollection<IPlayer> _onlinePlayers = new List<IPlayer>();
         private readonly Dictionary<string, int> _playerConnectionCounterMap = new Dictionary<string, int>();
     }

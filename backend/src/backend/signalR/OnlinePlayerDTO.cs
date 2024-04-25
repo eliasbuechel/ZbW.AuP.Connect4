@@ -2,7 +2,7 @@
 
 namespace backend.signalR
 {
-    internal class OnlinePlayerDTO : UserIdentityDTO
+    internal class OnlinePlayerDTO : PlayerIdentityDTO
     {
         public OnlinePlayerDTO(IPlayer player, IPlayer you) : base(player)
         {

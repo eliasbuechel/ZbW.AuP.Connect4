@@ -3,9 +3,9 @@ using System.Diagnostics;
 
 namespace backend.signalR
 {
-    internal class UserIdentityDTO
+    internal class PlayerIdentityDTO
     {
-        public UserIdentityDTO(IPlayer player)
+        public PlayerIdentityDTO(IPlayer player)
         {
             Id = player.Id;
             string? username = player.Username;

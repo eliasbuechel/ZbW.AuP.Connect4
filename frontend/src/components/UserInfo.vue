@@ -8,14 +8,10 @@
 </template>
 
 <script lang="ts">
+import { PlayerIdentity } from "@/DataTransferObjects";
 import eventBus from "@/services/eventBus";
 import signalRHub from "@/services/signalRHub";
 import { defineComponent } from "vue";
-
-interface UserIdentity {
-  id: string;
-  username: string;
-}
 
 export default defineComponent({
   mounted() {
@@ -31,7 +27,7 @@ export default defineComponent({
     eventBus.off("signalr-connected", this.onSignalRConnected);
     eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
   },
-  data(): { identity: UserIdentity; isSubscribed: boolean } {
+  data(): { identity: PlayerIdentity; isSubscribed: boolean } {
     return {
       identity: { id: "", username: "" },
       isSubscribed: false,
@@ -46,7 +42,7 @@ export default defineComponent({
       if (!this.isSubscribed) return;
       signalRHub.off("send-user-data", this.updateUserIdentity);
     },
-    updateUserIdentity(identity: UserIdentity): void {
+    updateUserIdentity(identity: PlayerIdentity): void {
       this.identity = identity;
     },
     onSignalRConnected(): void {
