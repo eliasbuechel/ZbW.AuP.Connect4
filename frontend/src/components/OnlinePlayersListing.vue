@@ -23,13 +23,14 @@
 import { defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 import eventBus from "@/services/eventBus";
-import { Match, OnlinePlayer } from "@/DataTransferObjects";
+import { Match, OnlinePlayer, PlayerIdentity } from "@/DataTransferObjects";
 
 export default defineComponent({
   mounted() {
     if (signalRHub.isConnected()) {
       this.subscribe();
       signalRHub.invoke("GetOnlinePlayers");
+      signalRHub.invoke("GetUserData");
     }
 
     eventBus.on("signalr-connected", this.onSignalRConnected);
@@ -41,8 +42,14 @@ export default defineComponent({
 
     this.unsubscribe();
   },
-  data(): { onlinePlayers: Set<OnlinePlayer>; errors: { players: string }; isSubscribed: boolean } {
+  data(): {
+    identity?: PlayerIdentity;
+    onlinePlayers: Set<OnlinePlayer>;
+    errors: { players: string };
+    isSubscribed: boolean;
+  } {
     return {
+      identity: undefined,
       onlinePlayers: new Set<OnlinePlayer>(),
       errors: { players: "" },
       isSubscribed: false,
@@ -57,6 +64,7 @@ export default defineComponent({
       signalRHub.on("player-requested-match", this.onPlayerRequestedMatch);
       signalRHub.on("player-rejected-match", this.onPlayerRejectedMatch);
       signalRHub.on("matched", this.onMatched);
+      signalRHub.on("send-user-data", this.updateUserIdentity);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -66,6 +74,7 @@ export default defineComponent({
       signalRHub.off("player-requested-match", this.onPlayerRequestedMatch);
       signalRHub.off("player-rejected-match", this.onPlayerRejectedMatch);
       signalRHub.off("matched", this.onMatched);
+      signalRHub.off("send-user-data", this.updateUserIdentity);
     },
     requestMatch(player: OnlinePlayer): void {
       signalRHub.invoke("RequestMatch", player.id);
@@ -81,6 +90,9 @@ export default defineComponent({
     onUdateOnlinePlayers(onlinePlayers: OnlinePlayer[]): void {
       this.onlinePlayers.clear();
       onlinePlayers.forEach((p) => this.onlinePlayers.add(p));
+    },
+    updateUserIdentity(identity: PlayerIdentity): void {
+      this.identity = identity;
     },
     onPlayerConnected(player: OnlinePlayer): void {
       console.log(player);
@@ -111,8 +123,12 @@ export default defineComponent({
       });
     },
     onMatched(match: Match) {
+      if (this.identity === undefined) return;
       this.onlinePlayers.forEach((p) => {
-        if (p.id == match.player1.id || p.id == match.player2.id) {
+        if (
+          (p.id === match.player1.id && this.identity?.id === match.player2.id) ||
+          (p.id === match.player2.id && this.identity?.id === match.player1.id)
+        ) {
           p.matched = true;
           p.requestedMatch = false;
           p.youRequestedMatch = false;
@@ -123,6 +139,7 @@ export default defineComponent({
     onSignalRConnected(): void {
       this.subscribe();
       signalRHub.invoke("GetOnlinePlayers");
+      signalRHub.invoke("GetUserData");
     },
     onSignalRDisconnected(): void {
       this.unsubscribe();

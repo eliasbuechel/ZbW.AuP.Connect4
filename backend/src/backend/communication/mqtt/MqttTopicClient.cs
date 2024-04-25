@@ -4,7 +4,7 @@ using System.Text;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
-namespace backend.communication
+namespace backend.communication.mqtt
 {
     internal class MqttTopicClient
     {

@@ -1,6 +1,6 @@
 ﻿using backend.game;
 
-namespace backend.signalR
+namespace backend.communication.DOTs
 {
     internal class OnlinePlayerDTO : PlayerIdentityDTO
     {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace backend.controllers
+namespace backend.communication.controllers
 {
     [ApiController]
     [Route("[controller]")]

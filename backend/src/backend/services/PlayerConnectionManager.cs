@@ -4,10 +4,14 @@ using System.Diagnostics;
 
 namespace backend.services
 {
-    internal class PlayerManager
+    internal class PlayerConnectionManager : IOnlinePlayerProvider
     {
-        public PlayerManager()
-        { }
+        private static int instanceCount = 0;
+        public PlayerConnectionManager()
+        {
+            instanceCount++;
+            Debug.Assert(instanceCount < 2); // only one instance allowed
+        }
 
         public IEnumerable<IPlayer> OnlinePlayers
         {

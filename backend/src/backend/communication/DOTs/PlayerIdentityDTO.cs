@@ -1,7 +1,7 @@
 ﻿using backend.game;
 using System.Diagnostics;
 
-namespace backend.signalR
+namespace backend.communication.DOTs
 {
     internal class PlayerIdentityDTO
     {
@@ -10,7 +10,7 @@ namespace backend.signalR
             Id = player.Id;
             string? username = player.Username;
             Debug.Assert(username != null);
-            this.Username = username;
+            Username = username;
         }
         public string Id { get; set; }
         public string Username { get; set; }

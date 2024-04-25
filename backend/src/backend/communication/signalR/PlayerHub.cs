@@ -1,4 +1,5 @@
-﻿using backend.database;
+﻿using backend.communication.DOTs;
+using backend.database;
 using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.Authorization;
@@ -7,17 +8,16 @@ using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Security.Claims;
 
-namespace backend.signalR
+namespace backend.communication.signalR
 {
     [Authorize]
-    internal class SignalRPlayerHub : Hub 
+    internal class PlayerHub : Hub
     {
-        public SignalRPlayerHub(PlayerManager playerManager, GameManager gameManager, UserManager<PlayerIdentity> userManager, IHubContext<SignalRPlayerHub> playerHubContext, PlayerRequestLock playerRequestLock)
+        public PlayerHub(IOnlinePlayerProvider onlinePlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, HubPlayer<PlayerHub>> createPlayer, PlayerRequestLock playerRequestLock)
         {
-            _playerManager = playerManager;
-            _gameManager = gameManager;
+            _onlinePlayerProvider = onlinePlayerProvider;
             _userManager = userManager;
-            _playerHubContext = playerHubContext;
+            _createPlayer = createPlayer;
             _playerRequestLock = playerRequestLock;
         }
 
@@ -51,7 +51,7 @@ namespace backend.signalR
         {
             lock (_playerRequestLock[Identity])
             {
-                IPlayer player = _playerManager.GetPlayer(playerId);
+                IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.RequestMatch(player);
             }
         }
@@ -59,7 +59,7 @@ namespace backend.signalR
         {
             lock (_playerRequestLock[Identity])
             {
-                IPlayer player = _playerManager.GetPlayer(playerId);
+                IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.AcceptMatch(player);
             }
         }
@@ -67,7 +67,7 @@ namespace backend.signalR
         {
             lock (_playerRequestLock[Identity])
             {
-                IPlayer player = _playerManager.GetPlayer(playerId);
+                IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.RejectMatch(player);
             }
         }
@@ -76,9 +76,10 @@ namespace backend.signalR
         {
             lock (_playerRequestLock[Identity])
             {
-                IPlayer? player = _playerManager.GetPlayerOrDefault(Identity);
+                IPlayer? player = _onlinePlayerProvider.GetPlayerOrDefault(Identity);
                 if (player == null)
-                    player = new SignalRPlayer(Identity, _gameManager, _playerHubContext);
+                    player = _createPlayer(Identity);
+                //new HubPlayer(Identity, _gameManager, _playerHubContext);
 
                 player.Connected(Context.ConnectionId);
                 return Task.CompletedTask;
@@ -88,7 +89,7 @@ namespace backend.signalR
         {
             lock (_playerRequestLock[Identity])
             {
-                IPlayer? player = _playerManager.GetPlayerOrDefault(Identity);
+                IPlayer? player = _onlinePlayerProvider.GetPlayerOrDefault(Identity);
 
                 if (player != null)
                     ThisPlayer.Disconnected(Context.ConnectionId);
@@ -113,12 +114,11 @@ namespace backend.signalR
                 return identity;
             }
         }
-        private IPlayer ThisPlayer => _playerManager.GetPlayer(Identity);
+        private IPlayer ThisPlayer => _onlinePlayerProvider.GetPlayer(Identity);
 
-        private readonly PlayerManager _playerManager;
-        private readonly GameManager _gameManager;
-        private readonly UserManager<PlayerIdentity> _userManager;
-        private readonly IHubContext<SignalRPlayerHub> _playerHubContext;
+        private readonly IOnlinePlayerProvider _onlinePlayerProvider;
         private readonly PlayerRequestLock _playerRequestLock;
+        private readonly UserManager<PlayerIdentity> _userManager;
+        private readonly Func<PlayerIdentity, HubPlayer<PlayerHub>> _createPlayer;
     }
 }

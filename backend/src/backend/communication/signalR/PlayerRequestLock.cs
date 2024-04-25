@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 
-namespace backend.signalR
+namespace backend.communication.signalR
 {
     internal class PlayerRequestLock
     {

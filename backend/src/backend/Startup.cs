@@ -1,12 +1,15 @@
 using backend.communication;
+using backend.communication.mqtt;
+using backend.communication.signalR;
 using backend.database;
 using backend.game;
 using backend.services;
-using backend.signalR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Diagnostics;
 using System.Net;
 
@@ -60,7 +63,13 @@ namespace backend
             services.AddSignalR();
 
             services.AddSingleton<PlayerRequestLock>();
-            services.AddSingleton<PlayerManager>();
+            services.AddScoped<Func<PlayerIdentity, HubPlayer<PlayerHub>>>(s => {
+                GameManager gameManager = s.GetRequiredService<GameManager>();
+                IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
+                return (PlayerIdentity identity) => new HubPlayer<PlayerHub>(identity, gameManager, hubContext);
+            });
+            services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
+            services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -85,7 +94,7 @@ namespace backend
             {
                 endpoints.MapControllers();
                 endpoints.MapIdentityApi<PlayerIdentity>();
-                endpoints.MapHub<SignalRPlayerHub>("/playerHub");
+                endpoints.MapHub<PlayerHub>("/playerHub");
             });
 
             BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();
