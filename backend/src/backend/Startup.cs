@@ -59,6 +59,7 @@ namespace backend
             ConfigureIdentity(services);
             services.AddSignalR();
 
+            services.AddSingleton<PlayerRequestLock>();
             services.AddSingleton<services.PlayerManager>();
             services.AddSingleton<GameManager>();
         }

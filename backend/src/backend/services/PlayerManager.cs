@@ -11,29 +11,47 @@ namespace backend.services
             _gameManager = gameManager;
         }
 
-        public IEnumerable<IPlayer> OnlinePlayers => _onlinePlayers;
+        public IEnumerable<IPlayer> OnlinePlayers
+        {
+            get
+            {
+                lock (_onlinePlayersLock)
+                {
+                    return _onlinePlayers.ToArray();
+                }
+            }
+        }
 
         public void OnPlayerConnected(IPlayer player)
         {
-            if (_playerConnectionCounterMap.ContainsKey(player.Id))
+            lock (_playerConnectionCounterMapLock)
             {
-                _playerConnectionCounterMap[player.Id]++;
-                return;
+                if (_playerConnectionCounterMap.ContainsKey(player.Id))
+                {
+                    _playerConnectionCounterMap[player.Id]++;
+                    return;
+                }
+
+                _playerConnectionCounterMap.Add(player.Id, 1);
             }
 
-            _playerConnectionCounterMap.Add(player.Id, 1);
+            lock(_onlinePlayersLock)
+            {
+                foreach (var onlinePlayer in _onlinePlayers)
+                    onlinePlayer.PlayerConnected(player);
 
-            foreach (var onlinePlayer in _onlinePlayers)
-                onlinePlayer.PlayerConnected(player);
-
-            _onlinePlayers.Add(player);
+                _onlinePlayers.Add(player);
+            }
         }
         public async void OnPlayerDisconnected(IPlayer player)
         {
-            _playerConnectionCounterMap[player.Id]--;
+            lock (_playerConnectionCounterMapLock)
+            { 
+                _playerConnectionCounterMap[player.Id]--;
 
-            if (_playerConnectionCounterMap[player.Id] > 0)
-                return;
+                if (_playerConnectionCounterMap[player.Id] > 0)
+                    return;
+            }
 
             await Task.Run(async () =>
             {
@@ -41,18 +59,25 @@ namespace backend.services
 
                 int activeConnectionCount;
 
-                if (!_playerConnectionCounterMap.TryGetValue(player.Id, out activeConnectionCount))
-                    return;
+                lock (_playerConnectionCounterMapLock)
+                {
+                    if (!_playerConnectionCounterMap.TryGetValue(player.Id, out activeConnectionCount))
+                        return;
 
-                if (activeConnectionCount > 0)
-                    return;
+                    if (activeConnectionCount > 0)
+                        return;
 
-                _playerConnectionCounterMap.Remove(player.Id);
-                _onlinePlayers.Remove(player);
-                _gameManager.PlayerQuit(player);
+                    _playerConnectionCounterMap.Remove(player.Id);
+                }
 
-                foreach (var onlinePlayer in _onlinePlayers)
-                    onlinePlayer.PlayerDisconnected(player);
+                lock (_onlinePlayersLock)
+                {
+                    _onlinePlayers.Remove(player);
+                    _gameManager.PlayerQuit(player);
+
+                    foreach (var onlinePlayer in _onlinePlayers)
+                        onlinePlayer.PlayerDisconnected(player);
+                }
             });
         }
 
@@ -62,17 +87,24 @@ namespace backend.services
         }
         public IPlayer GetPlayer(string playerId)
         {
-            IPlayer? player = _onlinePlayers.FirstOrDefault(p => p.Id == playerId);
-            Debug.Assert(player != null);
-            return player;
+            lock(_onlinePlayersLock)
+            {
+                IPlayer? player = _onlinePlayers.FirstOrDefault(p => p.Id == playerId);
+                Debug.Assert(player != null);
+                return player;
+            }
         }
         public IPlayer? GetPlayerOrDefault(PlayerIdentity identity)
         {
-            return _onlinePlayers.FirstOrDefault(p => p.Id == identity.Id);
+            lock(_onlinePlayersLock)
+            {
+                return _onlinePlayers.FirstOrDefault(p => p.Id == identity.Id);
+            }
         }
 
+        private readonly object _onlinePlayersLock = new object();
+        private readonly object _playerConnectionCounterMapLock = new object();
         private readonly GameManager _gameManager;
-
         private readonly ICollection<IPlayer> _onlinePlayers = new List<IPlayer>();
         private readonly Dictionary<string, int> _playerConnectionCounterMap = new Dictionary<string, int>();
     }

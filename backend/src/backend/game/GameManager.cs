@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 
 namespace backend.game
@@ -6,8 +7,6 @@ namespace backend.game
     internal class GameManager
     {
         public event Action<IPlayer, IPlayer>? OnGameStarted;
-
-        public IEnumerable<IPlayer> ActivePlayers => _activePlayers;
 
         //public void AddPlayer(IPlayer player)
         //{
@@ -62,7 +61,6 @@ namespace backend.game
             if (_activeGame == null)
                 StartNextGame();
         }
-
         private void StartNextGame()
         {
             var players = _gamePlan.Dequeue();
@@ -70,123 +68,139 @@ namespace backend.game
             OnGameStarted?.Invoke(_activeGame.Player1, _activeGame.Player2);
         }
 
-        internal void RequestMatch(IPlayer requester, IPlayer opponent)
+        public void RequestMatch(IPlayer requester, IPlayer opponent)
         {
-            foreach (var request in _requestedGamePlan)
+            lock(_requestedGamePlanLock)
             {
-                if (request.Item1 == requester)
+                foreach (var request in _requestedGamePlan)
                 {
-                    requester.RejectedMatch(opponent);
-                    return;
+                    if (request.Item1 == requester)
+                    {
+                        requester.RejectedMatch(opponent);
+                        return;
+                    }
                 }
+                _requestedGamePlan.Add(new Tuple<IPlayer, IPlayer>(requester, opponent));
             }
-
-            _requestedGamePlan.Add(new Tuple<IPlayer, IPlayer>(requester, opponent));
             opponent.RequestedMatch(requester);
         }
-
         public bool HasRequestedMatch(IPlayer requester, IPlayer opponent)
         {
-            foreach (var request in _requestedGamePlan)
-                if (request.Item1 == requester && request.Item2 == opponent)
-                    return true;
-
+            lock(_requestedGamePlanLock)
+            {
+                foreach (var request in _requestedGamePlan)
+                    if (request.Item1 == requester && request.Item2 == opponent)
+                        return true;
+            }
             return false;
         }
-
         public bool HasMatched(Player player1, IPlayer player2)
         {
-            foreach (var match in _gamePlan)
+            lock(_gamePlanLock)
             {
-                if (match.Item1 == player1 && match.Item2 == player2)
-                    return true;
+                foreach (var match in _gamePlan)
+                {
+                    if (match.Item1 == player1 && match.Item2 == player2)
+                        return true;
 
-                if (match.Item1 == player2 && match.Item2 == player1)
-                    return true;
+                    if (match.Item1 == player2 && match.Item2 == player1)
+                        return true;
+                }
             }
-
             return false;
         }
-
         public void AcceptMatch(IPlayer player, IPlayer requester)
         {
-            foreach (var request in _requestedGamePlan)
+            lock (_requestedGamePlanLock)
             {
-                if (request.Item1 == requester && request.Item2 == player)
+                foreach (var request in _requestedGamePlan)
                 {
-                    _requestedGamePlan.Remove(request);
-                    _gamePlan.Enqueue(request);
+                    if (request.Item1 == requester && request.Item2 == player)
+                    {
+                        _requestedGamePlan.Remove(request);
+                        lock(_gamePlanLock)
+                        {
+                            _gamePlan.Enqueue(request);
+                        }
 
-                    player.Matched(requester);
-                    requester.Matched(player);
+                        player.Matched(requester);
+                        requester.Matched(player);
 
-                    return;
+                        return;
+                    }
                 }
             }
         }
-
-        internal void RejectMatch(Player player, IPlayer requester)
+        public void RejectMatch(Player player, IPlayer requester)
         {
-            foreach (var request in _requestedGamePlan)
+            lock (_requestedGamePlanLock)
             {
-                if (request.Item1 == requester && request.Item2 == player)
+                foreach (var request in _requestedGamePlan)
                 {
-                    _requestedGamePlan.Remove(request);
-                    requester.RejectedMatch(player);
-                    return;
-                }
+                    if (request.Item1 == requester && request.Item2 == player)
+                    {
+                        _requestedGamePlan.Remove(request);
+                        requester.RejectedMatch(player);
+                        return;
+                    }
 
+                }
             }
-            
             Debug.Assert(false);
         }
-
-        internal void PlayerQuit(IPlayer player)
+        public void PlayerQuit(IPlayer player)
         {
             while (true)
             {
                 Tuple<IPlayer, IPlayer>? foundRequest = null;
 
-                foreach (var request in _requestedGamePlan)
+                lock(_requestedGamePlanLock)
                 {
-                    if (request.Item1 == player || request.Item2 == player)
+                    foreach (var request in _requestedGamePlan)
                     {
-                        foundRequest = request;
-                        break;
+                        if (request.Item1 == player || request.Item2 == player)
+                        {
+                            foundRequest = request;
+                            break;
+                        }
                     }
+
+                    if (foundRequest == null)
+                        break;
+
+                    _requestedGamePlan.Remove(foundRequest);
                 }
-
-                if (foundRequest == null)
-                    break;
-
-                _requestedGamePlan.Remove(foundRequest);
             }
 
             while (true)
             {
                 Tuple<IPlayer, IPlayer>? foundMatch = null;
 
-                foreach (var match in _gamePlan)
+                lock (_gamePlanLock)
                 {
-                    if (match.Item1 == player || match.Item2 == player)
+                    foreach (var match in _gamePlan)
                     {
-                        foundMatch = match;
-                        break;
+                        if (match.Item1 == player || match.Item2 == player)
+                        {
+                            foundMatch = match;
+                            break;
+                        }
                     }
+
+                    if (foundMatch == null)
+                        break;
+
+                    List<Tuple<IPlayer, IPlayer>> gamePlan = new List<Tuple<IPlayer, IPlayer>>(_gamePlan);
+                    gamePlan.Remove(foundMatch);
+                    _gamePlan = new Queue<Tuple<IPlayer, IPlayer>>(gamePlan);
                 }
-
-                if (foundMatch == null)
-                    break;
-
-                List<Tuple<IPlayer, IPlayer>> gamePlan = new List<Tuple<IPlayer, IPlayer>>(_gamePlan);
-                gamePlan.Remove(foundMatch);
-                _gamePlan = new Queue<Tuple<IPlayer, IPlayer>>(gamePlan);
             }
         }
 
+        private object _gamePlanLock = new object();
+        private object _requestedGamePlanLock = new object();
         private Game? _activeGame = null;
-        private readonly List<Tuple<IPlayer, IPlayer>> _requestedGamePlan = new List<Tuple<IPlayer, IPlayer>>(); // first = requester, second = opponent
         private Queue<Tuple<IPlayer, IPlayer>> _gamePlan = new Queue<Tuple<IPlayer, IPlayer>>(); 
-        private readonly List<IPlayer> _activePlayers = new List<IPlayer>();
+        private readonly List<Tuple<IPlayer, IPlayer>> _requestedGamePlan = new List<Tuple<IPlayer, IPlayer>>(); // first = requester, second = opponent
     }
 }
