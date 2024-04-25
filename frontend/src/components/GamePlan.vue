@@ -15,6 +15,11 @@ import eventBus from "@/services/eventBus";
 import signalRHub from "@/services/signalRHub";
 import { defineComponent } from "vue";
 
+interface GamePlanState {
+  gamePlan: Set<Match>;
+  isSubscribed: boolean;
+}
+
 export default defineComponent({
   mounted() {
     if (signalRHub.isConnected()) {
@@ -31,7 +36,7 @@ export default defineComponent({
 
     this.unsubscribe();
   },
-  data(): { gamePlan: Set<Match>; isSubscribed: boolean } {
+  data(): GamePlanState {
     return {
       gamePlan: new Set<Match>(),
       isSubscribed: false,

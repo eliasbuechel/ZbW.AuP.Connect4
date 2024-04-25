@@ -1,4 +1,5 @@
 ﻿
+using backend.communication.DOTs;
 using backend.database;
 using backend.services;
 using System.Diagnostics;
@@ -85,6 +86,20 @@ namespace backend.game
         public IEnumerable<Match> GetGamePlan()
         {
             return _gameManager.GetGamePlan();
+        }
+
+        public abstract void MovePlayed(int column);
+
+        public void PlayMove(int column)
+        {
+            _gameManager.PlayMove(this, column);
+        }
+
+        public abstract void GameStarted();
+
+        public Connect4Game GetCurrentGameState()
+        {
+            return _gameManager.GetCurrentGameState();
         }
 
         private readonly GameManager _gameManager;

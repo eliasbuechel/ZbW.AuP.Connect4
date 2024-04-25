@@ -41,6 +41,16 @@ namespace backend.game
             foreach (string connection in Connections)
                 await _hubContext.Clients.Client(connection).SendAsync("matched", matchDTO);
         }
+        public override async void MovePlayed(int column)
+        {
+            foreach (string connection in Connections)
+                await _hubContext.Clients.Client(connection).SendAsync("move-played", column);
+        }
+        public override async void GameStarted()
+        {
+            foreach (string connection in Connections)
+                await _hubContext.Clients.Client(connection).SendAsync("game-started");
+        }
 
         private readonly IHubContext<THub> _hubContext;
     }

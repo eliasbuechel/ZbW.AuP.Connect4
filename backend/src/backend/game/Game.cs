@@ -123,7 +123,7 @@
 //            int c = column;
 //            int r = row;
 
-//            while(true)
+//            while (true)
 //            {
 //                if (c <= 0 || r <= 0)
 //                    break;
@@ -133,7 +133,7 @@
 //            }
 
 //            int count = 0;
-//            while(c < COLUMNS && r < ROWS)
+//            while (c < COLUMNS && r < ROWS)
 //            {
 //                if (_field[c][r] == player)
 //                {

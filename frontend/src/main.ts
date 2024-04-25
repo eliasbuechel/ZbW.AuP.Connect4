@@ -8,17 +8,15 @@ import AppVue from "./App.vue";
 
 // Lokale Dateien/Komponenten
 import HomeView from "@/views/HomeView.vue";
-import Login from "@/components/LoginForm.vue";
-import Register from "@/components/RegisterForm.vue";
-import GameView from "./views/GameView.vue";
+import LoginView from "./views/LoginView.vue";
+import RegisterView from "./views/RegisterView.vue";
 
 const router: Router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: "/", name: "Home", component: HomeView },
-    { path: "/login", name: "Login", component: Login },
-    { path: "/register", name: "Register", component: Register },
-    { path: "/game", name: "Game", component: GameView },
+    { path: "/login", name: "Login", component: LoginView },
+    { path: "/register", name: "Register", component: RegisterView },
   ],
 });
 

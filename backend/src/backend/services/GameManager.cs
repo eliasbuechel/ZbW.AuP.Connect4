@@ -1,4 +1,5 @@
-﻿using backend.game;
+﻿using backend.communication.DOTs;
+using backend.game;
 using System.Diagnostics;
 
 namespace backend.services
@@ -94,6 +95,8 @@ namespace backend.services
                         foreach (IPlayer p in _playerConnectionManager.OnlinePlayers)
                             p.Matched(match);
 
+                        StartGame();
+
                         return;
                     }
                 }
@@ -165,6 +168,29 @@ namespace backend.services
                 }
             }
         }
+        private void StartGame()
+        {
+            if (_activeGame != null)
+                return;
+
+            Match? match;
+            if (!_gamePlan.TryPeek(out match))
+                return;
+
+            _activeGame = new Connect4Game(match);
+        }
+
+        public void PlayMove(Player player, int column)
+        {
+            Debug.Assert(_activeGame != null);
+            _activeGame.PlayMove(player, column);
+        }
+
+        public Connect4Game GetCurrentGameState()
+        {
+            Debug.Assert(_activeGame != null);
+            return _activeGame;
+        }
 
 
         //public void AddPlayer(IPlayer player)
@@ -230,7 +256,7 @@ namespace backend.services
 
         private object _gamePlanLock = new object();
         private object _matchRequestsLock = new object();
-        //private Game? _activeGame = null;
+        private Connect4Game? _activeGame = null;
         private readonly PlayerConnectionManager _playerConnectionManager;
         private Queue<Match> _gamePlan = new Queue<Match>();
         private readonly List<MatchRequest> _matchRequests = new List<MatchRequest>();

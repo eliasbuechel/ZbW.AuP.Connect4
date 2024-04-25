@@ -13,6 +13,11 @@ import eventBus from "@/services/eventBus";
 import signalRHub from "@/services/signalRHub";
 import { defineComponent } from "vue";
 
+interface UserDataState {
+  identity: PlayerIdentity;
+  isSubscribed: boolean;
+}
+
 export default defineComponent({
   mounted() {
     if (!signalRHub.isConnected()) {
@@ -27,7 +32,7 @@ export default defineComponent({
     eventBus.off("signalr-connected", this.onSignalRConnected);
     eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
   },
-  data(): { identity: PlayerIdentity; isSubscribed: boolean } {
+  data(): UserDataState {
     return {
       identity: { id: "", username: "" },
       isSubscribed: false,

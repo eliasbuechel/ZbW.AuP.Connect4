@@ -1,8 +1,7 @@
 <template>
   <div class="listing-container">
     <h2>Online players</h2>
-    <span v-if="errors.players" class="error">{{ errors.players }}</span>
-    <ul v-else>
+    <ul>
       <li v-for="player in onlinePlayers" :key="player.id">
         <span>{{ player.username }}</span>
         <span v-if="player.matched">Matched</span>
@@ -25,6 +24,12 @@ import signalRHub from "@/services/signalRHub";
 import eventBus from "@/services/eventBus";
 import { Match, OnlinePlayer, PlayerIdentity } from "@/DataTransferObjects";
 
+interface PlayerListingState {
+  identity?: PlayerIdentity;
+  onlinePlayers: Set<OnlinePlayer>;
+  isSubscribed: boolean;
+}
+
 export default defineComponent({
   mounted() {
     if (signalRHub.isConnected()) {
@@ -42,16 +47,10 @@ export default defineComponent({
 
     this.unsubscribe();
   },
-  data(): {
-    identity?: PlayerIdentity;
-    onlinePlayers: Set<OnlinePlayer>;
-    errors: { players: string };
-    isSubscribed: boolean;
-  } {
+  data(): PlayerListingState {
     return {
       identity: undefined,
       onlinePlayers: new Set<OnlinePlayer>(),
-      errors: { players: "" },
       isSubscribed: false,
     };
   },

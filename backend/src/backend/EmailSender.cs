@@ -11,17 +11,14 @@ namespace backend
         {
             return Task.CompletedTask;
         }
-
         Task IEmailSender<PlayerIdentity>.SendConfirmationLinkAsync(PlayerIdentity user, string email, string confirmationLink)
         {
             return Task.CompletedTask;
         }
-
         Task IEmailSender<PlayerIdentity>.SendPasswordResetCodeAsync(PlayerIdentity user, string email, string resetCode)
         {
             return Task.CompletedTask;
         }
-
         Task IEmailSender<PlayerIdentity>.SendPasswordResetLinkAsync(PlayerIdentity user, string email, string resetLink)
         {
             return Task.CompletedTask;

@@ -47,6 +47,15 @@ namespace backend.communication.signalR
                 Clients.Caller.SendAsync("send-game-plan", gamePlanDTO).Wait();
             }
         }
+        public void GetCurrentGame()
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                Connect4Game currentGame =  ThisPlayer.GetCurrentGameState();
+                Connect4GameDTO connect4GameDTO = new Connect4GameDTO(currentGame);
+                Clients.Caller.SendAsync("send-current-game", connect4GameDTO).Wait();
+            }
+        }
         public void RequestMatch(string playerId)
         {
             lock (_playerRequestLock[Identity])
@@ -69,6 +78,13 @@ namespace backend.communication.signalR
             {
                 IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.RejectMatch(player);
+            }
+        }
+        public void PlayMove(int column)
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                ThisPlayer.PlayMove(column);
             }
         }
 

@@ -1,4 +1,6 @@
-﻿namespace backend.game
+﻿using backend.communication.DOTs;
+
+namespace backend.game
 {
     internal interface IPlayer
     {
@@ -10,7 +12,6 @@
         bool HasConfirmedGameStart { get; }
 
         void ConfirmGameStart();
-        //void MakeMove(int column);
         void RequestMatch(IPlayer player);
         void RequestedMatch(IPlayer player);
         void RejectedMatch(IPlayer opponent);
@@ -25,18 +26,9 @@
         void Matched(Match match);
         void RejectMatch(IPlayer player);
         IEnumerable<Match> GetGamePlan();
-
-        //void OnOpponentConfirmedGameStart();
-        //void OnOpponentMadeMove(int column);
-        //void OnErrorWhileMakingMove(string message);
-        //void OnWon(Connect4Line connect4Line);
-        //void OnLost(Connect4Line connect4Line);
-        //void OnDraw();
-        //void OnLostConnection();
-        //void OnReconnected();
-        //void OnOpponentLostconnection();
-        //void OpponentReconnected();
-        //void OnOpponentQuit();
-        //void OnGameCreated(IPlayer player1, IPlayer player2);
+        void MovePlayed(int column);
+        void PlayMove(int column);
+        void GameStarted();
+        Connect4Game GetCurrentGameState();
     }
 }
