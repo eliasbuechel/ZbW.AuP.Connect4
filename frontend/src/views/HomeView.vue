@@ -13,9 +13,17 @@ import signalRHub from "@/services/signalRHub";
 import MainBoard from "@/components/MainBoard.vue";
 import Connect4Game from "@/components/Connect4Game.vue";
 import eventBus from "@/services/eventBus";
+import { Game, GameState, PlayerIdentity } from "@/DataTransferObjects";
+
+interface HomeState {
+  gameState: GameState;
+  isSubscribed: boolean;
+}
 
 export default defineComponent({
   mounted(): void {
+    if (signalRHub.isConnected()) signalRHub.invoke("HasGameStarted");
+
     eventBus.on("signalr-connected", this.onSignalRConnected);
     eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
 
@@ -28,26 +36,48 @@ export default defineComponent({
     signalRHub.stop();
     this.unsubscribe();
   },
-  data(): { inGame: boolean; isSubscribed: boolean } {
+  data(): HomeState {
     return {
-      inGame: false,
+      gameState: {
+        identity: undefined,
+        game: undefined,
+        gameResult: undefined,
+        isSubscribed: false,
+      },
       isSubscribed: false,
     };
   },
   methods: {
     subscribe(): void {
       if (this.isSubscribed) return;
+      eventBus.on("quit-game", this.onQuitGame);
       signalRHub.on("game-started", this.onGameStarted);
+      signalRHub.on("send-current-game", this.updateGame);
+      signalRHub.on("send-user-data", this.updateUserIdentity);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
+      eventBus.off("quit-game", this.onQuitGame);
       signalRHub.off("game-started", this.onGameStarted);
+      signalRHub.off("send-current-game", this.updateGame);
+      signalRHub.off("send-user-data", this.updateUserIdentity);
+    },
+    updateUserIdentity(identity: PlayerIdentity): void {
+      this.gameState!.identity = identity;
+    },
+    updateGame(game: Game): void {
+      this.gameState.game = game;
     },
     onGameStarted(): void {
-      this.inGame = true;
+      signalRHub.invoke("GetUserData");
+      signalRHub.invoke("GetCurrentGame");
+    },
+    onQuitGame(): void {
+      this.gameState.game = undefined;
     },
     onSignalRConnected(): void {
       this.subscribe();
+      signalRHub.invoke("HasGameStarted");
     },
     onSignalRDisconnected(): void {
       this.unsubscribe();
@@ -59,7 +89,11 @@ export default defineComponent({
   },
   computed: {
     isInGame(): boolean {
-      return this.inGame;
+      if (this.gameState.game === undefined) return false;
+      if (this.gameState.identity === undefined) return false;
+      if (this.gameState.game!.match.player1.id === this.gameState.identity!.id) return true;
+      if (this.gameState.game!.match.player2.id === this.gameState.identity!.id) return true;
+      return false;
     },
   },
 });

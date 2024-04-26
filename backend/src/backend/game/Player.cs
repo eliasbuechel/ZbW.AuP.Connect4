@@ -1,6 +1,4 @@
-﻿
-using backend.communication.DOTs;
-using backend.database;
+﻿using backend.database;
 using backend.services;
 using System.Diagnostics;
 
@@ -100,6 +98,18 @@ namespace backend.game
         public Connect4Game GetCurrentGameState()
         {
             return _gameManager.GetCurrentGameState();
+        }
+
+        public void QuitGame()
+        {
+            _gameManager.QuitGame(this);
+        }
+
+        public abstract void GameEnded(GameResult gameResult);
+
+        public bool HasGameStarted()
+        {
+            return _gameManager.HasGameStarted(this);
         }
 
         private readonly GameManager _gameManager;

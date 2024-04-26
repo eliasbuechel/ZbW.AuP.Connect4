@@ -61,7 +61,9 @@ export default defineComponent({
       signalRHub.on("player-connected", this.onPlayerConnected);
       signalRHub.on("player-disconnected", this.onPlayerDisconnected);
       signalRHub.on("player-requested-match", this.onPlayerRequestedMatch);
+      signalRHub.on("you-requested-match", this.onYouRequestedMatch);
       signalRHub.on("player-rejected-match", this.onPlayerRejectedMatch);
+      signalRHub.on("you-rejected-match", this.onYouRejectedMatch);
       signalRHub.on("matched", this.onMatched);
       signalRHub.on("send-user-data", this.updateUserIdentity);
     },
@@ -71,7 +73,9 @@ export default defineComponent({
       signalRHub.off("player-connected", this.onPlayerConnected);
       signalRHub.off("player-disconnected", this.onPlayerDisconnected);
       signalRHub.off("player-requested-match", this.onPlayerRequestedMatch);
+      signalRHub.off("you-requested-match", this.onYouRequestedMatch);
       signalRHub.off("player-rejected-match", this.onPlayerRejectedMatch);
+      signalRHub.off("you-rejected-match", this.onYouRejectedMatch);
       signalRHub.off("matched", this.onMatched);
       signalRHub.off("send-user-data", this.updateUserIdentity);
     },
@@ -113,10 +117,26 @@ export default defineComponent({
         }
       });
     },
+    onYouRequestedMatch(playerId: string): void {
+      this.onlinePlayers.forEach((p) => {
+        if (p.id === playerId) {
+          p.youRequestedMatch = true;
+          return;
+        }
+      });
+    },
     onPlayerRejectedMatch(playerId: string): void {
       this.onlinePlayers.forEach((p) => {
         if (p.id === playerId) {
           p.youRequestedMatch = false;
+          return;
+        }
+      });
+    },
+    onYouRejectedMatch(playerId: string): void {
+      this.onlinePlayers.forEach((p) => {
+        if (p.id === playerId) {
+          p.requestedMatch = false;
           return;
         }
       });

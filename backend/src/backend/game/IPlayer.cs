@@ -1,4 +1,4 @@
-﻿using backend.communication.DOTs;
+﻿using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.game
 {
@@ -10,6 +10,7 @@ namespace backend.game
         string Id { get; }
         string Username { get; }
         bool HasConfirmedGameStart { get; }
+        public IEnumerable<string> Connections { get; }
 
         void ConfirmGameStart();
         void RequestMatch(IPlayer player);
@@ -30,5 +31,8 @@ namespace backend.game
         void PlayMove(int column);
         void GameStarted();
         Connect4Game GetCurrentGameState();
+        void QuitGame();
+        void GameEnded(GameResult gameResult);
+        bool HasGameStarted();
     }
 }

@@ -2,7 +2,6 @@ using backend.communication;
 using backend.communication.mqtt;
 using backend.communication.signalR;
 using backend.database;
-using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -63,10 +62,10 @@ namespace backend
             services.AddSignalR();
 
             services.AddSingleton<PlayerRequestLock>();
-            services.AddScoped<Func<PlayerIdentity, HubPlayer<PlayerHub>>>(s => {
+            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
-                return (PlayerIdentity identity) => new HubPlayer<PlayerHub>(identity, gameManager, hubContext);
+                return (PlayerIdentity identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
             });
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();

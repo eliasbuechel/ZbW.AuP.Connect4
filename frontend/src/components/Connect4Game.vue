@@ -7,7 +7,7 @@
     <div>
       <label> {{ game?.match.player2.username }}</label>
     </div>
-    <div class="board">
+    <div v-if="gameResult === undefined" class="board">
       <div v-for="(column, colIdx) in game?.connect4Board" :key="colIdx" class="column" @click="placeStone(colIdx)">
         <div
           v-for="(cell, rowIdx) in column"
@@ -16,6 +16,10 @@
         ></div>
       </div>
     </div>
+    <div v-else>
+      <span>{{ resultMessage }}</span>
+    </div>
+    <button class="button-light" @click="quitGame">Quit game</button>
   </div>
 </template>
 
@@ -23,19 +27,7 @@
 import { defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 import eventBus from "@/services/eventBus";
-import { Match, PlayerIdentity } from "@/DataTransferObjects";
-
-interface GameState {
-  identity?: PlayerIdentity;
-  game?: Game;
-  isSubscribed: boolean;
-}
-
-interface Game {
-  match: Match;
-  activePlayerId: string;
-  connect4Board: string[][];
-}
+import { GameResult, PlayerIdentity, GameState, Game } from "@/DataTransferObjects";
 
 export default defineComponent({
   mounted() {
@@ -58,6 +50,7 @@ export default defineComponent({
     return {
       identity: undefined,
       game: undefined,
+      gameResult: undefined,
       isSubscribed: false,
     };
   },
@@ -67,6 +60,7 @@ export default defineComponent({
       signalRHub.on("send-current-game", this.updateGame);
       signalRHub.on("send-user-data", this.updateUserIdentity);
       signalRHub.on("move-played", this.onMovePlayed);
+      signalRHub.on("game-ended", this.onGameEnded);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -79,6 +73,12 @@ export default defineComponent({
       if (this.identity!.id !== this.game!.activePlayerId) return;
       if (!this.doMove(this.game!.activePlayerId, colIdx)) return;
       signalRHub.invoke("PlayMove", colIdx);
+    },
+    quitGame(): void {
+      eventBus.emit("quit-game");
+      if (this.game === undefined) return;
+      if (this.gameResult !== undefined) return;
+      signalRHub.invoke("QuitGame");
     },
     switchActivePlayer(): void {
       this.game!.activePlayerId =
@@ -111,8 +111,10 @@ export default defineComponent({
     onMovePlayed(colIdx: number): void {
       if (!this.game) return;
       if (this.identity === undefined) return;
-      if (this.identity!.id === this.game!.activePlayerId) return;
       this.doMove(this.game!.activePlayerId, colIdx);
+    },
+    onGameEnded(gameResult: GameResult): void {
+      this.gameResult = gameResult;
     },
     onSignalRConnected(): void {
       this.subscribe();
@@ -121,6 +123,15 @@ export default defineComponent({
     },
     onSignalRDisconnected(): void {
       this.unsubscribe();
+    },
+  },
+  computed: {
+    resultMessage(): string {
+      if (this.gameResult === undefined) return "";
+      if (this.identity === undefined) return "";
+      if (this.gameResult!.winnerId === undefined) return "Draw!";
+      if (this.gameResult!.winnerId === this.identity.id) return "You won!";
+      return "You lost!";
     },
   },
 });
@@ -150,7 +161,7 @@ h2 {
 }
 
 .cell {
-  background-color: orange;
+  background-color: transparent;
   width: 4rem;
   height: 4rem;
   border-radius: 50%;

@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.communication.signalR
 {
     [Authorize]
     internal class PlayerHub : Hub
     {
-        public PlayerHub(IOnlinePlayerProvider onlinePlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, HubPlayer<PlayerHub>> createPlayer, PlayerRequestLock playerRequestLock)
+        public PlayerHub(IOnlinePlayerProvider onlinePlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<PlayerHub>> createPlayer, PlayerRequestLock playerRequestLock)
         {
             _onlinePlayerProvider = onlinePlayerProvider;
             _userManager = userManager;
@@ -62,6 +63,10 @@ namespace backend.communication.signalR
             {
                 IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.RequestMatch(player);
+
+                foreach (var connection in ThisPlayer.Connections)
+                    if (connection != Context.ConnectionId)
+                        Clients.Client(connection).SendAsync("you-requested-match", playerId);
             }
         }
         public void AcceptMatch(string playerId)
@@ -78,6 +83,10 @@ namespace backend.communication.signalR
             {
                 IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.RejectMatch(player);
+
+                foreach (var connection in ThisPlayer.Connections)
+                    if (connection != Context.ConnectionId)
+                        Clients.Client(connection).SendAsync("you-rejected-match", playerId);
             }
         }
         public void PlayMove(int column)
@@ -85,7 +94,23 @@ namespace backend.communication.signalR
             lock (_playerRequestLock[Identity])
             {
                 ThisPlayer.PlayMove(column);
+
+                foreach (var connection in ThisPlayer.Connections)
+                    if (connection != Context.ConnectionId)
+                        Clients.Client(connection).SendAsync("move-played", column);
             }
+        }
+        public void QuitGame()
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                ThisPlayer.QuitGame();
+            }
+        }
+        public void HasGameStarted()
+        {
+            if (ThisPlayer.HasGameStarted())
+                Clients.Caller.SendAsync("game-started");
         }
 
         public override Task OnConnectedAsync()
@@ -135,6 +160,6 @@ namespace backend.communication.signalR
         private readonly IOnlinePlayerProvider _onlinePlayerProvider;
         private readonly PlayerRequestLock _playerRequestLock;
         private readonly UserManager<PlayerIdentity> _userManager;
-        private readonly Func<PlayerIdentity, HubPlayer<PlayerHub>> _createPlayer;
+        private readonly Func<PlayerIdentity, ToPlayerHub<PlayerHub>> _createPlayer;
     }
 }

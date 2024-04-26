@@ -14,3 +14,30 @@ export interface OnlinePlayer extends PlayerIdentity {
   youRequestedMatch: boolean;
   matched: boolean;
 }
+
+export interface Field {
+  column: number;
+  row: number;
+}
+
+export interface Connect4Line {
+  line: Field[];
+}
+
+export interface GameResult {
+  winnerId?: string;
+  line?: Connect4Line;
+}
+
+export interface GameState {
+  identity?: PlayerIdentity;
+  game?: Game;
+  gameResult?: GameResult;
+  isSubscribed: boolean;
+}
+
+export interface Game {
+  match: Match;
+  activePlayerId: string;
+  connect4Board: string[][];
+}

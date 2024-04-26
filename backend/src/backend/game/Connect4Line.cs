@@ -19,6 +19,7 @@ namespace backend.game
                 return _line[index];
             }
         }
+        public int Length => _line.Length;
 
         private readonly Field[] _line = new Field[4];
     }

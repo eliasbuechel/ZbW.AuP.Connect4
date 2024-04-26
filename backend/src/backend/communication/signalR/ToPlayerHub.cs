@@ -1,14 +1,14 @@
-﻿
-using backend.communication.DOTs;
+﻿using backend.communication.DOTs;
 using backend.database;
+using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
 
-namespace backend.game
+namespace backend.communication.signalR
 {
-    internal class HubPlayer<THub> : Player where THub : Hub
+    internal class ToPlayerHub<THub> : Player where THub : Hub
     {
-        public HubPlayer(PlayerIdentity identity, GameManager gameManager, IHubContext<THub> hubContext) : base(identity, gameManager)
+        public ToPlayerHub(PlayerIdentity identity, GameManager gameManager, IHubContext<THub> hubContext) : base(identity, gameManager)
         {
             _hubContext = hubContext;
         }
@@ -25,7 +25,7 @@ namespace backend.game
                 await _hubContext.Clients.Client(connection).SendAsync("player-disconnected", player.Id);
         }
         public override async void RequestedMatch(IPlayer player)
-        {   
+        {
             foreach (string connection in Connections)
                 await _hubContext.Clients.Client(connection).SendAsync("player-requested-match", player.Id);
         }
@@ -50,6 +50,13 @@ namespace backend.game
         {
             foreach (string connection in Connections)
                 await _hubContext.Clients.Client(connection).SendAsync("game-started");
+        }
+        public override async void GameEnded(GameResult gameResult)
+        {
+            GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
+
+            foreach (string connection in Connections)
+                await _hubContext.Clients.Client(connection).SendAsync("game-ended", gameResultDTO);
         }
 
         private readonly IHubContext<THub> _hubContext;
