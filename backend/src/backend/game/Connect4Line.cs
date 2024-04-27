@@ -1,4 +1,4 @@
-﻿using Mysqlx.Expr;
+﻿using System.Diagnostics;
 
 namespace backend.game
 {
@@ -8,7 +8,7 @@ namespace backend.game
         {
             for (int i = 0; i < _line.Length; i++)
             {
-                _line[i] = new Field();
+                _line[i] = new Field(-1, -1);
             }
         }
 
@@ -16,6 +16,7 @@ namespace backend.game
         {
             get
             {
+                Debug.Assert(index >= 0 && index < _line.Length);
                 return _line[index];
             }
         }

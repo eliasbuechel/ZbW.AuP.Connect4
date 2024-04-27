@@ -1,10 +1,6 @@
 <template>
-  <div v-if="!isInGame">
-    <MainBoard />
-  </div>
-  <div v-else>
-    <Connect4Game />
-  </div>
+  <MainBoard v-if="!isInGame" />
+  <Connect4Game :state="gameState" v-else />
 </template>
 
 <script lang="ts">
@@ -74,6 +70,7 @@ export default defineComponent({
     },
     onQuitGame(): void {
       this.gameState.game = undefined;
+      signalRHub.invoke("GetOnlinePlayers");
     },
     onSignalRConnected(): void {
       this.subscribe();

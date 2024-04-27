@@ -30,6 +30,9 @@
                 return fieldAsIds;
             }
         }
+        public Field? LastPlacedStone => _lastPlacedStone;
+        public int Columns => COLUMNS;
+        public int Rows => ROWS;
 
         public bool PlaceStone(IPlayer player, int column)
         {
@@ -46,13 +49,19 @@
                     continue;
 
                 col[i] = player;
+                _lastPlacedStone = new Field(column, i);
                 return true;
             }
 
             return false;
         }
+        public IPlayer?[] this[int index]
+        {
+            get { return _field[index]; }
+        }
 
         private readonly IPlayer?[][] _field;
+        private Field? _lastPlacedStone = null;
         private const int ROWS = 7;
         private const int COLUMNS = 6;
     }

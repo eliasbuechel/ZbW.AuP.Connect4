@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace backend.game
 {
@@ -19,49 +20,32 @@ namespace backend.game
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
 
 
-        public void PlayMove(IPlayer player, int column)
+        public bool PlayMove(IPlayer player, int column)
         {
             Debug.Assert(_activePlayer == player);
             Debug.Assert(_connect4Board.PlaceStone(player, column));
+            Field? lastPlacedStone = _connect4Board.LastPlacedStone;
+            Debug.Assert(lastPlacedStone != null);
+
+            GameResult? gameResult = CheckForWin(player, lastPlacedStone);
+
             SwapActivePlayer();
             _activePlayer.MovePlayed(column);
 
-            //if (_lastplayer != null && _lastplayer == player)
-            //    throw new playermanager("its the other players turn.", player);
+            if (gameResult != null)
+            {
+                Match.Player1.GameEnded(gameResult);
+                Match.Player2.GameEnded(gameResult);
+                return false;
+            }
 
-            //if (player != _player1 && player != _player2)
-            //    throw new playermanager("player is not in the current game.", player);
-
-            //if (column < 0 || column >= columns)
-            //    throw new InvalidArg("provided column is not valid", player, column);
-
-
-            //int nextFreeRow = -1;
-            //for (int row = 0; row < ROWS; row++)
-            //{
-            //    if (_field[column][row] == null)
-            //    {
-            //        nextFreeRow = row;
-            //        break;
-            //    }
-            //}
-
-            //if (nextFreeRow == -1)
-            //    throw new MoveNotPossibleException($"Column is already full!", player, column);
-
-            //_field[column][nextFreeRow] = player;
-            //_lastPlayer = player;
-            //OnMovePlayed?.Invoke(player, column);
-
-            //CheckForWin(player, column, nextFreeRow);
+            return true;
         }
-
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
         }
-
-        internal void Quit(Player player)
+        public void Quit(Player player)
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null);
@@ -69,108 +53,113 @@ namespace backend.game
             winner.GameEnded(gameResult);
         }
 
-        //private void CheckForWin(IPlayer player, int column, int row)
-        //{
-        //    if (CheckForWinInColumn(player, column, row))
-        //        return;
+        private GameResult? CheckForWin(IPlayer player, Field field)
+        {
+            Connect4Line? connect4Line;
 
-        //    if (CheckForWinInRow(player, column, row))
-        //        return;
+            connect4Line = CheckForWinInColumn(player, field);
+            if (connect4Line != null)
+                return new GameResult(player, connect4Line);
 
-        //    if (CheckForWinDiagonally(player, column, row))
-        //        return;
-        //}
-        //private bool CheckForWinInColumn(IPlayer player, int column, int row)
-        //{
-        //    Connect4Line connect4Line = new Connect4Line();
-        //    int count = 4;
+            connect4Line = CheckForWinInRow(player, field);
+            if (connect4Line != null)
+                return new GameResult(player, connect4Line);
 
-        //    count--;
-        //    connect4Line[count].Column = column;
-        //    connect4Line[count].Row = row;
+            connect4Line = CheckForWinDiagonally(player, field);
+            if (connect4Line != null)
+                return new GameResult(player, connect4Line);
 
-        //    for (int rowDown = row - 1; rowDown >= 0; rowDown--)
-        //    {
-        //        if (_field[column][rowDown] != player)
-        //            break;
+            return null;
+        }
+        private Connect4Line? CheckForWinInColumn(IPlayer player, Field lastPlacedStone)
+        {
+            Connect4Line connect4Line = new Connect4Line();
 
-        //        count--;
-        //        connect4Line[count].Column = column;
-        //        connect4Line[count].Row = rowDown;
+            int count = 4;
+            count--;
+            connect4Line[count].Column = lastPlacedStone.Column;
+            connect4Line[count].Row = lastPlacedStone.Row;
 
-        //        if (count == 0)
-        //        {
-        //            OnConnect4?.Invoke(connect4Line);
-        //            return true;
-        //        }
-        //    }
+            for (int rowDown = lastPlacedStone.Row - 1; rowDown >= 0; rowDown--)
+            {
+                if (_connect4Board[lastPlacedStone.Column][rowDown] != player)
+                    break;
 
-        //    return false;
-        //}
-        //private bool CheckForWinInRow(IPlayer player, int column, int row)
-        //{
-        //    Connect4Line connect4Line = new Connect4Line();
-        //    int count = 0;
+                Field field = new Field(lastPlacedStone.Column, rowDown);
+                count--;
+                connect4Line[count].Column = lastPlacedStone.Column;
+                connect4Line[count].Row = rowDown;
 
-        //    for (int i = 0; i < COLUMNS; i++)
-        //    {
-        //        if (_field[i][row] == player)
-        //        {
-        //            connect4Line[count].Column = i;
-        //            connect4Line[count].Row = row;
-        //            count++;
-        //        }
-        //        else
-        //            count = 0;
+                if (count == 0)
+                {
+                    return connect4Line;
+                }
+            }
 
-        //        if (count == 4)
-        //        {
-        //            OnConnect4?.Invoke(connect4Line);
-        //            return true;
-        //        }
-        //    }
+            return null;
+        }
+        private Connect4Line? CheckForWinInRow(IPlayer player, Field lastPlacedStone)
+        {
+            Connect4Line connect4Line = new Connect4Line();
+            int count = 0;
 
-        //    return false;
-        //}
-        //private bool CheckForWinDiagonally(IPlayer player, int column, int row)
-        //{
-        //    Connect4Line connect4Line = new Connect4Line();
-        //    int c = column;
-        //    int r = row;
+            for (int i = 0; i < _connect4Board.Columns; i++)
+            {
+                if (_connect4Board[i][lastPlacedStone.Row] == player)
+                {
+                    connect4Line[count].Column = i;
+                    connect4Line[count].Row = lastPlacedStone.Row;
+                    count++;
+                }
+                else
+                    count = 0;
 
-        //    while (true)
-        //    {
-        //        if (c <= 0 || r <= 0)
-        //            break;
+                if (count == 4)
+                {
+                    return connect4Line;
+                }
+            }
 
-        //        c--;
-        //        r--;
-        //    }
+            return null;
+        }
+        private Connect4Line? CheckForWinDiagonally(IPlayer player, Field lastPlacedStone)
+        {
+            Connect4Line connect4Line = new Connect4Line();
+            int c = lastPlacedStone.Column;
+            int r = lastPlacedStone.Row;
 
-        //    int count = 0;
-        //    while (c < COLUMNS && r < ROWS)
-        //    {
-        //        if (_field[c][r] == player)
-        //        {
-        //            connect4Line[count].Column = c;
-        //            connect4Line[count].Row = r;
-        //            count++;
-        //        }
-        //        else
-        //            count = 0;
+            while (true)
+            {
+                if (c <= 0 || r <= 0)
+                    break;
 
-        //        if (count == 4)
-        //        {
-        //            OnConnect4?.Invoke(connect4Line);
-        //            return true;
-        //        }
+                c--;
+                r--;
+            }
 
-        //        c++;
-        //        r++;
-        //    }
+            int count = 0;
+            while (c < _connect4Board.Columns && r < _connect4Board.Rows)
+            {
+                if (_connect4Board[c][r] == player)
+                {
+                    connect4Line[count].Column = c;
+                    connect4Line[count].Row = r;
+                    count++;
+                }
+                else
+                    count = 0;
 
-        //    return false;
-        //}
+                if (count == 4)
+                {
+                    return connect4Line;
+                }
+
+                c++;
+                r++;
+            }
+
+            return null;
+        }
 
 
         private IPlayer _activePlayer;

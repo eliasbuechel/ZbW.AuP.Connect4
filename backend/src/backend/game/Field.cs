@@ -2,7 +2,13 @@
 {
     internal class Field
     {
-        public int Column { get; set; } = int.MinValue;
-        public int Row { get; set; } = int.MinValue;
+        public Field(int column, int row)
+        {
+            Column = column;
+            Row = row;
+        }
+        public int Column { get; set; }
+        public int Row { get; set; }
+
     }
 }

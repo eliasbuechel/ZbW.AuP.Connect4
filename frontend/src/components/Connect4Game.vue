@@ -24,13 +24,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { PropType, defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 import eventBus from "@/services/eventBus";
 import { GameResult, PlayerIdentity, GameState, Game } from "@/DataTransferObjects";
 
 export default defineComponent({
+  props: {
+    state: {
+      type: Object as PropType<GameState>,
+      default: () => ({
+        identity: undefined,
+        game: undefined,
+        gameResult: undefined,
+        isSubscribed: false,
+      }),
+    },
+  },
   mounted() {
+    this.$data.game = this.$props.state.game;
+    this.$data.identity = this.$props.state.identity;
+    this.$data.gameResult = this.$props.state.gameResult;
+    this.$data.isSubscribed = this.$props.state.isSubscribed;
+
     if (signalRHub.isConnected()) {
       this.subscribe();
       signalRHub.invoke("GetUserData");

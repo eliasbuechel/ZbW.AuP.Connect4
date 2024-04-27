@@ -185,7 +185,10 @@ namespace backend.services
         public void PlayMove(Player player, int column)
         {
             Debug.Assert(_activeGame != null);
-            _activeGame.PlayMove(player, column);
+            if (_activeGame.PlayMove(player, column))
+                return;
+
+            StartNextGame();
         }
 
         public Connect4Game GetCurrentGameState()
