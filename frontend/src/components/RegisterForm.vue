@@ -14,7 +14,7 @@
           <span v-if="errors.password" class="error">{{ errors.password }}</span>
         </div>
         <span v-if="errors.registration" class="error">{{ errors.registration }}</span>
-        <button class="button-submit" type="submit" :disabled="!allowRegistration" @click="register">Register</button>
+        <button class="button-submit" type="submit" :disabled="!allowRegistration">Register</button>
         <button class="button-link" type="button" @click="redirectToLogin">Login</button>
       </form>
     </div>
@@ -54,18 +54,6 @@ export default defineComponent({
       if (!emailInput.checkValidity()) {
         this.errors.email = emailInput.validationMessage;
         return;
-      }
-
-      try {
-        await this.$axios.get("http://localhost:5000/Registration/email-taken", {
-          params: {
-            email: this.credentials.email,
-          },
-        });
-        // missing validation logic for email
-        this.errors.email = "";
-      } catch (error: any) {
-        this.errors.email = error.response.data;
       }
     },
     validatePassword(): void {
