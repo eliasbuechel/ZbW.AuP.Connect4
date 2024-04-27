@@ -11,11 +11,19 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 });
-
 export default router;
 
-//Guard-API to controll access to URL's
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false);
+  const isAuthenticated = localStorage.getItem('authToken'); 
 
+  if (requiresAuth && !isAuthenticated) {
+    next('/login'); 
+  } else {
+    next(); 
+  }
+});
 
 // Register (main)App
 const app: App = createApp(AppVue);
@@ -25,7 +33,6 @@ declare module "@vue/runtime-core" {
     $axios: AxiosStatic;
   }
 }
-
 app.config.globalProperties.$axios = axios;
 
 app.use(router);

@@ -100,6 +100,9 @@ namespace backend
                 endpoints.MapIdentityApi<PlayerIdentity>();
                 endpoints.MapHub<SignalRPlayerHub>("/playerHub");
             });
+
+            // app.UseHttpsRedirection();
+
         }
 
         private static void ConfigureIdentity(IServiceCollection services)
@@ -137,7 +140,7 @@ namespace backend
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.Cookie.HttpOnly = false;
+                options.Cookie.HttpOnly = true;
                 options.Cookie.Path = "/";
             });
 
