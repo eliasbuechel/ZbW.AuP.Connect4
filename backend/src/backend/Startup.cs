@@ -52,9 +52,12 @@ namespace backend
             int mqttPort = mqttConfig.GetValue<int>("Port");
             services.AddSingleton(s => new MqttTopicClient(mqttIpAddress, mqttPort));
 
-            string connectionString = _configuration[$"{_environment.EnvironmentName}:ConnectionString"] ?? throw new Exception("Connection string not found in configuration.");
-            services.AddSingleton(s => new BackendDbContextFacory(new DbContextOptionsBuilder().UseMySQL(connectionString).Options));
-            services.AddScoped<BackendDbContext>(s => s.GetRequiredService<BackendDbContextFacory>().GetDbContext());
+            services.AddDbContext<BackendDbContext>(options =>
+            {
+                var connectionString = _configuration.GetConnectionString(_environment.EnvironmentName)
+                                      ?? throw new InvalidOperationException("Database connection string is not configured.");
+                options.UseMySQL(connectionString);
+            });
 
             ConfigureIdentity(services);
             services.AddSignalR();
@@ -72,6 +75,17 @@ namespace backend
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Name v1");
                 });
+
+                using var scope = app.ApplicationServices.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BackendDbContext>();
+                try
+                {
+                    context.Database.Migrate();
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogCase.ERROR, "Not able to migrate database.", e);
+                }
             }
 
             app.UseRouting();
@@ -86,17 +100,6 @@ namespace backend
                 endpoints.MapIdentityApi<PlayerIdentity>();
                 endpoints.MapHub<SignalRPlayerHub>("/playerHub");
             });
-
-            BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();
-            using BackendDbContext context = dbContextFactory.GetDbContext();
-            try
-            {
-                context.Database.Migrate();
-            }
-            catch (Exception e)
-            {
-                Logger.Log(LogCase.ERROR, "Not able to migrate database.", e);
-            }
         }
 
         private static void ConfigureIdentity(IServiceCollection services)
