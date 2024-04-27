@@ -13,7 +13,7 @@
         <span v-if="errors.password" class="error">{{ errors.password }}</span>
       </div>
       <span v-if="errors.login" class="error">{{ errors.login }}</span>
-      <button class="button-submit" :disabled="!allowLogin" type="submit">Login</button>
+      <button class="button-submit" type="submit" :disabled="!allowLogin">Login</button>
       <button class="button-link" type="button" @click="redirectToRegister">Registration</button>
     </form>
   </div>
@@ -39,9 +39,10 @@ export default defineComponent({
   methods: {
     async login() {
       try {
-        await this.$axios.post("http://localhost:5000/login?useCookies=true", this.credentials, {
+        const response = await this.$axios.post("http://localhost:5000/login?useCookies=true", this.credentials, {
           withCredentials: true,
         });
+        localStorage.setItem('authToken', response.data.token);
         this.errors.login = "";
         this.$router.push({ name: "Home" });
       } catch (error: any) {
