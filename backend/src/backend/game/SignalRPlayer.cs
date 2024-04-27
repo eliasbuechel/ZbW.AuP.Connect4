@@ -1,5 +1,5 @@
 ﻿
-using backend.database;
+using backend.Data;
 using backend.signalR;
 using Microsoft.AspNetCore.SignalR;
 using System.Numerics;

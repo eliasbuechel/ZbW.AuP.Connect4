@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace backend.database
+namespace backend.Data
 {
     internal class PlayerIdentity : IdentityUser
     {

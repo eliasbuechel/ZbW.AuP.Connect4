@@ -1,10 +1,13 @@
 using backend.communication;
-using backend.database;
+using backend.Data;
 using backend.game;
+using backend.Infrastructure;
 using backend.services;
+using backend.Services;
 using backend.signalR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Diagnostics;
@@ -62,6 +65,8 @@ namespace backend
             ConfigureIdentity(services);
             services.AddSignalR();
 
+            services.AddTransient<IEmailSender, EmailSender>();
+
             services.AddSingleton<services.PlayerManager>();
             services.AddSingleton<GameManager>();
         }
@@ -114,7 +119,7 @@ namespace backend
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
-                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedEmail = true;
 
                 // Password settings.
                 options.Password.RequireDigit = false;
@@ -145,8 +150,6 @@ namespace backend
             });
 
             services.AddIdentityApiEndpoints<PlayerIdentity>();
-
-            services.AddTransient<IEmailSender<PlayerIdentity>, EmailSender>();
 
             services.AddSingleton<TimeProvider>(s => TimeProvider.System);
 
