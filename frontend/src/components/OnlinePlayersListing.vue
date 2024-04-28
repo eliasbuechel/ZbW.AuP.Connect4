@@ -2,16 +2,31 @@
   <div class="listing-container">
     <h2>Online players</h2>
     <ul>
-      <li v-for="player in onlinePlayers" :key="player.id">
-        <span>{{ player.username }}</span>
+      <li v-for="player in onlinePlayers" :key="player.id" class="matchable-player">
+        <span class="matchable-player-username">{{ player.username }}</span>
         <span v-if="player.matched">Matched</span>
-        <span v-else-if="player.youRequestedMatch">Matching pending...</span>
-        <div v-else-if="player.requestedMatch">
-          <button class="button-light" @click="acceptMatch(player)">Accept match</button>
-          <button class="button-light" @click="rejectMatch(player)">Reject match</button>
-        </div>
-        <button v-else class="button-light" @click="requestMatch(player)" :disabled="hasPendingRequest">
-          Request Game
+        <span v-if="player.youRequestedMatch">Matching pending...</span>
+        <button
+          v-if="player.requestedMatch && !player.youRequestedMatch"
+          class="button-accept"
+          @click="acceptMatch(player)"
+        >
+          &check;
+        </button>
+        <button
+          v-if="player.requestedMatch && !player.youRequestedMatch"
+          class="button-danger"
+          @click="rejectMatch(player)"
+        >
+          &cross;
+        </button>
+        <button
+          v-if="!player.matched && !player.youRequestedMatch && !player.requestedMatch"
+          class="button-light"
+          @click="requestMatch(player)"
+          :disabled="hasPendingRequest"
+        >
+          Request
         </button>
       </li>
     </ul>
@@ -175,3 +190,15 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.matchable-player {
+  display: flex;
+  align-items: center;
+  color: whitesmoke;
+}
+
+.matchable-player > .matchable-player-username {
+  flex-grow: 1;
+}
+</style>

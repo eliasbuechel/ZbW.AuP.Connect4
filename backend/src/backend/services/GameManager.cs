@@ -86,16 +86,13 @@ namespace backend.services
                     {
                         _matchRequests.Remove(matchRequest);
                         Match match = new Match(matchRequest);
-                        lock (_gamePlanLock)
-                        {
-                            _gamePlan.Enqueue(match);
-                        }
 
                         foreach (IPlayer p in _playerConnectionManager.OnlinePlayers)
                             p.Matched(match);
 
-                        StartNextGame();
+                        _gamePlan.Enqueue(match);
 
+                        TryStartGame();
                         return;
                     }
                 }
@@ -167,10 +164,11 @@ namespace backend.services
                 }
             }
         }
-        private void StartNextGame()
+
+        private void TryStartGame()
         {
-            if (_activeGame != null && _gamePlan.Count > 0)
-                _gamePlan.Dequeue();
+            if (_activeGame != null)
+                return;
 
             Match? match;
             if (!_gamePlan.TryPeek(out match))
@@ -180,6 +178,18 @@ namespace backend.services
             }
 
             _activeGame = new Connect4Game(match);
+        }
+
+        private void StartNextGame()
+        {
+            Debug.Assert(_activeGame != null);
+
+            foreach (Player player in _playerConnectionManager.OnlinePlayers)
+                player.GameEnded();
+
+            _activeGame = null;
+            _gamePlan.Dequeue();
+            TryStartGame();
         }
 
         public void PlayMove(Player player, int column)
@@ -201,7 +211,6 @@ namespace backend.services
         {
             Debug.Assert(_activeGame != null);
             _activeGame.Quit(player);
-
             StartNextGame();
         }
 

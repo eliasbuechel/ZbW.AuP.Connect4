@@ -42,10 +42,10 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.$data.game = this.$props.state.game;
-    this.$data.identity = this.$props.state.identity;
-    this.$data.gameResult = this.$props.state.gameResult;
-    this.$data.isSubscribed = this.$props.state.isSubscribed;
+    // this.$data.game = this.$props.state.game;
+    // this.$data.identity = this.$props.state.identity;
+    // this.$data.gameResult = this.$props.state.gameResult;
+    // this.$data.isSubscribed = this.$props.state.isSubscribed;
 
     if (signalRHub.isConnected()) {
       this.subscribe();

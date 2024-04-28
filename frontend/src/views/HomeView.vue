@@ -12,13 +12,17 @@ import eventBus from "@/services/eventBus";
 import { Game, GameState, PlayerIdentity } from "@/DataTransferObjects";
 
 interface HomeState {
+  identity?: PlayerIdentity;
   gameState: GameState;
   isSubscribed: boolean;
 }
 
 export default defineComponent({
   mounted(): void {
-    if (signalRHub.isConnected()) signalRHub.invoke("HasGameStarted");
+    if (signalRHub.isConnected()) {
+      signalRHub.invoke("HasGameStarted");
+      signalRHub.invoke("GetUserData");
+    }
 
     eventBus.on("signalr-connected", this.onSignalRConnected);
     eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
@@ -34,6 +38,7 @@ export default defineComponent({
   },
   data(): HomeState {
     return {
+      identity: undefined,
       gameState: {
         identity: undefined,
         game: undefined,
@@ -59,7 +64,7 @@ export default defineComponent({
       signalRHub.off("send-user-data", this.updateUserIdentity);
     },
     updateUserIdentity(identity: PlayerIdentity): void {
-      this.gameState!.identity = identity;
+      this.identity = identity;
     },
     updateGame(game: Game): void {
       this.gameState.game = game;
@@ -87,12 +92,13 @@ export default defineComponent({
   computed: {
     isInGame(): boolean {
       if (this.gameState.game === undefined) return false;
-      if (this.gameState.identity === undefined) return false;
-      if (this.gameState.game!.match.player1.id === this.gameState.identity!.id) return true;
-      if (this.gameState.game!.match.player2.id === this.gameState.identity!.id) return true;
+      if (this.identity === undefined) return false;
+      if (this.gameState.game!.match.player1.id === this.identity!.id) return true;
+      if (this.gameState.game!.match.player2.id === this.identity!.id) return true;
       return false;
     },
   },
 });
 </script>
-@/components/DashBoard.vue
+
+<style scoped></style>

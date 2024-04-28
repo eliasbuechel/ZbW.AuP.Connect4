@@ -1,6 +1,6 @@
 html {
   font-family: Arial, Helvetica, sans-serif;
-  color: white;
+  color: #df9500cc;
 }
 
 * {
@@ -64,15 +64,39 @@ body {
   margin-top: 0.2rem;
 }
 
+ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  justify-content: stretch;
+  flex-direction: column;
+}
+li {
+  list-style: none;
+  width: 100%;
+  min-height: 3rem;
+}
+
+.listing-container {
+  display: flex;
+  flex-direction: column;
+  padding: 3vw;
+  max-width: 600px;
+}
+
+.listing-container > h2 {
+  align-self: center;
+}
+
 button {
-  padding: 0.4rem 1rem;
+  padding: 0.4rem 0.8rem;
   color: #01172c;
   font-size: 1rem;
   font-weight: bolder;
   border: 2px solid #01172c;
   border-radius: 1.2rem;
   background-color: transparent;
-  margin: 0.5rem;
+  margin: 0.3rem;
 }
 
 button:hover,
@@ -82,7 +106,7 @@ button:focus {
 }
 
 button:active {
-  transform: translateY(1px);
+  transform: translateY(2px);
 }
 
 .button-light {
@@ -99,6 +123,42 @@ button:active {
 .button-light:disabled {
   color: #df950055;
   border-color: #df950055;
+}
+
+.button-accept {
+  color: whitesmoke;
+  border: 2px solid #009500aa;
+  background-color: #009500aa;
+}
+
+.button-accept:hover,
+.button-accept:focus {
+  border: 2px solid whitesmoke;
+  background-color: #009500aa;
+  color: whitesmoke;
+}
+
+.button-accept:disabled {
+  color: #00950055;
+  border-color: #00950055;
+}
+
+.button-danger {
+  color: whitesmoke;
+  border: 2px solid #950000aa;
+  background-color: #950000aa;
+}
+
+.button-danger:hover,
+.button-danger:focus {
+  border: 2px solid whitesmoke;
+  background-color: #950000aa;
+  color: whitesmoke;
+}
+
+.button-danger:disabled {
+  color: #95000055;
+  border-color: #95000055;
 }
 
 .button-link:hover,

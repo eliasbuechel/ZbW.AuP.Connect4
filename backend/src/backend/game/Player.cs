@@ -106,6 +106,7 @@ namespace backend.game
         }
 
         public abstract void GameEnded(GameResult gameResult);
+        public abstract void GameEnded();
 
         public bool HasGameStarted()
         {

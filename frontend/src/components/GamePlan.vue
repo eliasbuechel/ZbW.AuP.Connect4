@@ -2,8 +2,11 @@
   <div class="listing-container">
     <h2>Game plan</h2>
     <ul>
-      <li v-for="player in gamePlan" :key="player.id">
-        <span>{{ player.player1.username }} vs. {{ player.player2.username }}</span>
+      <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
+        <span class="player1">{{ player.player1.username }}</span>
+        <span v-if="idx == 0" class="battle-icon">&#9876;</span>
+        <span v-else class="battle-icon">&#x1f91d;</span>
+        <span class="player2">{{ player.player2.username }}</span>
       </li>
     </ul>
   </div>
@@ -48,12 +51,14 @@ export default defineComponent({
       signalRHub.on("send-game-plan", this.updateGamePlan);
       signalRHub.on("matched", this.onMatched);
       signalRHub.on("player-disconnected", this.onPlayerDisconnected);
+      signalRHub.on("game-ended", this.onGameEnded);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
       signalRHub.off("send-game-plan", this.updateGamePlan);
       signalRHub.off("matched", this.onMatched);
       signalRHub.off("player-disconnected", this.onPlayerDisconnected);
+      signalRHub.off("game-ended", this.onGameEnded);
     },
     updateGamePlan(gamePlan: Match[]) {
       this.gamePlan.clear();
@@ -61,6 +66,10 @@ export default defineComponent({
     },
     onMatched(match: Match): void {
       this.gamePlan.add(match);
+    },
+    onGameEnded(): void {
+      let match: Match = [...this.gamePlan][0];
+      this.gamePlan.delete(match);
     },
     onSignalRConnected(): void {
       this.subscribe();
@@ -75,3 +84,27 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.match {
+  display: flex;
+  color: whitesmoke;
+  align-items: center;
+  justify-content: stretch;
+}
+.match > span {
+  display: block;
+}
+
+.match > .battle-icon {
+  font-size: xx-large;
+  color: brown;
+  flex-grow: 1;
+}
+match > .player1 {
+  text-align: end;
+  width: 200px;
+}
+match > .player2 {
+}
+</style>
