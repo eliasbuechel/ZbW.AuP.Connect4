@@ -6,6 +6,7 @@ using backend.services;
 using backend.Services;
 using backend.signalR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ using System.Net;
 
 namespace backend
 {
-    internal class Startup
+    public class Startup
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
@@ -65,6 +66,7 @@ namespace backend
             ConfigureIdentity(services);
             services.AddSignalR();
 
+            services.Configure<EmailSettings>(_configuration.GetSection("Smtp"));
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddSingleton<services.PlayerManager>();
@@ -102,7 +104,7 @@ namespace backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapIdentityApi<PlayerIdentity>();
+                endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
                 endpoints.MapHub<SignalRPlayerHub>("/playerHub");
             });
 
@@ -150,7 +152,7 @@ namespace backend
             });
 
             services.AddIdentityApiEndpoints<PlayerIdentity>();
-
+            
             services.AddSingleton<TimeProvider>(s => TimeProvider.System);
 
             services.AddScoped<SignInManager<PlayerIdentity>>();

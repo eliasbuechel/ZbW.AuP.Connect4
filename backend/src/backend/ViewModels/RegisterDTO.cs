@@ -2,7 +2,7 @@
 
 namespace backend.ViewModels
 {
-    public class RegisterViewModel
+    public class RegisterDTO
     {
         [Required]
         [EmailAddress]

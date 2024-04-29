@@ -2,7 +2,7 @@
 
 namespace backend.Data
 {
-    internal class PlayerIdentity : IdentityUser
+    public class PlayerIdentity : IdentityUser
     {
     }
 }
