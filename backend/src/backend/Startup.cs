@@ -1,21 +1,21 @@
-using backend.communication;
 using backend.communication.mqtt;
 using backend.communication.signalR;
-using backend.database;
+using backend.Data;
+using backend.Infrastructure;
 using backend.services;
-using Microsoft.AspNetCore.Authorization;
+using backend.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Diagnostics;
 using System.Net;
 
 
 namespace backend
 {
-    internal class Startup
+    public class Startup
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
@@ -54,18 +54,23 @@ namespace backend
             int mqttPort = mqttConfig.GetValue<int>("Port");
             services.AddSingleton(s => new MqttTopicClient(mqttIpAddress, mqttPort));
 
-            string connectionString = _configuration[$"{_environment.EnvironmentName}:ConnectionString"] ?? throw new Exception("Connection string not found in configuration.");
-            services.AddSingleton(s => new BackendDbContextFacory(new DbContextOptionsBuilder().UseMySQL(connectionString).Options));
-            services.AddScoped<BackendDbContext>(s => s.GetRequiredService<BackendDbContextFacory>().GetDbContext());
+            services.AddDbContext<BackendDbContext>(options =>
+            {
+                var connectionString = _configuration.GetConnectionString(_environment.EnvironmentName)
+                                      ?? throw new InvalidOperationException("Database connection string is not configured.");
+                options.UseMySQL(connectionString);
+            });
 
             ConfigureIdentity(services);
             services.AddSignalR();
 
+            services.Configure<EmailSettings>(_configuration.GetSection("Smtp"));
+            services.AddTransient<IEmailSender, EmailSender>();
             services.AddSingleton<PlayerRequestLock>();
             services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
-                return (PlayerIdentity identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
+                return (identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
             });
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();
@@ -81,6 +86,17 @@ namespace backend
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Name v1");
                 });
+
+                using var scope = app.ApplicationServices.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BackendDbContext>();
+                try
+                {
+                    context.Database.Migrate();
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogCase.ERROR, "Not able to migrate database.", e);
+                }
             }
 
             app.UseRouting();
@@ -92,20 +108,13 @@ namespace backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapIdentityApi<PlayerIdentity>();
+
+                endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
                 endpoints.MapHub<PlayerHub>("/playerHub");
             });
 
-            BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();
-            using BackendDbContext context = dbContextFactory.GetDbContext();
-            try
-            {
-                context.Database.Migrate();
-            }
-            catch (Exception e)
-            {
-                Logger.Log(LogCase.ERROR, "Not able to migrate database.", e);
-            }
+            // app.UseHttpsRedirection();
+
         }
 
         private static void ConfigureIdentity(IServiceCollection services)
@@ -117,7 +126,7 @@ namespace backend
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
-                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedEmail = true;
 
                 // Password settings.
                 options.Password.RequireDigit = false;
@@ -143,14 +152,12 @@ namespace backend
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.Cookie.HttpOnly = false;
+                options.Cookie.HttpOnly = true;
                 options.Cookie.Path = "/";
             });
 
             services.AddIdentityApiEndpoints<PlayerIdentity>();
-
-            services.AddTransient<IEmailSender<PlayerIdentity>, EmailSender>();
-
+            
             services.AddSingleton<TimeProvider>(s => TimeProvider.System);
 
             services.AddScoped<SignInManager<PlayerIdentity>>();

@@ -1,8 +1,9 @@
 ﻿using backend.game;
+using backend.Infrastructure;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.database
+namespace backend.Data
 {
     internal class BackendDbContext : IdentityDbContext<PlayerIdentity>
     {

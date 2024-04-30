@@ -1,4 +1,4 @@
-﻿namespace backend
+﻿namespace backend.Infrastructure
 {
     internal enum LogCase
     {
