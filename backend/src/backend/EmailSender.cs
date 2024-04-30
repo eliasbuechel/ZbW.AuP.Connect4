@@ -1,26 +1,25 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using backend.database;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace backend
 {
-    public class EmailSender : IEmailSender<IdentityUser>
+    public class EmailSender : IEmailSender<PlayerIdentity>
     {
-        public Task SendConfirmationLinkAsync(IdentityUser user, string email, string confirmationLink)
-        {
-            return Task.CompletedTask;
-        }
 
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             return Task.CompletedTask;
         }
-
-        public Task SendPasswordResetCodeAsync(IdentityUser user, string email, string resetCode)
+        Task IEmailSender<PlayerIdentity>.SendConfirmationLinkAsync(PlayerIdentity user, string email, string confirmationLink)
         {
             return Task.CompletedTask;
         }
-
-        public Task SendPasswordResetLinkAsync(IdentityUser user, string email, string resetLink)
+        Task IEmailSender<PlayerIdentity>.SendPasswordResetCodeAsync(PlayerIdentity user, string email, string resetCode)
+        {
+            return Task.CompletedTask;
+        }
+        Task IEmailSender<PlayerIdentity>.SendPasswordResetLinkAsync(PlayerIdentity user, string email, string resetLink)
         {
             return Task.CompletedTask;
         }

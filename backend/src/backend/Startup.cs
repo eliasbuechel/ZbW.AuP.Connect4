@@ -1,10 +1,14 @@
 using backend.communication;
+using backend.communication.mqtt;
+using backend.communication.signalR;
 using backend.database;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
+using backend.services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Diagnostics;
 using System.Net;
 
@@ -55,6 +59,17 @@ namespace backend
             services.AddScoped<BackendDbContext>(s => s.GetRequiredService<BackendDbContextFacory>().GetDbContext());
 
             ConfigureIdentity(services);
+            services.AddSignalR();
+
+            services.AddSingleton<PlayerRequestLock>();
+            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
+                GameManager gameManager = s.GetRequiredService<GameManager>();
+                IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
+                return (PlayerIdentity identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
+            });
+            services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
+            services.AddSingleton<PlayerConnectionManager>();
+            services.AddSingleton<GameManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -71,13 +86,14 @@ namespace backend
             app.UseRouting();
             app.UseCors("MyCorsPolicy");
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapIdentityApi<IdentityUser>();
+                endpoints.MapIdentityApi<PlayerIdentity>();
+                endpoints.MapHub<PlayerHub>("/playerHub");
             });
 
             BackendDbContextFacory dbContextFactory = app.ApplicationServices.GetRequiredService<BackendDbContextFacory>();
@@ -95,8 +111,9 @@ namespace backend
         private static void ConfigureIdentity(IServiceCollection services)
         {
             services.AddAuthorization();
+            services.AddAuthentication();
 
-            services.AddIdentityCore<IdentityUser>(options =>
+            services.AddIdentityCore<PlayerIdentity>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
@@ -130,17 +147,16 @@ namespace backend
                 options.Cookie.Path = "/";
             });
 
-            services.AddIdentityApiEndpoints<IdentityUser>();
+            services.AddIdentityApiEndpoints<PlayerIdentity>();
 
-            services.AddTransient<IEmailSender<IdentityUser>, EmailSender>();
+            services.AddTransient<IEmailSender<PlayerIdentity>, EmailSender>();
 
             services.AddSingleton<TimeProvider>(s => TimeProvider.System);
 
-            services.AddScoped<SignInManager<IdentityUser>>();
-            services.AddScoped<UserManager<IdentityUser>>();
+            services.AddScoped<SignInManager<PlayerIdentity>>();
+            services.AddScoped<UserManager<PlayerIdentity>>();
 
-            services.AddScoped<SignInManager<IdentityUser>>();
-            services.AddScoped<UserManager<IdentityUser>>();
+            services.AddScoped<Func<UserManager<PlayerIdentity>>>(s => () => s.GetRequiredService<UserManager<PlayerIdentity>>());
         }
 
         private readonly IConfiguration _configuration;
