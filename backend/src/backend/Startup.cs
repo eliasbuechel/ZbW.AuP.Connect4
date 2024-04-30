@@ -5,12 +5,18 @@ using backend.Infrastructure;
 using backend.services;
 using backend.Services;
 using backend.signalR;
+using backend.communication.mqtt;
+using backend.communication.signalR;
+using backend.database;
+using backend.services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Diagnostics;
 using System.Net;
 
@@ -68,8 +74,14 @@ namespace backend
 
             services.Configure<EmailSettings>(_configuration.GetSection("Smtp"));
             services.AddTransient<IEmailSender, EmailSender>();
-
-            services.AddSingleton<services.PlayerManager>();
+            services.AddSingleton<PlayerRequestLock>();
+            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
+                GameManager gameManager = s.GetRequiredService<GameManager>();
+                IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
+                return (PlayerIdentity identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
+            });
+            services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
+            services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -104,8 +116,12 @@ namespace backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+<<<<<<< HEAD
                 endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
-                endpoints.MapHub<SignalRPlayerHub>("/playerHub");
+
+
+                endpoints.MapHub<PlayerHub>("/playerHub");
+>>>>>>> dev
             });
 
             // app.UseHttpsRedirection();

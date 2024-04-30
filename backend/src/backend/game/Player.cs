@@ -1,12 +1,13 @@
-﻿
-using backend.Data;
+﻿using backend.Data;
+﻿using backend.database;
+using backend.services;
 using System.Diagnostics;
 
 namespace backend.game
 {
     internal abstract class Player : IPlayer
     {
-        public Player(PlayerIdentity identity, GameManager gameManager, backend.services.PlayerManager playerManager)
+        public Player(PlayerIdentity identity, GameManager gameManager)
         {
             Id = identity.Id;
             string? username = identity.UserName;
@@ -14,7 +15,6 @@ namespace backend.game
             Username = username;
 
             _gameManager = gameManager;
-            _playerManager = playerManager;
         }
 
         public bool HasConfirmedGameStart { get; private set; }
@@ -29,17 +29,17 @@ namespace backend.game
 
         public IEnumerable<IPlayer> GetOnlinePlayers()
         {
-            return _playerManager.OnlinePlayers.Where(p => p.Id != Id);
+            return _gameManager.GetOnlinePlayersExcept(Id);
         }
         public void Connected(string connectionId)
         {
             _connections.Add(connectionId);
-            _playerManager.OnPlayerConnected(this);
+            _gameManager.ConnectPlayer(this);
         }
         public void Disconnected(string onnectionId)
         {
             _connections.Remove(onnectionId);
-            _playerManager.OnPlayerDisconnected(this);
+            _gameManager.DisconnectPlayer(this);
         }
         public void RequestMatch(IPlayer player)
         {
@@ -75,15 +75,45 @@ namespace backend.game
             _gameManager.AcceptMatch(this, player);
         }
 
-        public abstract void Matched(IPlayer requester);
+        public abstract void Matched(Match match);
 
         public void RejectMatch(IPlayer player)
         {
             _gameManager.RejectMatch(this, player);
         }
 
+        public IEnumerable<Match> GetGamePlan()
+        {
+            return _gameManager.GetGamePlan();
+        }
+
+        public abstract void MovePlayed(int column);
+
+        public void PlayMove(int column)
+        {
+            _gameManager.PlayMove(this, column);
+        }
+
+        public abstract void GameStarted(Connect4Game connect4Game);
+
+        public Connect4Game GetCurrentGameState()
+        {
+            return _gameManager.GetCurrentGameState();
+        }
+
+        public void QuitGame()
+        {
+            _gameManager.QuitGame(this);
+        }
+
+        public abstract void GameEnded(GameResult gameResult);
+
+        public bool HasGameStarted()
+        {
+            return _gameManager.HasGameStarted(this);
+        }
+
         private readonly GameManager _gameManager;
-        private readonly backend.services.PlayerManager _playerManager;
         private readonly ICollection<string> _connections = new List<string>();
     }
 }
