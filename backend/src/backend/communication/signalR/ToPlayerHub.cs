@@ -46,16 +46,18 @@ namespace backend.communication.signalR
             foreach (string connection in Connections)
                 await _hubContext.Clients.Client(connection).SendAsync("move-played", column);
         }
-        public override async void GameStarted()
+        public override async void GameStarted(Connect4Game connect4Game)
         {
+            Connect4GameDTO connect4GameDTO = new Connect4GameDTO(connect4Game);
+
             foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("game-started");
+                await _hubContext.Clients.Client(connection).SendAsync("game-started", connect4GameDTO);
         }
-        public override async void GameEnded()
-        {
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("game-ended");
-        }
+        //public override async void GameEnded()
+        //{
+        //    foreach (string connection in Connections)
+        //        await _hubContext.Clients.Client(connection).SendAsync("game-ended");
+        //}
         public override async void GameEnded(GameResult gameResult)
         {
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);

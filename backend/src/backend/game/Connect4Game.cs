@@ -10,8 +10,8 @@ namespace backend.game
             _activePlayer = match.Player1;
             _match = match;
 
-            match.Player1.GameStarted();
-            match.Player2.GameStarted();
+            match.Player1.GameStarted(this);
+            match.Player2.GameStarted(this);
         }
 
         public Guid Id { get; } = new Guid();
@@ -49,8 +49,8 @@ namespace backend.game
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null);
-
-            winner.GameEnded(gameResult);
+            _match.Player1.GameEnded(gameResult);
+            _match.Player2.GameEnded(gameResult);
         }
 
         private GameResult? CheckForWin(IPlayer player, Field field)

@@ -22,6 +22,7 @@ namespace backend.communication.signalR
             _playerRequestLock = playerRequestLock;
         }
 
+
         public void GetUserData()
         {
             lock (_playerRequestLock[Identity])
@@ -120,7 +121,6 @@ namespace backend.communication.signalR
                 IPlayer? player = _onlinePlayerProvider.GetPlayerOrDefault(Identity);
                 if (player == null)
                     player = _createPlayer(Identity);
-                //new HubPlayer(Identity, _gameManager, _playerHubContext);
 
                 player.Connected(Context.ConnectionId);
                 return Task.CompletedTask;

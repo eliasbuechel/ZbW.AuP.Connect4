@@ -93,7 +93,7 @@ namespace backend.game
             _gameManager.PlayMove(this, column);
         }
 
-        public abstract void GameStarted();
+        public abstract void GameStarted(Connect4Game connect4Game);
 
         public Connect4Game GetCurrentGameState()
         {
@@ -106,7 +106,6 @@ namespace backend.game
         }
 
         public abstract void GameEnded(GameResult gameResult);
-        public abstract void GameEnded();
 
         public bool HasGameStarted()
         {

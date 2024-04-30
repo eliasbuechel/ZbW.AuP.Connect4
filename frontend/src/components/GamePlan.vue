@@ -13,75 +13,27 @@
 </template>
 
 <script lang="ts">
-import { Match } from "@/DataTransferObjects";
-import eventBus from "@/services/eventBus";
-import signalRHub from "@/services/signalRHub";
-import { defineComponent } from "vue";
+import { Match } from "@/types/Match";
+import { defineComponent, PropType } from "vue";
 
 interface GamePlanState {
-  gamePlan: Set<Match>;
   isSubscribed: boolean;
 }
 
 export default defineComponent({
-  mounted() {
-    if (signalRHub.isConnected()) {
-      this.subscribe();
-      signalRHub.invoke("GetGamePlan");
-    }
-
-    eventBus.on("signalr-connected", this.onSignalRConnected);
-    eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
-  },
-  unmounted() {
-    eventBus.off("signalr-connected", this.onSignalRConnected);
-    eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
-
-    this.unsubscribe();
+  name: "GamePlan",
+  props: {
+    gamePlan: {
+      required: true,
+      type: Array as PropType<Match[]>,
+    },
   },
   data(): GamePlanState {
     return {
-      gamePlan: new Set<Match>(),
       isSubscribed: false,
     };
   },
-  methods: {
-    subscribe(): void {
-      if (this.isSubscribed) return;
-      signalRHub.on("send-game-plan", this.updateGamePlan);
-      signalRHub.on("matched", this.onMatched);
-      signalRHub.on("player-disconnected", this.onPlayerDisconnected);
-      signalRHub.on("game-ended", this.onGameEnded);
-    },
-    unsubscribe(): void {
-      if (!this.isSubscribed) return;
-      signalRHub.off("send-game-plan", this.updateGamePlan);
-      signalRHub.off("matched", this.onMatched);
-      signalRHub.off("player-disconnected", this.onPlayerDisconnected);
-      signalRHub.off("game-ended", this.onGameEnded);
-    },
-    updateGamePlan(gamePlan: Match[]) {
-      this.gamePlan.clear();
-      gamePlan.forEach((m) => this.gamePlan.add(m));
-    },
-    onMatched(match: Match): void {
-      this.gamePlan.add(match);
-    },
-    onGameEnded(): void {
-      let match: Match = [...this.gamePlan][0];
-      this.gamePlan.delete(match);
-    },
-    onSignalRConnected(): void {
-      this.subscribe();
-      signalRHub.invoke("GetGamePlan");
-    },
-    onSignalRDisconnected(): void {
-      this.unsubscribe();
-    },
-    onPlayerDisconnected(): void {
-      signalRHub.invoke("GetGamePlan");
-    },
-  },
+  methods: {},
 });
 </script>
 
@@ -108,3 +60,4 @@ match > .player1 {
 match > .player2 {
 }
 </style>
+@/types/DataTransferObjects

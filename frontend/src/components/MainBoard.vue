@@ -4,19 +4,47 @@
       <img id="logo-home" src="@/assets/images/Logo.png" alt="r4d4-logo" />
       <h1 class="home">R4D4 - Connect4</h1>
     </div>
-    <UserInfo class="grid-item-user-info" />
-    <OnlinePlayersListing class="grid-item-online-player-listing" />
-    <GamePlan class="grid-item-game-plan" />
+    <UserInfo :identity="identity" class="grid-item-user-info" />
+    <OnlinePlayersListing :onlinePlayers="onlinePlayers" :identity="identity" class="grid-item-online-player-listing" />
+    <GamePlan class="grid-item-game-plan" :gamePlan="gamePlan" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { PropType, defineComponent } from "vue";
 import OnlinePlayersListing from "@/components/OnlinePlayersListing.vue";
 import GamePlan from "@/components/GamePlan.vue";
 import UserInfo from "@/components/UserInfo.vue";
+import { Match } from "@/types/Match";
+import { OnlinePlayer } from "@/types/OnlinePlayer";
+import { PlayerIdentity } from "@/types/PlayerIdentity";
+
+interface MainBoardState {
+  isSubscribed: boolean;
+}
 
 export default defineComponent({
+  name: "MainBoard",
+
+  props: {
+    identity: {
+      required: true,
+      type: Object as PropType<PlayerIdentity>,
+    },
+    onlinePlayers: {
+      required: true,
+      type: Array as PropType<OnlinePlayer[]>,
+    },
+    gamePlan: {
+      required: true,
+      type: Array as PropType<Match[]>,
+    },
+  },
+  data(): MainBoardState {
+    return {
+      isSubscribed: false,
+    };
+  },
   components: {
     UserInfo,
     OnlinePlayersListing,

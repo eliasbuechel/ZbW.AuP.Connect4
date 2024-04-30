@@ -2,143 +2,69 @@
   <div class="connect4-game">
     <h2>Connect Four</h2>
     <div>
-      <label>{{ game?.match.player1.username }}</label>
+      <label>{{ player1.username }}</label>
     </div>
     <div>
-      <label> {{ game?.match.player2.username }}</label>
+      <label> {{ player2.username }}</label>
     </div>
-    <div v-if="gameResult === undefined" class="board">
-      <div v-for="(column, colIdx) in game?.connect4Board" :key="colIdx" class="column" @click="placeStone(colIdx)">
-        <div
-          v-for="(cell, rowIdx) in column"
-          :key="rowIdx"
-          :class="{ cell: true, g: cell === game?.match.player1.id, b: cell === game?.match.player2.id }"
-        ></div>
-      </div>
-    </div>
-    <div v-else>
-      <span>{{ resultMessage }}</span>
-    </div>
-    <button class="button-light" @click="quitGame">Quit game</button>
+    <Connect4Board
+      v-if="game != null"
+      :connect4Board="game.connect4Board"
+      :match="game.match"
+      @place-stone="reemitPlaceStone"
+      @quit-game="reemitQuitGame"
+    />
+    <GameResultView
+      v-if="gameResult != null"
+      :gameResult="gameResult"
+      :identity="identity"
+      @leave-game-result-view="reemitLeaveGameResultView"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
-import signalRHub from "@/services/signalRHub";
-import eventBus from "@/services/eventBus";
-import { GameResult, PlayerIdentity, GameState, Game } from "@/DataTransferObjects";
+import { GameResult } from "@/types/GameResult";
+import { Game } from "@/types/Game";
+import { PlayerIdentity } from "@/types/PlayerIdentity";
+import Connect4Board from "./Connect4Board.vue";
+import GameResultView from "./GameResultView.vue";
 
 export default defineComponent({
   props: {
-    state: {
-      type: Object as PropType<GameState>,
-      default: () => ({
-        identity: undefined,
-        game: undefined,
-        gameResult: undefined,
-        isSubscribed: false,
-      }),
+    game: {
+      required: true,
+      type: Object as PropType<Game | undefined>,
+      default: undefined,
+    },
+    gameResult: {
+      required: true,
+      type: Object as PropType<GameResult | undefined>,
+      default: undefined,
+    },
+    identity: {
+      required: true,
+      type: Object as PropType<PlayerIdentity>,
     },
   },
-  mounted() {
-    // this.$data.game = this.$props.state.game;
-    // this.$data.identity = this.$props.state.identity;
-    // this.$data.gameResult = this.$props.state.gameResult;
-    // this.$data.isSubscribed = this.$props.state.isSubscribed;
-
-    if (signalRHub.isConnected()) {
-      this.subscribe();
-      signalRHub.invoke("GetUserData");
-      signalRHub.invoke("GetCurrentGame");
-    }
-
-    eventBus.on("signalr-connected", this.onSignalRConnected);
-    eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
-  },
-  unmounted() {
-    eventBus.off("signalr-connected", this.onSignalRConnected);
-    eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
-
-    this.unsubscribe();
-  },
-  data(): GameState {
-    return {
-      identity: undefined,
-      game: undefined,
-      gameResult: undefined,
-      isSubscribed: false,
-    };
+  components: {
+    Connect4Board,
+    GameResultView,
   },
   methods: {
-    subscribe(): void {
-      if (this.isSubscribed) return;
-      signalRHub.on("send-current-game", this.updateGame);
-      signalRHub.on("send-user-data", this.updateUserIdentity);
-      signalRHub.on("move-played", this.onMovePlayed);
-      signalRHub.on("game-ended", this.onGameEnded);
+    reemitPlaceStone(column: number): void {
+      if (this.game == null) return;
+      if (this.game.activePlayerId !== this.identity.id) return;
+      this.$emit("place-stone", column);
     },
-    unsubscribe(): void {
-      if (!this.isSubscribed) return;
-      signalRHub.on("send-current-game", this.updateGame);
-      signalRHub.off("send-user-data", this.updateUserIdentity);
-    },
-    placeStone(colIdx: number): void {
-      if (!this.game) return;
-      if (this.identity === undefined) return;
-      if (this.identity!.id !== this.game!.activePlayerId) return;
-      if (!this.doMove(this.game!.activePlayerId, colIdx)) return;
-      signalRHub.invoke("PlayMove", colIdx);
-    },
-    quitGame(): void {
-      eventBus.emit("quit-game");
+    reemitQuitGame(): void {
       if (this.game === undefined) return;
       if (this.gameResult !== undefined) return;
-      signalRHub.invoke("QuitGame");
+      this.$emit("quit-game");
     },
-    switchActivePlayer(): void {
-      this.game!.activePlayerId =
-        this.game!.activePlayerId === this.game!.match.player1.id
-          ? this.game!.match.player2.id
-          : this.game!.match.player1.id;
-    },
-    doMove(playerId: string, colIdx: number): boolean {
-      if (this.game === undefined) return false;
-
-      let column = this.game!.connect4Board[colIdx];
-      if (column[column.length - 1] != "") return false;
-
-      for (let i = 0; i < column.length; i++) {
-        if (column[i] == "") {
-          column[i] = this.game!.activePlayerId;
-          this.switchActivePlayer();
-          return true;
-        }
-      }
-
-      return false;
-    },
-    updateUserIdentity(identity: PlayerIdentity): void {
-      this.identity = identity;
-    },
-    updateGame(game: Game): void {
-      this.game = game;
-    },
-    onMovePlayed(colIdx: number): void {
-      if (!this.game) return;
-      if (this.identity === undefined) return;
-      this.doMove(this.game!.activePlayerId, colIdx);
-    },
-    onGameEnded(gameResult: GameResult): void {
-      this.gameResult = gameResult;
-    },
-    onSignalRConnected(): void {
-      this.subscribe();
-      signalRHub.invoke("GetOnlinePlayers");
-      signalRHub.invoke("GetUserData");
-    },
-    onSignalRDisconnected(): void {
-      this.unsubscribe();
+    reemitLeaveGameResultView(): void {
+      this.$emit("leave-game-result-view");
     },
   },
   computed: {
@@ -149,6 +75,14 @@ export default defineComponent({
       if (this.gameResult!.winnerId === this.identity.id) return "You won!";
       return "You lost!";
     },
+    player1(): PlayerIdentity {
+      if (!this.game) return { username: "", id: "" };
+      return this.game.match.player1;
+    },
+    player2(): PlayerIdentity {
+      if (!this.game) return { username: "", id: "" };
+      return this.game.match.player2;
+    },
   },
 });
 </script>
@@ -156,43 +90,5 @@ export default defineComponent({
 <style scoped>
 h2 {
   color: white;
-}
-
-.board {
-  display: flex;
-  border: 2px solid yellow;
-  border-top: none;
-}
-
-.column {
-  border: 2px solid yellow;
-  border-top: none;
-  border-bottom: none;
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.column:hover {
-  background-color: #ffffff33;
-}
-
-.cell {
-  background-color: transparent;
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  margin: 0 0.2rem;
-}
-
-.t {
-  background-color: transparent;
-}
-
-.g {
-  background-color: green;
-}
-
-.b {
-  background-color: blue;
 }
 </style>

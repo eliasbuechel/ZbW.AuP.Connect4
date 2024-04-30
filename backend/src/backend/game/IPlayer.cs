@@ -29,7 +29,7 @@ namespace backend.game
         IEnumerable<Match> GetGamePlan();
         void MovePlayed(int column);
         void PlayMove(int column);
-        void GameStarted();
+        void GameStarted(Connect4Game connect4Game);
         Connect4Game GetCurrentGameState();
         void QuitGame();
         void GameEnded(GameResult gameResult);

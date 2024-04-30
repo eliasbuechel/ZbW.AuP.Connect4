@@ -34,66 +34,23 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { PropType, defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
-import eventBus from "@/services/eventBus";
-import { Match, OnlinePlayer, PlayerIdentity } from "@/DataTransferObjects";
-
-interface PlayerListingState {
-  identity?: PlayerIdentity;
-  onlinePlayers: Set<OnlinePlayer>;
-  isSubscribed: boolean;
-}
+import { PlayerIdentity } from "@/types/PlayerIdentity";
+import { OnlinePlayer } from "@/types/OnlinePlayer";
 
 export default defineComponent({
-  mounted() {
-    if (signalRHub.isConnected()) {
-      this.subscribe();
-      signalRHub.invoke("GetOnlinePlayers");
-      signalRHub.invoke("GetUserData");
-    }
-
-    eventBus.on("signalr-connected", this.onSignalRConnected);
-    eventBus.on("signalr-disconnected", this.onSignalRDisconnected);
-  },
-  unmounted() {
-    eventBus.off("signalr-connected", this.onSignalRConnected);
-    eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
-
-    this.unsubscribe();
-  },
-  data(): PlayerListingState {
-    return {
-      identity: undefined,
-      onlinePlayers: new Set<OnlinePlayer>(),
-      isSubscribed: false,
-    };
+  props: {
+    onlinePlayers: {
+      required: true,
+      type: Array as PropType<OnlinePlayer[]>,
+    },
+    identity: {
+      required: true,
+      type: Object as PropType<PlayerIdentity>,
+    },
   },
   methods: {
-    subscribe(): void {
-      if (this.isSubscribed) return;
-      signalRHub.on("send-online-players", this.onUdateOnlinePlayers);
-      signalRHub.on("player-connected", this.onPlayerConnected);
-      signalRHub.on("player-disconnected", this.onPlayerDisconnected);
-      signalRHub.on("player-requested-match", this.onPlayerRequestedMatch);
-      signalRHub.on("you-requested-match", this.onYouRequestedMatch);
-      signalRHub.on("player-rejected-match", this.onPlayerRejectedMatch);
-      signalRHub.on("you-rejected-match", this.onYouRejectedMatch);
-      signalRHub.on("matched", this.onMatched);
-      signalRHub.on("send-user-data", this.updateUserIdentity);
-    },
-    unsubscribe(): void {
-      if (!this.isSubscribed) return;
-      signalRHub.off("send-online-players", this.onUdateOnlinePlayers);
-      signalRHub.off("player-connected", this.onPlayerConnected);
-      signalRHub.off("player-disconnected", this.onPlayerDisconnected);
-      signalRHub.off("player-requested-match", this.onPlayerRequestedMatch);
-      signalRHub.off("you-requested-match", this.onYouRequestedMatch);
-      signalRHub.off("player-rejected-match", this.onPlayerRejectedMatch);
-      signalRHub.off("you-rejected-match", this.onYouRejectedMatch);
-      signalRHub.off("matched", this.onMatched);
-      signalRHub.off("send-user-data", this.updateUserIdentity);
-    },
     requestMatch(player: OnlinePlayer): void {
       signalRHub.invoke("RequestMatch", player.id);
       player.youRequestedMatch = true;
@@ -104,79 +61,6 @@ export default defineComponent({
     rejectMatch(player: OnlinePlayer): void {
       signalRHub.invoke("RejectMatch", player.id);
       player.requestedMatch = false;
-    },
-    onUdateOnlinePlayers(onlinePlayers: OnlinePlayer[]): void {
-      this.onlinePlayers.clear();
-      onlinePlayers.forEach((p) => this.onlinePlayers.add(p));
-    },
-    updateUserIdentity(identity: PlayerIdentity): void {
-      this.identity = identity;
-    },
-    onPlayerConnected(player: OnlinePlayer): void {
-      console.log(player);
-      this.onlinePlayers.add(player);
-    },
-    onPlayerDisconnected(playerId: string): void {
-      this.onlinePlayers.forEach((player) => {
-        if (player.id === playerId) {
-          this.onlinePlayers.delete(player);
-          return;
-        }
-      });
-    },
-    onPlayerRequestedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
-        if (p.id === playerId) {
-          p.requestedMatch = true;
-          return;
-        }
-      });
-    },
-    onYouRequestedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
-        if (p.id === playerId) {
-          p.youRequestedMatch = true;
-          return;
-        }
-      });
-    },
-    onPlayerRejectedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
-        if (p.id === playerId) {
-          p.youRequestedMatch = false;
-          return;
-        }
-      });
-    },
-    onYouRejectedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
-        if (p.id === playerId) {
-          p.requestedMatch = false;
-          return;
-        }
-      });
-    },
-    onMatched(match: Match) {
-      if (this.identity === undefined) return;
-      this.onlinePlayers.forEach((p) => {
-        if (
-          (p.id === match.player1.id && this.identity?.id === match.player2.id) ||
-          (p.id === match.player2.id && this.identity?.id === match.player1.id)
-        ) {
-          p.matched = true;
-          p.requestedMatch = false;
-          p.youRequestedMatch = false;
-          return;
-        }
-      });
-    },
-    onSignalRConnected(): void {
-      this.subscribe();
-      signalRHub.invoke("GetOnlinePlayers");
-      signalRHub.invoke("GetUserData");
-    },
-    onSignalRDisconnected(): void {
-      this.unsubscribe();
     },
   },
   computed: {
@@ -202,3 +86,4 @@ export default defineComponent({
   flex-grow: 1;
 }
 </style>
+@/types/DataTransferObjects

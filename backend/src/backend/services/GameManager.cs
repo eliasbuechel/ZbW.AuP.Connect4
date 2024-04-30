@@ -115,6 +115,35 @@ namespace backend.services
             }
             Debug.Assert(false);
         }
+        public void PlayMove(Player player, int column)
+        {
+            Debug.Assert(_activeGame != null);
+            if (_activeGame.PlayMove(player, column))
+                return;
+
+            StartNextGame();
+        }
+        internal void QuitGame(Player player)
+        {
+            Debug.Assert(_activeGame != null);
+            _activeGame.Quit(player);
+            StartNextGame();
+        }
+        internal bool HasGameStarted(IPlayer player)
+        {
+            if (_activeGame == null)
+                return false;
+
+            if (_activeGame.Match.Player1 == player || _activeGame.Match.Player2 == player)
+                return true;
+
+            return false;
+        }
+        public Connect4Game GetCurrentGameState()
+        {
+            Debug.Assert(_activeGame != null);
+            return _activeGame;
+        }
 
         private void PlayerQuit(IPlayer player)
         {
@@ -164,7 +193,6 @@ namespace backend.services
                 }
             }
         }
-
         private void TryStartGame()
         {
             if (_activeGame != null)
@@ -179,50 +207,17 @@ namespace backend.services
 
             _activeGame = new Connect4Game(match);
         }
-
         private void StartNextGame()
         {
             Debug.Assert(_activeGame != null);
 
             foreach (Player player in _playerConnectionManager.OnlinePlayers)
-                player.GameEnded();
+                if (player != _activeGame.Match.Player1 && player != _activeGame.Match.Player2)
+                    player.GameEnded(new GameResult(null, null));
 
             _activeGame = null;
             _gamePlan.Dequeue();
             TryStartGame();
-        }
-
-        public void PlayMove(Player player, int column)
-        {
-            Debug.Assert(_activeGame != null);
-            if (_activeGame.PlayMove(player, column))
-                return;
-
-            StartNextGame();
-        }
-
-        public Connect4Game GetCurrentGameState()
-        {
-            Debug.Assert(_activeGame != null);
-            return _activeGame;
-        }
-
-        internal void QuitGame(Player player)
-        {
-            Debug.Assert(_activeGame != null);
-            _activeGame.Quit(player);
-            StartNextGame();
-        }
-
-        internal bool HasGameStarted(IPlayer player)
-        {
-            if (_activeGame == null)
-                return false;
-
-            if (_activeGame.Match.Player1 == player || _activeGame.Match.Player2 == player)
-                return true;
-
-            return false;
         }
 
 
