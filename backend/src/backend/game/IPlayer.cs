@@ -1,6 +1,4 @@
-﻿using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-
-namespace backend.game
+﻿namespace backend.game
 {
     internal interface IPlayer
     {
