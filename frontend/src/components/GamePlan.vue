@@ -1,14 +1,16 @@
 <template>
-  <div class="listing-container">
-    <h2>Game plan</h2>
-    <ul>
-      <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
-        <span class="player1">{{ player.player1.username }}</span>
-        <span v-if="idx == 0" class="battle-icon">&#9876;</span>
-        <span v-else class="battle-icon">&#x1f91d;</span>
-        <span class="player2">{{ player.player2.username }}</span>
-      </li>
-    </ul>
+  <div class="container">
+    <div class="listing-container">
+      <h2>Game plan</h2>
+      <ul>
+        <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
+          <div class="player1">{{ player.player1.username }}</div>
+          <div v-if="idx == 0" class="battle-icon">&#9876;</div>
+          <div v-else class="handshake-icon">&#129309;</div>
+          <div class="player2">{{ player.player2.username }}</div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -42,22 +44,27 @@ export default defineComponent({
   display: flex;
   color: whitesmoke;
   align-items: center;
-  justify-content: stretch;
-}
-.match > span {
-  display: block;
+  width: 400px;
 }
 
 .match > .battle-icon {
   font-size: xx-large;
   color: brown;
-  flex-grow: 1;
+  width: 50px;
+  text-align: center;
 }
-match > .player1 {
+.match > .handshake-icon {
+  font-size: x-large;
+  width: 50px;
+  text-align: center;
+}
+
+.match > .player1 {
   text-align: end;
-  width: 200px;
+  width: 175px;
 }
-match > .player2 {
+.match > .player2 {
+  width: 175px;
 }
 </style>
 @/types/DataTransferObjects

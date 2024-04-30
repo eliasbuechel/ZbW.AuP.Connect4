@@ -1,7 +1,7 @@
 <template>
-  <div class="grid-container-main-board">
-    <div class="grid-item-page-info">
-      <img id="logo-home" src="@/assets/images/Logo.png" alt="r4d4-logo" />
+  <div class="grid-container">
+    <div class="grid-item-page-info page-info">
+      <img id="logo-home" src="@/assets/images/Logo.png" alt="r4d4-logo" class="r4d4-logo" />
       <h1 class="home">R4D4 - Connect4</h1>
     </div>
     <UserInfo :identity="identity" class="grid-item-user-info" />
@@ -54,21 +54,9 @@ export default defineComponent({
 </script>
 
 <style>
-.grid-container-main-board {
-  display: grid;
-  grid-column-gap: 2vw;
-  grid-row-gap: 2vh;
-  grid-template-columns: repeat(12, 6vw);
-  grid-template-rows: repeat(12, 6vh);
-}
-
 .grid-item-page-info {
   grid-column: 4 / span 6;
   grid-row: 1 / span 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 .grid-item-user-info {
   grid-column: 10 / span 3;

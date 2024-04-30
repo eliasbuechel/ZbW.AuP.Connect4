@@ -1,8 +1,10 @@
 <template>
   <div>
-    <span>{{ resultMessage }}</span>
+    <div>
+      <span>{{ resultMessage }}</span>
+    </div>
+    <button class="button-light" @click="leaveGameResultView">Back home</button>
   </div>
-  <button class="button-light" @click="leaveGameResultView">Back home</button>
 </template>
 <script lang="ts">
 import { GameResult } from "@/types/GameResult";

@@ -1,8 +1,5 @@
 <template>
   <div class="user-data">
-    <label for="id">Id</label>
-    <div>{{ identity.id }}</div>
-    <label for="username">Username</label>
     <div>{{ identity.username }}</div>
   </div>
 </template>

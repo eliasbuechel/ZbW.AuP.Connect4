@@ -1,35 +1,37 @@
 <template>
-  <div class="listing-container">
-    <h2>Online players</h2>
-    <ul>
-      <li v-for="player in onlinePlayers" :key="player.id" class="matchable-player">
-        <span class="matchable-player-username">{{ player.username }}</span>
-        <span v-if="player.matched">Matched</span>
-        <span v-if="player.youRequestedMatch">Matching pending...</span>
-        <button
-          v-if="player.requestedMatch && !player.youRequestedMatch"
-          class="button-accept"
-          @click="acceptMatch(player)"
-        >
-          &check;
-        </button>
-        <button
-          v-if="player.requestedMatch && !player.youRequestedMatch"
-          class="button-danger"
-          @click="rejectMatch(player)"
-        >
-          &cross;
-        </button>
-        <button
-          v-if="!player.matched && !player.youRequestedMatch && !player.requestedMatch"
-          class="button-light"
-          @click="requestMatch(player)"
-          :disabled="hasPendingRequest"
-        >
-          Request
-        </button>
-      </li>
-    </ul>
+  <div class="container">
+    <div class="listing-container">
+      <h2>Online players</h2>
+      <ul>
+        <li v-for="player in onlinePlayers" :key="player.id" class="matchable-player">
+          <span class="matchable-player-username">{{ player.username }}</span>
+          <span v-if="player.matched">Matched</span>
+          <span v-if="player.youRequestedMatch">Matching pending...</span>
+          <button
+            v-if="player.requestedMatch && !player.youRequestedMatch"
+            class="button-accept"
+            @click="acceptMatch(player)"
+          >
+            &check;
+          </button>
+          <button
+            v-if="player.requestedMatch && !player.youRequestedMatch"
+            class="button-danger"
+            @click="rejectMatch(player)"
+          >
+            &cross;
+          </button>
+          <button
+            v-if="!player.matched && !player.youRequestedMatch && !player.requestedMatch"
+            class="button-light"
+            @click="requestMatch(player)"
+            :disabled="hasPendingRequest"
+          >
+            Request
+          </button>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 

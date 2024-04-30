@@ -1,11 +1,19 @@
 <template>
-  <div class="connect4-game">
-    <h2>Connect Four</h2>
-    <div>
-      <label>{{ player1.username }}</label>
+  <div class="grid-container">
+    <div class="grid-item-page-info container">
+      <h2>Connect Four</h2>
     </div>
-    <div>
+    <div class="grid-item-player1 player-info player-info-left">
+      <label>{{ player1.username }}</label>
+      <button v-if="game != null && game.match.player1.id === identity.id" class="button-light" @click="quitGame">
+        Quit game
+      </button>
+    </div>
+    <div class="grid-item-player2 player-info player-info-right">
       <label> {{ player2.username }}</label>
+      <button v-if="game != null && game.match.player2.id === identity.id" class="button-light" @click="quitGame">
+        Quit game
+      </button>
     </div>
     <Connect4Board
       v-if="game != null"
@@ -13,12 +21,14 @@
       :match="game.match"
       @place-stone="reemitPlaceStone"
       @quit-game="reemitQuitGame"
+      class="grid-item-connect4-board"
     />
     <GameResultView
       v-if="gameResult != null"
       :gameResult="gameResult"
       :identity="identity"
       @leave-game-result-view="reemitLeaveGameResultView"
+      class="grid-item-game-result"
     />
   </div>
 </template>
@@ -66,6 +76,9 @@ export default defineComponent({
     reemitLeaveGameResultView(): void {
       this.$emit("leave-game-result-view");
     },
+    quitGame(): void {
+      this.$emit("quit-game");
+    },
   },
   computed: {
     resultMessage(): string {
@@ -88,7 +101,24 @@ export default defineComponent({
 </script>
 
 <style scoped>
-h2 {
-  color: white;
+.grid-item-page-info {
+  grid-column: 4 / span 6;
+  grid-row: 1 / span 2;
+}
+.grid-item-player1 {
+  grid-column: 1 / span 3;
+  grid-row: 1 / span 4;
+}
+.grid-item-player2 {
+  grid-column: 10 / span 3;
+  grid-row: 1 / span 4;
+}
+.grid-item-connect4-board {
+  grid-column: 4 / span 6;
+  grid-row: 3 / span 10;
+}
+.grid-item-game-result {
+  grid-column: 4 / span 6;
+  grid-row: 3 / span 10;
 }
 </style>
