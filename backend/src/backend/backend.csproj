@@ -31,4 +31,8 @@
 	<InternalsVisibleTo Include="backendTests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>
