@@ -1,5 +1,5 @@
 ﻿using backend.communication.DOTs;
-using backend.database;
+using backend.Data;
 using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.communication.signalR
 {

@@ -1,22 +1,14 @@
-using backend.communication;
+using backend.communication.mqtt;
+using backend.communication.signalR;
 using backend.Data;
-using backend.game;
 using backend.Infrastructure;
 using backend.services;
 using backend.Services;
-using backend.signalR;
-using backend.communication.mqtt;
-using backend.communication.signalR;
-using backend.database;
-using backend.services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Diagnostics;
 using System.Net;
 
@@ -78,7 +70,7 @@ namespace backend
             services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
-                return (PlayerIdentity identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
+                return (identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
             });
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();
@@ -116,12 +108,9 @@ namespace backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-<<<<<<< HEAD
+
                 endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
-
-
                 endpoints.MapHub<PlayerHub>("/playerHub");
->>>>>>> dev
             });
 
             // app.UseHttpsRedirection();
