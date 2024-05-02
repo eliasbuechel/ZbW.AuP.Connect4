@@ -44,10 +44,6 @@ namespace backend.game
         {
             _gameManager.RequestMatch(this, player);
         }
-        //public void MakeMove(int column)
-        //{
-        //    _gameManager.MakeMove(this, column);
-        //}
         public void ConfirmGameStart()
         {
             Debug.Assert(!HasConfirmedGameStart);
@@ -86,7 +82,7 @@ namespace backend.game
             return _gameManager.GetGamePlan();
         }
 
-        public abstract void MovePlayed(int column);
+        public abstract void MovePlayed(IPlayer player, Field field);
 
         public void PlayMove(int column)
         {

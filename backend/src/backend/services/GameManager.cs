@@ -5,14 +5,12 @@ namespace backend.services
 {
     internal class GameManager
     {
-        private static int instanceCount = 0;
-        public GameManager(PlayerConnectionManager playerConnectionManager)
+        public GameManager(PlayerConnectionManager playerConnectionManager, Func<Match, Connect4Game> getConnect4Game)
         {
-            instanceCount++;
-            Debug.Assert(instanceCount < 2); // only one instance allowed
-
             _playerConnectionManager = playerConnectionManager;
+            _getConnect4Game = getConnect4Game;
         }
+
         public event Action<IPlayer, IPlayer>? OnGameStarted;
 
         public IEnumerable<Match> GetGamePlan()
@@ -34,7 +32,6 @@ namespace backend.services
         {
             _playerConnectionManager.DisconnectPlayer(player, PlayerQuit);
         }
-
         public bool HasRequestedMatch(IPlayer requester, IPlayer opponent)
         {
             lock (_matchRequestsLock)
@@ -117,19 +114,20 @@ namespace backend.services
         }
         public void PlayMove(Player player, int column)
         {
-            Debug.Assert(_activeGame != null);
-            if (_activeGame.PlayMove(player, column))
+            if (_activeGame == null)
+            {
+                Debug.Assert(false);
                 return;
+            }
 
-            StartNextGame();
+            _activeGame.PlayMove(player, column);
         }
-        internal void QuitGame(Player player)
+        public void QuitGame(Player player)
         {
             Debug.Assert(_activeGame != null);
-            _activeGame.Quit(player);
-            StartNextGame();
+            _activeGame.PlayerQuit(player);
         }
-        internal bool HasGameStarted(IPlayer player)
+        public bool HasGameStarted(IPlayer player)
         {
             if (_activeGame == null)
                 return false;
@@ -145,6 +143,29 @@ namespace backend.services
             return _activeGame;
         }
 
+        private void StartNewGame(Match match)
+        {
+            Debug.Assert(_activeGame == null);
+            _activeGame = _getConnect4Game(match);
+            _activeGame.OnGameEnded += OnGameEnded;
+
+            _activeGame.Initialize();
+        }
+        private void OnGameEnded()
+        {
+            if (_activeGame == null)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _activeGame.OnGameEnded -= OnGameEnded;
+            _activeGame.Dispose();
+            _activeGame = null;
+            _gamePlan.Dequeue();
+
+            TryStartGame();
+        }
         private void PlayerQuit(IPlayer player)
         {
             while (true)
@@ -200,92 +221,16 @@ namespace backend.services
 
             Match? match;
             if (!_gamePlan.TryPeek(out match))
-            {
-                _activeGame = null;
                 return;
-            }
 
-            _activeGame = new Connect4Game(match);
+            StartNewGame(match);
         }
-        private void StartNextGame()
-        {
-            Debug.Assert(_activeGame != null);
-
-            foreach (Player player in _playerConnectionManager.OnlinePlayers)
-                if (player != _activeGame.Match.Player1 && player != _activeGame.Match.Player2)
-                    player.GameEnded(new GameResult(null, null));
-
-            _activeGame = null;
-            _gamePlan.Dequeue();
-            TryStartGame();
-        }
-
-
-        //public void AddPlayer(IPlayer player)
-        //{
-        //    Debug.Assert(!_activePlayers.Contains(player));
-        //    _activePlayers.Add(player);
-        //    player.OnMovePlayed += OnPlayerPlayedMove;
-        //    player.OnMatch += OnMatch;
-        //    OnGameStarted += player.OnGameCreated;
-        //}
-        //public void RemovePlayer(IPlayer player)
-        //{
-        //    Debug.Assert(_activePlayers.Contains(player));
-        //    player.OnMovePlayed -= OnPlayerPlayedMove;
-        //    player.OnMatch -= OnMatch;
-        //    _activePlayers.Remove(player);
-        //}
-        //public void MakeMove(IPlayer player, int column)
-        //{
-        //    Debug.Assert(_activeGame != null);
-
-        //    try
-        //    {
-        //        _activeGame.PlayMove(player, column);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        player.OnErrorWhileMakingMove(ex.Message);
-        //    }
-        //}
-
-        //private void OnPlayerPlayedMove(IPlayer player, int column)
-        //{
-        //    if (_activeGame == null)
-        //    {
-        //        player.OnErrorWhileMakingMove("No game is active");
-        //        return;
-        //    }
-
-        //    try
-        //    {
-        //        _activeGame.PlayMove(player, column);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        player.OnErrorWhileMakingMove(ex.Message);
-        //        return;
-        //    }
-        //}
-        //private void OnMatch(IPlayer player1, IPlayer player2)
-        //{
-        //    _gamePlan.Enqueue(new Tuple<IPlayer, IPlayer>(player1, player2));
-        //    if (_activeGame == null)
-        //        StartNextGame();
-        //}
-        //private void StartNextGame()
-        //{
-        //    var players = _gamePlan.Dequeue();
-        //    _activeGame = new Game(players.Item1, players.Item2);
-        //    OnGameStarted?.Invoke(_activeGame.Player1, _activeGame.Player2);
-        //}
-
 
         private object _gamePlanLock = new object();
         private object _matchRequestsLock = new object();
         private Connect4Game? _activeGame = null;
         private readonly PlayerConnectionManager _playerConnectionManager;
+        private readonly Func<Match, Connect4Game> _getConnect4Game;
         private Queue<Match> _gamePlan = new Queue<Match>();
         private readonly List<MatchRequest> _matchRequests = new List<MatchRequest>();
     }
