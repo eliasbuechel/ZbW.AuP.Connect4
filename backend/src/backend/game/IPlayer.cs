@@ -25,7 +25,7 @@
         void Matched(Match match);
         void RejectMatch(IPlayer player);
         IEnumerable<Match> GetGamePlan();
-        void MovePlayed(int column);
+        void MovePlayed(IPlayer player, Field field);
         void PlayMove(int column);
         void GameStarted(Connect4Game connect4Game);
         Connect4Game GetCurrentGameState();

@@ -2,6 +2,7 @@ using backend.communication.mqtt;
 using backend.communication.signalR;
 using backend.Data;
 using backend.Infrastructure;
+using backend.game;
 using backend.services;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
@@ -75,6 +76,13 @@ namespace backend
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
+            services.AddSingleton<Connect4Board>();
+            services.AddSingleton<IRoboterAPI, TestingRoboterAPI>();
+
+            services.AddSingleton<Func<Match, Connect4Game>>(s => m =>
+            {
+                return new Connect4Game(m, s.GetRequiredService<Connect4Board>());
+            });
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

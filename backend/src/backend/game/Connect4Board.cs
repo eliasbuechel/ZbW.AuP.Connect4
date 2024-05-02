@@ -1,14 +1,28 @@
-﻿namespace backend.game
+﻿using backend.communication.mqtt;
+
+namespace backend.game
 {
     internal class Connect4Board
     {
-        public Connect4Board()
+        public Connect4Board(IRoboterAPI roboterAPI)
         {
             _field = new IPlayer?[COLUMNS][];
 
             for (int i = 0; i < _field.Length; i++)
                 _field[i] = new IPlayer?[ROWS];
+            _roboterAPI = roboterAPI;
+
+            _roboterAPI.OnStonePlaced += OnStonePlacedOnRoboter;
+            _roboterAPI.OnBoardReset += OnRoboterBoardReset;
         }
+        ~Connect4Board()
+        {
+            _roboterAPI.OnStonePlaced -= OnStonePlacedOnRoboter;
+            _roboterAPI.OnBoardReset -= OnRoboterBoardReset;
+        }
+
+        public event Action<IPlayer, Field>? OnStonePlaced;
+        public event Action? OnBoardReset;
 
         public string[][] FieldAsIds
         {
@@ -30,9 +44,12 @@
                 return fieldAsIds;
             }
         }
-        public Field? LastPlacedStone => _lastPlacedStone;
         public int Columns => COLUMNS;
         public int Rows => ROWS;
+        public IPlayer?[] this[int index]
+        {
+            get { return _field[index]; }
+        }
 
         public bool PlaceStone(IPlayer player, int column)
         {
@@ -49,19 +66,33 @@
                     continue;
 
                 col[i] = player;
-                _lastPlacedStone = new Field(column, i);
+                Field field = new Field(column, i);
+                _roboterAPI.PlaceStone(player, field);
                 return true;
             }
 
             return false;
         }
-        public IPlayer?[] this[int index]
+        public void Reset()
         {
-            get { return _field[index]; }
+            for (int i = 0; i < _field.Length; i++)
+                for (int j = 0 ; j < _field[i].Length; j++)
+                    _field[i][j] = null;
+
+            _roboterAPI.ResetConnect4Board();
+        }
+
+        private void OnStonePlacedOnRoboter(IPlayer player, Field field)
+        {
+            OnStonePlaced?.Invoke(player, field);
+        }
+        private void OnRoboterBoardReset()
+        {
+            OnBoardReset?.Invoke();
         }
 
         private readonly IPlayer?[][] _field;
-        private Field? _lastPlacedStone = null;
+        private readonly IRoboterAPI _roboterAPI;
         private const int ROWS = 7;
         private const int COLUMNS = 6;
     }

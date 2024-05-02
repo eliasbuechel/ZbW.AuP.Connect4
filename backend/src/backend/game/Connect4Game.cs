@@ -2,75 +2,76 @@
 
 namespace backend.game
 {
-    internal class Connect4Game
+    internal class Connect4Game : IDisposable
     {
-        public Connect4Game(Match match)
+        public Connect4Game(Match match, Connect4Board connect4Board)
         {
-            _activePlayer = match.Player1;
             _match = match;
+            _connect4Board = connect4Board;
 
-            match.Player1.GameStarted(this);
-            match.Player2.GameStarted(this);
+            _connect4Board.OnStonePlaced += OnStonePlaced;
+            _connect4Board.OnBoardReset += OnBoardReset;
+
+            _activePlayer = match.Player1;
         }
+
+        public event Action? OnGameEnded;
 
         public Guid Id { get; } = new Guid();
         public Match Match => _match;
         public IPlayer ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
 
-
-        public bool PlayMove(IPlayer player, int column)
+        public void PlayMove(IPlayer player, int column)
         {
-            Debug.Assert(_activePlayer == player);
-            Debug.Assert(_connect4Board.PlaceStone(player, column));
-            Field? lastPlacedStone = _connect4Board.LastPlacedStone;
-            Debug.Assert(lastPlacedStone != null);
-
-            GameResult? gameResult = CheckForWin(player, lastPlacedStone);
-
-            SwapActivePlayer();
-            _activePlayer.MovePlayed(column);
-
-            if (gameResult != null)
+            if (_activePlayer != player)
             {
-                Match.Player1.GameEnded(gameResult);
-                Match.Player2.GameEnded(gameResult);
-                return false;
+                Debug.Assert(false);
+                return;
             }
-
-            return true;
+            
+            Debug.Assert(_connect4Board.PlaceStone(player, column));
         }
-        private void SwapActivePlayer()
-        {
-            _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
-        }
-        public void Quit(Player player)
+        public void PlayerQuit(IPlayer player)
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null);
             _match.Player1.GameEnded(gameResult);
             _match.Player2.GameEnded(gameResult);
+            OnGameEnded?.Invoke();
         }
-
-        private GameResult? CheckForWin(IPlayer player, Field field)
+        public void Initialize()
         {
-            Connect4Line? connect4Line;
-
-            connect4Line = CheckForWinInColumn(player, field);
-            if (connect4Line != null)
-                return new GameResult(player, connect4Line);
-
-            connect4Line = CheckForWinInRow(player, field);
-            if (connect4Line != null)
-                return new GameResult(player, connect4Line);
-
-            connect4Line = CheckForWinDiagonally(player, field);
-            if (connect4Line != null)
-                return new GameResult(player, connect4Line);
-
-            return null;
+            _connect4Board.Reset();
         }
-        private Connect4Line? CheckForWinInColumn(IPlayer player, Field lastPlacedStone)
+
+        private void OnBoardReset()
+        {
+            _match.Player1.GameStarted(this);
+            _match.Player2.GameStarted(this);
+        }
+        private void OnStonePlaced(IPlayer player, Field field)
+        {
+            Match.Player1.MovePlayed(player, field);
+            Match.Player2.MovePlayed(player, field);
+
+            CheckForWin(field);
+            SwapActivePlayer();
+        }
+        private void SwapActivePlayer()
+        {
+            _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
+        }
+        private void CheckForWin(Field field)
+        {
+            if (CheckForWinInColumn(field))
+                return;
+            if (CheckForWinInRow(field))
+                return;
+            if (CheckForWinDiagonally(field))
+                return;
+        }
+        private bool CheckForWinInColumn(Field lastPlacedStone)
         {
             Connect4Line connect4Line = new Connect4Line();
 
@@ -81,7 +82,7 @@ namespace backend.game
 
             for (int rowDown = lastPlacedStone.Row - 1; rowDown >= 0; rowDown--)
             {
-                if (_connect4Board[lastPlacedStone.Column][rowDown] != player)
+                if (_connect4Board[lastPlacedStone.Column][rowDown] != _activePlayer)
                     break;
 
                 Field field = new Field(lastPlacedStone.Column, rowDown);
@@ -91,20 +92,21 @@ namespace backend.game
 
                 if (count == 0)
                 {
-                    return connect4Line;
+                    OnConnect4(connect4Line);
+                    return true;
                 }
             }
 
-            return null;
+            return false;
         }
-        private Connect4Line? CheckForWinInRow(IPlayer player, Field lastPlacedStone)
+        private bool CheckForWinInRow(Field lastPlacedStone)
         {
             Connect4Line connect4Line = new Connect4Line();
             int count = 0;
 
             for (int i = 0; i < _connect4Board.Columns; i++)
             {
-                if (_connect4Board[i][lastPlacedStone.Row] == player)
+                if (_connect4Board[i][lastPlacedStone.Row] == _activePlayer)
                 {
                     connect4Line[count].Column = i;
                     connect4Line[count].Row = lastPlacedStone.Row;
@@ -115,13 +117,14 @@ namespace backend.game
 
                 if (count == 4)
                 {
-                    return connect4Line;
+                    OnConnect4(connect4Line);
+                    return true;
                 }
             }
 
-            return null;
+            return false;
         }
-        private Connect4Line? CheckForWinDiagonally(IPlayer player, Field lastPlacedStone)
+        private bool CheckForWinDiagonally(Field lastPlacedStone)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = lastPlacedStone.Column;
@@ -139,7 +142,7 @@ namespace backend.game
             int count = 0;
             while (c < _connect4Board.Columns && r < _connect4Board.Rows)
             {
-                if (_connect4Board[c][r] == player)
+                if (_connect4Board[c][r] == _activePlayer)
                 {
                     connect4Line[count].Column = c;
                     connect4Line[count].Row = r;
@@ -150,19 +153,41 @@ namespace backend.game
 
                 if (count == 4)
                 {
-                    return connect4Line;
+                    OnConnect4(connect4Line);
+                    return true;
                 }
 
                 c++;
                 r++;
             }
 
-            return null;
+            return false;
+        }
+        private void OnConnect4(Connect4Line connect4Line)
+        {
+            GameResult gameResult = new GameResult(_activePlayer, connect4Line);
+            _match.Player1.GameEnded(gameResult);
+            _match.Player2.GameEnded(gameResult);
+
+            OnGameEnded?.Invoke();
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                Debug.Assert(false);
+                return;
+            }
 
+            _connect4Board.OnStonePlaced -= OnStonePlaced;
+            _connect4Board.OnBoardReset -= OnBoardReset;
+            _disposed = true;
+        }
+
+        private bool _disposed = false;
         private IPlayer _activePlayer;
         private readonly Match _match;
-        private readonly Connect4Board _connect4Board = new Connect4Board();
+        private readonly Connect4Board _connect4Board;
     }
 }

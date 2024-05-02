@@ -27,6 +27,7 @@ import { Game } from "@/types/Game";
 import { Match } from "@/types/Match";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { GameResult } from "@/types/GameResult";
+import { Field } from "@/types/Field";
 
 interface HomeState {
   identity?: PlayerIdentity;
@@ -111,7 +112,6 @@ export default defineComponent({
     },
     placeStone(column: number): void {
       signalRHub.invoke("PlayMove", column);
-      this.doMove(this.identity!.id, column);
     },
     quitGame(): void {
       signalRHub.invoke("QuitGame");
@@ -167,8 +167,7 @@ export default defineComponent({
       });
     },
     onGameEnded(gameResult: GameResult): void {
-      console.log(gameResult);
-      if (this.isInGame) {
+      if (this.isInGame != null) {
         this.gameResult = gameResult;
         this.game = undefined;
       }
@@ -189,32 +188,18 @@ export default defineComponent({
       this.onlinePlayers = this.onlinePlayers.filter((o) => o.id !== playerId);
       this.gamePlan = this.gamePlan.filter((m) => m.player1.id !== playerId && m.player2.id !== playerId);
     },
-    onMovePlayed(colIdx: number): void {
-      if (!this.game) return;
-      if (this.identity === undefined) return;
-      this.doMove(this.game!.activePlayerId, colIdx);
+    onMovePlayed(playerId: string, field: Field): void {
+      if (this.game == null) return;
+      if (this.identity == null) return;
+
+      this.game!.connect4Board[field.column][field.row] = playerId;
+      this.switchActivePlayer();
     },
     switchActivePlayer(): void {
       this.game!.activePlayerId =
         this.game!.activePlayerId === this.game!.match.player1.id
           ? this.game!.match.player2.id
           : this.game!.match.player1.id;
-    },
-    doMove(playerId: string, colIdx: number): boolean {
-      if (this.game === undefined) return false;
-
-      let column = this.game!.connect4Board[colIdx];
-      if (column[column.length - 1] != "") return false;
-
-      for (let i = 0; i < column.length; i++) {
-        if (column[i] == "") {
-          column[i] = this.game!.activePlayerId;
-          this.switchActivePlayer();
-          return true;
-        }
-      }
-
-      return false;
     },
     onUdateOnlinePlayers(onlinePlayers: OnlinePlayer[]): void {
       this.onlinePlayers = onlinePlayers;
@@ -254,10 +239,6 @@ export default defineComponent({
         }
       });
     },
-    onStonePlaced(column: number): void {
-      signalRHub.invoke("PlayMove", column);
-      this.doMove(this.identity!.id, column);
-    },
     onSignalRConnected(): void {
       this.subscribe();
       signalRHub.invoke("GetGamePlan");
@@ -284,4 +265,3 @@ export default defineComponent({
 </script>
 
 <style scoped></style>
-@/types/DataTransferObjects

@@ -41,10 +41,12 @@ namespace backend.communication.signalR
             foreach (string connection in Connections)
                 await _hubContext.Clients.Client(connection).SendAsync("matched", matchDTO);
         }
-        public override async void MovePlayed(int column)
+        public override async void MovePlayed(IPlayer player, Field field)
         {
+            FieldDTO fieldDTO = new FieldDTO(field);
+
             foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("move-played", column);
+                await _hubContext.Clients.Client(connection).SendAsync("move-played", player.Id, fieldDTO);
         }
         public override async void GameStarted(Connect4Game connect4Game)
         {
@@ -53,11 +55,6 @@ namespace backend.communication.signalR
             foreach (string connection in Connections)
                 await _hubContext.Clients.Client(connection).SendAsync("game-started", connect4GameDTO);
         }
-        //public override async void GameEnded()
-        //{
-        //    foreach (string connection in Connections)
-        //        await _hubContext.Clients.Client(connection).SendAsync("game-ended");
-        //}
         public override async void GameEnded(GameResult gameResult)
         {
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);

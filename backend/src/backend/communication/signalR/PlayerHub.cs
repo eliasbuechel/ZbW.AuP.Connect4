@@ -21,7 +21,6 @@ namespace backend.communication.signalR
             _playerRequestLock = playerRequestLock;
         }
 
-
         public void GetUserData()
         {
             lock (_playerRequestLock[Identity])
