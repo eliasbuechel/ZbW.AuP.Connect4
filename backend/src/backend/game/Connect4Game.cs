@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Diagnostics;
-using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
-using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
 
 namespace backend.game
 {

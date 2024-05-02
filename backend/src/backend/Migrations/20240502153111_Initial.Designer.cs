@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using backend.database;
+using backend.Data;
 
 #nullable disable
 
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240502151725_Initial")]
+    [Migration("20240502153111_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -150,7 +150,7 @@ namespace backend.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("backend.database.PlayerIdentity", b =>
+            modelBuilder.Entity("backend.Data.PlayerIdentity", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
@@ -225,7 +225,7 @@ namespace backend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("backend.database.PlayerIdentity", null)
+                    b.HasOne("backend.Data.PlayerIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -234,7 +234,7 @@ namespace backend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("backend.database.PlayerIdentity", null)
+                    b.HasOne("backend.Data.PlayerIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -249,7 +249,7 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.database.PlayerIdentity", null)
+                    b.HasOne("backend.Data.PlayerIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -258,7 +258,7 @@ namespace backend.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("backend.database.PlayerIdentity", null)
+                    b.HasOne("backend.Data.PlayerIdentity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

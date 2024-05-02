@@ -4,10 +4,8 @@ namespace backend.game
 {
     internal class Connect4Board
     {
-        private static int count = 0;
         public Connect4Board(IRoboterAPI roboterAPI)
         {
-            count++;
             _field = new IPlayer?[COLUMNS][];
 
             for (int i = 0; i < _field.Length; i++)
@@ -48,6 +46,10 @@ namespace backend.game
         }
         public int Columns => COLUMNS;
         public int Rows => ROWS;
+        public IPlayer?[] this[int index]
+        {
+            get { return _field[index]; }
+        }
 
         public bool PlaceStone(IPlayer player, int column)
         {
@@ -87,12 +89,6 @@ namespace backend.game
         private void OnRoboterBoardReset()
         {
             OnBoardReset?.Invoke();
-        }
-
-
-        public IPlayer?[] this[int index]
-        {
-            get { return _field[index]; }
         }
 
         private readonly IPlayer?[][] _field;

@@ -1,5 +1,5 @@
 ﻿using backend.communication.DOTs;
-using backend.database;
+using backend.Data;
 using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
