@@ -8,8 +8,6 @@ namespace backend.Services
 {
     public class EmailSender : IEmailSender
     {
-        private readonly EmailSettings _emailSettings;
-
         public EmailSender(IOptions<EmailSettings> emailSettings)
         {
             _emailSettings = emailSettings.Value;
@@ -36,6 +34,8 @@ namespace backend.Services
                 await client.SendMailAsync(mailMessage);
             }
         }
+
+        private readonly EmailSettings _emailSettings;
     }
 }
 

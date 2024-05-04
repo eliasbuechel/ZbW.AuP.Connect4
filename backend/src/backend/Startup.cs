@@ -18,10 +18,10 @@ namespace backend
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
-            _environment = environment;
+            DotNetEnv.Env.Load();
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -44,28 +44,37 @@ namespace backend
             });
             services.AddControllers();
 
-            IConfiguration mqttConfig = _configuration.GetSection($"{_environment.EnvironmentName}:MqttClient");
-            string? mqttIpAddressString = mqttConfig["IpAddress"];
-            if (string.IsNullOrEmpty(mqttIpAddressString))
+
+            services.AddSingleton<MQTTNetTopicClient>(services =>
             {
-                Debug.Assert(false);
-                mqttIpAddressString = "localhost";
-            }
-            IPAddress mqttIpAddress = IPAddress.Parse(mqttIpAddressString);
-            int mqttPort = mqttConfig.GetValue<int>("Port");
-            services.AddSingleton(s => new MqttTopicClient(mqttIpAddress, mqttPort));
+                var borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI");
+                var username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME");
+                var password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD");
+
+                return new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
+            });
+            services.AddSingleton<IRoboterAPI, MQTTRoboterAPI>();
 
             services.AddDbContext<BackendDbContext>(options =>
             {
-                var connectionString = _configuration.GetConnectionString(_environment.EnvironmentName)
-                                      ?? throw new InvalidOperationException("Database connection string is not configured.");
+                var connectionString = DotNetEnv.Env.GetString("CONNECTIONSTRING");
                 options.UseMySQL(connectionString);
             });
 
             ConfigureIdentity(services);
             services.AddSignalR();
 
-            services.Configure<EmailSettings>(_configuration.GetSection("Smtp"));
+            services.AddTransient<EmailSettings>( services =>
+            {
+                EmailSettings settings = new EmailSettings();
+                settings.Host = DotNetEnv.Env.GetString("SMTP_HOST");
+                settings.Port = DotNetEnv.Env.GetInt("SMTP_PORT");
+                settings.Username = DotNetEnv.Env.GetString("SMTP_USERNAME");
+                settings.Password = DotNetEnv.Env.GetString("SMTP_PASSWORD");
+                settings.FromAddress = DotNetEnv.Env.GetString("SMTP_FROM_ADDRESS");
+                return settings;
+            });
+
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddSingleton<PlayerRequestLock>();
             services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
@@ -77,7 +86,7 @@ namespace backend
             services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
             services.AddSingleton<Connect4Board>();
-            services.AddSingleton<IRoboterAPI, TestingRoboterAPI>();
+
 
             services.AddSingleton<Func<Match, Connect4Game>>(s => m =>
             {
@@ -120,9 +129,6 @@ namespace backend
                 endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
                 endpoints.MapHub<PlayerHub>("/playerHub");
             });
-
-            // app.UseHttpsRedirection();
-
         }
 
         private static void ConfigureIdentity(IServiceCollection services)
@@ -175,6 +181,5 @@ namespace backend
         }
 
         private readonly IConfiguration _configuration;
-        private readonly IWebHostEnvironment _environment;
     }
 }

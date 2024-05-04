@@ -6,6 +6,7 @@ namespace backend.communication.mqtt
     {
         public event Action<IPlayer, Field>? OnStonePlaced;
         public event Action? OnBoardReset;
+        public event Action<int>? OnManualMove;
 
         public void PlaceStone(IPlayer player, Field field)
         {

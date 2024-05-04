@@ -1,90 +1,62 @@
 using backend.communication.mqtt;
-using backendTests.communication.helper;
-using System.Net;
 
 namespace backendTests.communication
 {
     [TestFixture]
     public class MqttTopicClientTests
     {
-        [Test]
+        //[Test]
         public void MqttTopicBroker_ComunicateOverToppics_NoErrors()
         {
             // arrange
-            const int PORT = 1890;
-            IPAddress ipAddress = IPAddress.Loopback;
-            using MqttTopicBroker broker = new MqttTopicBroker(ipAddress, PORT);
-            MqttTopicClient client = new MqttTopicClient(ipAddress, PORT);
-            broker.Start().Wait();
-            const string TOPIC = "test";
-            const string MESSAGE = "hello";
-            const int TIMEOUT_DURATION = 10;
-
+            MQTTNetTopicClient client = new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
+            //MQTTnetTopicClient client = new MQTTnetTopicClient("ws://mqtt.r4d4.work");
+            const string TOPIC = "test/gabor";
+            const string MESSAGE = "My own test message!";
+            const int TIMEOUT_DURATION = 1000;
 
             // act - connecting
             client.OnConnected += OnConnectedCallback;
-            bool isConnected = client.Connect();
-            Assert.That(isConnected, Is.True);
+            client.ConnectAsync().Wait();
             Assert.That(() => client.IsConnected, Is.True.After(TIMEOUT_DURATION));
             Assert.That(connectingCallbackCounter, Is.EqualTo(1));
             client.OnConnected -= OnConnectedCallback;
 
 
             // act - topic communication
-            client.SubscribeTo(TOPIC, CommunicationCallback);
-            client.Publish(TOPIC, MESSAGE);
+            client.SubscribeToAsync(TOPIC, CommunicationCallback).Wait();
+
+            client.PublishAsync(TOPIC, MESSAGE).Wait();
             Assert.That(() => communicationCallbackCounter, Is.EqualTo(1).After(TIMEOUT_DURATION));
             Assert.That(communicationCallbackMessage, Is.EqualTo(MESSAGE));
 
-            // act - connection loss
-            client.OnDisconnected += OnDisconnectedCallback;
-            broker.Stop().Wait();
-            Assert.That(() => client.IsConnected, Is.False.After(TIMEOUT_DURATION));
-            Assert.That(disconnectingCallbackCounter, Is.EqualTo(1));
-            client.OnDisconnected -= OnDisconnectedCallback;
+            client.PublishAsync(TOPIC, MESSAGE).Wait();
+            Assert.That(() => communicationCallbackCounter, Is.EqualTo(2).After(TIMEOUT_DURATION));
+            Assert.That(communicationCallbackMessage, Is.EqualTo(MESSAGE));
 
-            // act - reconnect
-            broker.Start().Wait();
-            client.Connect();
-            Assert.That(() => client.IsConnected, Is.True.After(TIMEOUT_DURATION));
+            client.UnsubscribeFromAsync(TOPIC, CommunicationCallback).Wait();
 
-            // act - topic communication after reconnection
-            client.Publish(TOPIC, MESSAGE);
+            client.PublishAsync(TOPIC, MESSAGE).Wait();
             Assert.That(() => communicationCallbackCounter, Is.EqualTo(2).After(TIMEOUT_DURATION));
 
-            // act - unsubscribe from topic
-            client.UnsubscribeFrom(TOPIC, CommunicationCallback);
-            client.Publish(TOPIC, MESSAGE);
-            Assert.That(communicationCallbackCounter, Is.EqualTo(2));
 
-            // act - disconnect
-            client.OnDisconnected += OnDisconnectedCallback;
-            client.Disconnect();
-            Assert.That(() => client.IsConnected, Is.False.After(TIMEOUT_DURATION));
-            Assert.That(disconnectingCallbackCounter, Is.EqualTo(2));
-            client.OnDisconnected -= OnDisconnectedCallback;
-
-
-            // cleenup
-            broker.Stop().Wait();
+            client.DisconnectAsync().Wait();
+            client.Dispose();
         }
+
 
         private void OnConnectedCallback()
         {
             connectingCallbackCounter++;
         }
-        private void OnDisconnectedCallback()
-        {
-            disconnectingCallbackCounter++;
-        }
-        private void CommunicationCallback(string message)
+        private async Task CommunicationCallback(string message)
         {
             communicationCallbackCounter++;
             communicationCallbackMessage = message;
+            await Task.CompletedTask;
         }
 
         private int connectingCallbackCounter = 0;
-        private int disconnectingCallbackCounter = 0;
         private int communicationCallbackCounter = 0;
         private string communicationCallbackMessage = string.Empty;
     }

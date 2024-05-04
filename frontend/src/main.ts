@@ -3,7 +3,7 @@ import { Router, createRouter, createWebHistory } from "vue-router";
 import axios, { AxiosStatic } from "axios";
 
 // Intern modules
-import { App, createApp, nextTick } from "vue";
+import { App, createApp } from "vue";
 import AppVue from "./App.vue";
 import routes from "@/routes";
 
@@ -13,22 +13,15 @@ const router = createRouter({
 });
 export default router;
 
-router.beforeEach(async (to, from, next) =>{
-  if (to.meta.requiresAuth) {
-    try {
-      const response = await axios.post("account/checkAuthentication");
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false);
+  const isAuthenticated = localStorage.getItem('authToken'); 
 
-      if (response.data.authenticated) {
-        next();
-      } else {
-        next("/login");
-      }
-    } catch (error) {
-      console.error("Error checking authentication status:", error);
-      next("/login");
-    }
+  if (requiresAuth && !isAuthenticated) {
+    next('/login'); 
   } else {
-    next();
+    next(); 
   }
 });
 
@@ -44,3 +37,4 @@ app.config.globalProperties.$axios = axios;
 
 app.use(router);
 app.mount("#app");
+

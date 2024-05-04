@@ -86,7 +86,10 @@ namespace backend.communication.mqtt
         public void SubscribeTo(string topic, Action<string> callback)
         {
             if (_topicCallbackMappings.TryAdd(topic, new List<Action<string>>()))
+            {
                 _mqttClient.Subscribe([topic], [MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE]);
+                _topicValueMappings.Add(topic, null);
+            }
 
             _topicCallbackMappings[topic].Add(callback);
         }
@@ -111,6 +114,7 @@ namespace backend.communication.mqtt
             {
                 _mqttClient.Unsubscribe([topic]);
                 _topicCallbackMappings.Remove(topic);
+                _topicValueMappings.Remove(topic);
             }
         }
 
@@ -120,6 +124,12 @@ namespace backend.communication.mqtt
             string message = Encoding.UTF8.GetString(e.Message);
 
             Log($"Received test message for topic: {topic}");
+
+            if (_topicValueMappings[topic] == null)
+            {
+                _topicValueMappings[topic] = message;
+                return;
+            }
 
             IEnumerable<Action<string>> callbacks = _topicCallbackMappings[topic];
 
@@ -187,5 +197,6 @@ namespace backend.communication.mqtt
         private readonly IPAddress _brokerIpAddress;
         private readonly MqttClient _mqttClient;
         private readonly Dictionary<string, ICollection<Action<string>>> _topicCallbackMappings = new Dictionary<string, ICollection<Action<string>>>();
+        private readonly Dictionary<string, string?> _topicValueMappings = new Dictionary<string, string?>();
     }
 }
