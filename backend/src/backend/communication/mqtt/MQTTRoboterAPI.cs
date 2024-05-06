@@ -67,7 +67,7 @@ namespace backend.communication.mqtt
 
             if (column == -1)
             {
-                Debug.Assert(_placingField != null);
+               Debug.Assert(_placingField != null);
                 Debug.Assert(_placingPlayer != null);
 
                 OnStonePlaced?.Invoke(_placingPlayer, _placingField);

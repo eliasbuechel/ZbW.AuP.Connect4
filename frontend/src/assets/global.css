@@ -233,6 +233,17 @@ button:active:enabled {
   align-items: flex-start;
 }
 
+.player-info > label {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.player-info-left > label {
+  background-color: #df9500aa;
+}
+.player-info-right > label {
+  background-color: #0117ccdd;
+}
 .player-info-right {
   align-items: flex-end;
 }
@@ -249,11 +260,13 @@ button:active:enabled {
   display: flex;
   flex-direction: column-reverse;
   padding: 0 0.3rem;
+  border: 2px solid transparent;
   border-radius: 0.5rem;
 }
 
-.column:hover {
-  background-color: #ffffff66;
+.playableColumn:hover {
+  background-color: #df950044;
+  border: 2px solid #df950099;
 }
 
 .cell {
@@ -261,15 +274,15 @@ button:active:enabled {
   width: min(8vw, 10vh);
   height: min(8vw, 10vh);
   border-radius: 25%;
-  margin: 0.3rem 0 0 0;
+  margin: 0.3rem 0;
   border: 2px solid whitesmoke;
 }
 
-.colorPlayer1 {
+.colorPlayerLeft {
   background-color: #df9500aa;
 }
 
-.colorPlayer2 {
+.colorPlayerRight {
   background-color: #0117ccdd;
 }
 

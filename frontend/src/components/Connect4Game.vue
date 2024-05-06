@@ -4,21 +4,26 @@
       <h2>Connect Four</h2>
     </div>
     <div class="grid-item-player1 player-info player-info-left">
-      <label>{{ player1.username }}</label>
+      <label>{{ namePlayerLeft }}</label>
+      <div class="playing-state">{{ gameStatePlayerLeft }}</div>
       <button v-if="game != null && game.match.player1.id === identity.id" class="button-light" @click="quitGame">
         Quit game
       </button>
     </div>
     <div class="grid-item-player2 player-info player-info-right">
-      <label> {{ player2.username }}</label>
+      <label> {{ namePlayerRight }}</label>
+      <div class="playing-state">{{ gameStatePlayerRight }}</div>
       <button v-if="game != null && game.match.player2.id === identity.id" class="button-light" @click="quitGame">
         Quit game
       </button>
     </div>
     <Connect4Board
       v-if="game != null"
+      :identity="identity"
       :connect4Board="game.connect4Board"
-      :match="game.match"
+      :playerLeftId="playerLeft!.id"
+      :playerRightId="playerRight!.id"
+      :activePlayerId="game.activePlayerId"
       @place-stone="reemitPlaceStone"
       @quit-game="reemitQuitGame"
       class="grid-item-connect4-board"
@@ -88,13 +93,55 @@ export default defineComponent({
       if (this.gameResult!.winnerId === this.identity.id) return "You won!";
       return "You lost!";
     },
-    player1(): PlayerIdentity {
-      if (!this.game) return { username: "", id: "" };
-      return this.game.match.player1;
+    playerLeft(): PlayerIdentity | undefined {
+      if (this.game != null)
+        return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
+
+      if (this.gameResult != null)
+        return this.gameResult.match.player1.id == this.identity.id
+          ? this.gameResult.match.player1
+          : this.gameResult.match.player2;
+
+      return undefined;
     },
-    player2(): PlayerIdentity {
-      if (!this.game) return { username: "", id: "" };
-      return this.game.match.player2;
+    playerRight(): PlayerIdentity | undefined {
+      if (this.game != null)
+        return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
+
+      if (this.gameResult != null)
+        return this.gameResult.match.player1.id == this.identity.id
+          ? this.gameResult.match.player2
+          : this.gameResult.match.player1;
+
+      return undefined;
+    },
+    namePlayerLeft(): string {
+      if (this.playerLeft == null) return "";
+      if (this.playerLeft.id == this.identity.id) return "you";
+      return this.playerLeft.username;
+    },
+    namePlayerRight(): string {
+      if (this.playerRight == undefined) return "";
+      if (this.playerRight.id == this.identity.id) return "you";
+      return this.playerRight.username;
+    },
+    gameStatePlayerLeft(): string {
+      if (this.game == null) return "";
+      if (this.playerLeft == null) return "";
+      if (this.game.activePlayerId === this.playerLeft.id) {
+        if (this.playerLeft.id == this.identity.id) return "your turn!";
+        return "playing...";
+      }
+      return "";
+    },
+    gameStatePlayerRight(): string {
+      if (this.game == null) return "";
+      if (this.playerRight == null) return "";
+      if (this.game.activePlayerId === this.playerRight.id) {
+        if (this.playerRight.id == this.identity.id) return "your turn!";
+        return "playing...";
+      }
+      return "";
     },
   },
 });
@@ -118,7 +165,7 @@ export default defineComponent({
   grid-row: 3 / span 10;
 }
 .grid-item-game-result {
-  grid-column: 4 / span 6;
+  grid-column: 2 / span 10;
   grid-row: 3 / span 10;
 }
 </style>

@@ -250,7 +250,6 @@ export default defineComponent({
       this.unsubscribe();
     },
   },
-
   computed: {
     isInGame(): boolean {
       return (

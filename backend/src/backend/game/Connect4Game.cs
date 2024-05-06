@@ -12,7 +12,8 @@ namespace backend.game
             _connect4Board.OnStonePlaced += OnStonePlaced;
             _connect4Board.OnBoardReset += OnBoardReset;
 
-            _activePlayer = match.Player1;
+            _startingPlayer = match.Player1;
+            _activePlayer = _startingPlayer;
         }
 
         public event Action? OnGameEnded;
@@ -30,12 +31,17 @@ namespace backend.game
                 return;
             }
             
-            Debug.Assert(_connect4Board.PlaceStone(player, column));
+            if (!_connect4Board.PlaceStone(player, column))
+            {
+                Debug.Assert(false);
+                return;
+            }
+            _playedMoves.Add(column);
         }
         public void PlayerQuit(IPlayer player)
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null);
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
             _match.Player1.GameEnded(gameResult);
             _match.Player2.GameEnded(gameResult);
             OnGameEnded?.Invoke();
@@ -165,7 +171,7 @@ namespace backend.game
         }
         private void OnConnect4(Connect4Line connect4Line)
         {
-            GameResult gameResult = new GameResult(_activePlayer, connect4Line);
+            GameResult gameResult = new GameResult(_activePlayer, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             _match.Player1.GameEnded(gameResult);
             _match.Player2.GameEnded(gameResult);
 
@@ -187,7 +193,9 @@ namespace backend.game
 
         private bool _disposed = false;
         private IPlayer _activePlayer;
+        private readonly IPlayer _startingPlayer;
         private readonly Match _match;
         private readonly Connect4Board _connect4Board;
+        private readonly ICollection<int> _playedMoves = new List<int>();
     }
 }
