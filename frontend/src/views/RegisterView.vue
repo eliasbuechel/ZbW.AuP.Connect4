@@ -41,7 +41,7 @@ export default defineComponent({
   methods: {
     async register(): Promise<void> {
       try {
-        await this.$axios.post("http://localhost:5000/account/register", this.credentials);
+        await this.$axios.post("/account/register", this.credentials);
         this.errors.registration = "";
         this.redirectToLogin();
       } catch (error: any) {
