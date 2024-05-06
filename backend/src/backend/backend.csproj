@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="communication\Controller\" />
     <Folder Include="Controllers\" />
   </ItemGroup>
 
