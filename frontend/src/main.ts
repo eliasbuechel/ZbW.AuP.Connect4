@@ -6,22 +6,21 @@ import axios, { AxiosStatic } from "axios";
 import { App, createApp } from "vue";
 import AppVue from "./App.vue";
 import routes from "@/routes";
+import authService from "@/services/authService";
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 export default router;
 
-// Navigation Guard
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false);
-  const isAuthenticated = localStorage.getItem('authToken'); 
-
-  if (requiresAuth && !isAuthenticated) {
-    next('/login'); 
+  if (to.meta.requiresAuth && !authService.isAuthenticated()) {
+    next("/login");
+  } else if (to.name === "Login" && authService.isAuthenticated()) {
+    next("/home");
   } else {
-    next(); 
+    next();
   }
 });
 
@@ -34,7 +33,7 @@ declare module "@vue/runtime-core" {
   }
 }
 app.config.globalProperties.$axios = axios;
+axios.defaults.baseURL = "http://localhost:5000";
 
 app.use(router);
 app.mount("#app");
-
