@@ -42,7 +42,7 @@ namespace backend.services
             }
             return false;
         }
-        public void RequestMatch(IPlayer requester, IPlayer opponent)
+        public bool RequestMatch(IPlayer requester, IPlayer opponent)
         {
             lock (_matchRequestsLock)
             {
@@ -51,12 +51,13 @@ namespace backend.services
                     if (request.Requester == requester)
                     {
                         requester.RejectedMatch(opponent);
-                        return;
+                        return false;
                     }
                 }
                 _matchRequests.Add(new MatchRequest(requester, opponent));
             }
             opponent.RequestedMatch(requester);
+            return true;
         }
         public bool HasMatched(Player player1, IPlayer player2)
         {
@@ -95,7 +96,7 @@ namespace backend.services
                 }
             }
         }
-        public void RejectMatch(Player player, IPlayer requester)
+        public bool RejectMatch(Player player, IPlayer requester)
         {
             lock (_matchRequestsLock)
             {
@@ -105,12 +106,13 @@ namespace backend.services
                     {
                         _matchRequests.Remove(matchRequest);
                         requester.RejectedMatch(player);
-                        return;
+                        return true;
                     }
 
                 }
             }
             Debug.Assert(false);
+            return false;
         }
         public void PlayMove(Player player, int column)
         {
@@ -127,7 +129,7 @@ namespace backend.services
             Debug.Assert(_activeGame != null);
             _activeGame.PlayerQuit(player);
         }
-        public bool HasGameStarted(IPlayer player)
+        public bool IsInGame(IPlayer player)
         {
             if (_activeGame == null)
                 return false;
@@ -162,7 +164,10 @@ namespace backend.services
             _activeGame.OnGameEnded -= OnGameEnded;
             _activeGame.Dispose();
             _activeGame = null;
-            _gamePlan.Dequeue();
+
+            Match match = _gamePlan.Dequeue();
+            foreach (var onlinePlayer in _playerConnectionManager.OnlinePlayers)
+                onlinePlayer.MatchingEnded(match);
 
             TryStartGame();
         }

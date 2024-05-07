@@ -21,39 +21,39 @@ namespace backend.communication.signalR
             _playerRequestLock = playerRequestLock;
         }
 
+        public void GetGamePlan()
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                ThisPlayer.GetGamePlan(Connection).Wait();
+            }
+        }
+        public void GetGame()
+        {
+            lock (_playerRequestLock[Identity])
+            {
+                ThisPlayer.GetGame(Connection).Wait();
+            }
+        }
         public void GetUserData()
         {
             lock (_playerRequestLock[Identity])
             {
-                PlayerIdentityDTO userData = new PlayerIdentityDTO(ThisPlayer);
-                Clients.Caller.SendAsync("send-user-data", userData).Wait();
+                ThisPlayer.GetUserDataAsync(Connection).Wait();
             }
         }
         public void GetOnlinePlayers()
         {
             lock (_playerRequestLock[Identity])
             {
-                IEnumerable<IPlayer> onlinePlayers = ThisPlayer.GetOnlinePlayers();
-                IEnumerable<OnlinePlayerDTO> onlinePlayersDTO = onlinePlayers.Select(p => new OnlinePlayerDTO(p, ThisPlayer)).ToArray();
-                Clients.Caller.SendAsync("send-online-players", onlinePlayersDTO).Wait();
-            }
-        }
-        public void GetGamePlan()
-        {
-            lock (_playerRequestLock[Identity])
-            {
-                IEnumerable<Match> gamePlan = ThisPlayer.GetGamePlan();
-                IEnumerable<MatchDTO> gamePlanDTO = gamePlan.Select(m => new MatchDTO(m)).ToList();
-                Clients.Caller.SendAsync("send-game-plan", gamePlanDTO).Wait();
+                ThisPlayer.GetOnlinePlayers(Connection).Wait();
             }
         }
         public void GetCurrentGame()
         {
             lock (_playerRequestLock[Identity])
             {
-                Connect4Game currentGame =  ThisPlayer.GetCurrentGameState();
-                Connect4GameDTO connect4GameDTO = new Connect4GameDTO(currentGame);
-                Clients.Caller.SendAsync("send-current-game", connect4GameDTO).Wait();
+                ThisPlayer.GetCurrentGame(Connection).Wait();
             }
         }
         public void RequestMatch(string playerId)
@@ -62,10 +62,6 @@ namespace backend.communication.signalR
             {
                 IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
                 ThisPlayer.RequestMatch(player);
-
-                foreach (var connection in ThisPlayer.Connections)
-                    if (connection != Context.ConnectionId)
-                        Clients.Client(connection).SendAsync("you-requested-match", playerId);
             }
         }
         public void AcceptMatch(string playerId)
@@ -81,11 +77,7 @@ namespace backend.communication.signalR
             lock (_playerRequestLock[Identity])
             {
                 IPlayer player = _onlinePlayerProvider.GetPlayer(playerId);
-                ThisPlayer.RejectMatch(player);
-
-                foreach (var connection in ThisPlayer.Connections)
-                    if (connection != Context.ConnectionId)
-                        Clients.Client(connection).SendAsync("you-rejected-match", playerId);
+                ThisPlayer.RejectMatch(player).Wait();
             }
         }
         public void PlayMove(int column)
@@ -93,10 +85,6 @@ namespace backend.communication.signalR
             lock (_playerRequestLock[Identity])
             {
                 ThisPlayer.PlayMove(column);
-
-                foreach (var connection in ThisPlayer.Connections)
-                    if (connection != Context.ConnectionId)
-                        Clients.Client(connection).SendAsync("move-played", column);
             }
         }
         public void QuitGame()
@@ -105,11 +93,6 @@ namespace backend.communication.signalR
             {
                 ThisPlayer.QuitGame();
             }
-        }
-        public void HasGameStarted()
-        {
-            if (ThisPlayer.HasGameStarted())
-                Clients.Caller.SendAsync("game-started");
         }
 
         public override Task OnConnectedAsync()
@@ -120,7 +103,7 @@ namespace backend.communication.signalR
                 if (player == null)
                     player = _createPlayer(Identity);
 
-                player.Connected(Context.ConnectionId);
+                player.Connect(Connection);
                 return Task.CompletedTask;
             }
         }
@@ -131,12 +114,13 @@ namespace backend.communication.signalR
                 IPlayer? player = _onlinePlayerProvider.GetPlayerOrDefault(Identity);
 
                 if (player != null)
-                    ThisPlayer.Disconnected(Context.ConnectionId);
+                    ThisPlayer.Disconnected(Connection);
 
                 return Task.CompletedTask;
             }
         }
 
+        private string Connection => Context.ConnectionId;
         private PlayerIdentity Identity
         {
             get

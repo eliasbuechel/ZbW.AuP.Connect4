@@ -8,7 +8,7 @@
             Player2 = request.Opponent;
         }
 
-        public Guid Id { get; private set; }
+        public Guid Id { get; } = Guid.NewGuid();
         public IPlayer Player1 { get; }
         public IPlayer Player2 { get; }
     }

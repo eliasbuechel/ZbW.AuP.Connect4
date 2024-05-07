@@ -17,13 +17,14 @@
         void PlayerConnected(IPlayer player);
         void PlayerDisconnected(IPlayer player);
         IEnumerable<IPlayer> GetOnlinePlayers();
-        void Connected(string connectionId);
-        void Disconnected(string connectionId);
+        void Connect(string connection);
+        void Disconnected(string connection);
         bool HasRequestedMatch(IPlayer you);
         bool HasMatched(IPlayer player);
         void AcceptMatch(IPlayer player);
         void Matched(Match match);
-        void RejectMatch(IPlayer player);
+        void MatchingEnded(Match match);
+        Task RejectMatch(IPlayer player);
         IEnumerable<Match> GetGamePlan();
         void MovePlayed(IPlayer player, Field field);
         void PlayMove(int column);
@@ -31,6 +32,10 @@
         Connect4Game GetCurrentGameState();
         void QuitGame();
         void GameEnded(GameResult gameResult);
-        bool HasGameStarted();
+        Task GetGame(string connection);
+        Task GetUserDataAsync(string connection);
+        Task GetOnlinePlayers(string connection);
+        Task GetGamePlan(string connection);
+        Task GetCurrentGame(string connection);
     }
 }

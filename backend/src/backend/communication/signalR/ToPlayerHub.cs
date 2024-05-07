@@ -3,6 +3,7 @@ using backend.Data;
 using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
+using MySqlX.XDevAPI;
 
 namespace backend.communication.signalR
 {
@@ -13,56 +14,66 @@ namespace backend.communication.signalR
             _hubContext = hubContext;
         }
 
-        public override async void PlayerConnected(IPlayer player)
+        protected override async Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer)
         {
-            OnlinePlayerDTO onlinePlayer = new OnlinePlayerDTO(player, this);
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("player-connected", onlinePlayer);
+            await _hubContext.Clients.Client(connection).SendAsync("PlayerConnected", onlinePlayer);
         }
-        public override async void PlayerDisconnected(IPlayer player)
+        protected override async Task PlayerDisconnected(string connection, string playerId)
         {
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("player-disconnected", player.Id);
+            await _hubContext.Clients.Client(connection).SendAsync("PlayerDisconnected", playerId);
         }
-        public override async void RequestedMatch(IPlayer player)
+        protected override async Task PlayerRequestedMatch(string connection, string playerId)
         {
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("player-requested-match", player.Id);
+            await _hubContext.Clients.Client(connection).SendAsync("PlayerRequestedMatch", playerId);
         }
-        public override async void RejectedMatch(IPlayer player)
+        protected override async Task PlayerRejectedMatch(string connection, string playerId)
         {
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("player-rejected-match", player.Id);
+            await _hubContext.Clients.Client(connection).SendAsync("PlayerRejectedMatch", playerId);
         }
-        public override async void Matched(Match match)
+        protected override async Task Matched(string connection, MatchDTO match)
         {
-            MatchDTO matchDTO = new MatchDTO(match);
-
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("matched", matchDTO);
+            await _hubContext.Clients.Client(connection).SendAsync("Matched", match);
         }
-        public override async void MovePlayed(IPlayer player, Field field)
+        protected override async Task MatchingEnded(string connection, string matchId)
         {
-            FieldDTO fieldDTO = new FieldDTO(field);
-
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("move-played", player.Id, fieldDTO);
+            await _hubContext.Clients.Client(connection).SendAsync("MatchingEnded", matchId);
         }
-        public override async void GameStarted(Connect4Game connect4Game)
+        protected override async Task MovePlayed(string connection, string playerId, FieldDTO field)
         {
-            Connect4GameDTO connect4GameDTO = new Connect4GameDTO(connect4Game);
-
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("game-started", connect4GameDTO);
+            await _hubContext.Clients.Client(connection).SendAsync("MovePlayed", playerId, field);
         }
-        public override async void GameEnded(GameResult gameResult)
+        protected override async Task GameStarted(string connection, Connect4GameDTO connect4Game)
         {
-            GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
-
-            foreach (string connection in Connections)
-                await _hubContext.Clients.Client(connection).SendAsync("game-ended", gameResultDTO);
+            await _hubContext.Clients.Client(connection).SendAsync("GameStarted", connect4Game);
         }
-
+        protected override async Task GameEnded(string connection, GameResultDTO gameResult)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("GameEnded", gameResult);
+        }
+        protected override async Task SendUserData(string connection, PlayerIdentityDTO userData)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("SendUserData", userData);
+        }
+        protected override async Task SendOnlinePlayers(string connection, IEnumerable<OnlinePlayerDTO> onlinePlayers)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("SendOnlinePlayers", onlinePlayers);
+        }
+        protected override async Task SendGamePlan(string connection, IEnumerable<MatchDTO> gamePlan)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("SendGamePlan", gamePlan);
+        }
+        protected override async Task SendGame(string connection, Connect4GameDTO game)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("SendGame", game);
+        }
+        protected override async Task YouRequestedMatch(string connection, string playerId)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("YouRequestedMatch", playerId);
+        }
+        protected override async Task YouRejectedMatch(string connection, string playerId)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync("YouRejectedMatch", playerId);
+        }
         private readonly IHubContext<THub> _hubContext;
     }
 }
