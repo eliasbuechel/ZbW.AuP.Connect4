@@ -8,13 +8,10 @@ namespace backend.game
 {
     internal abstract class Player : IPlayer
     {
-        public Player(PlayerIdentity identity, GameManager gameManager)
+        public Player(string playerId, string username, GameManager gameManager)
         {
-            Id = identity.Id;
-            string? username = identity.UserName;
-            Debug.Assert(username != null);
+            Id = playerId;
             Username = username;
-
             _gameManager = gameManager;
         }
 

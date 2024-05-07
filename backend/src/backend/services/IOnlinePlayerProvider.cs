@@ -1,12 +1,10 @@
-﻿using backend.Data;
-using backend.game;
+﻿using backend.game;
 
 namespace backend.services
 {
     internal interface IOnlinePlayerProvider
     {
-        IPlayer GetPlayer(PlayerIdentity identity);
-        IPlayer GetPlayer(string playerId);
-        IPlayer? GetPlayerOrDefault(PlayerIdentity identity);
+        IPlayer GetOnlinePlayer(string playerId);
+        IPlayer? GetOnlinePlayerOrDefault(string playerId);
     }
 }

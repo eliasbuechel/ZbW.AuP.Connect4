@@ -9,7 +9,7 @@ namespace backend.communication.signalR
 {
     internal class ToPlayerHub<THub> : Player where THub : Hub
     {
-        public ToPlayerHub(PlayerIdentity identity, GameManager gameManager, IHubContext<THub> hubContext) : base(identity, gameManager)
+        public ToPlayerHub(string playerId, string username, GameManager gameManager, IHubContext<THub> hubContext) : base(playerId, username, gameManager)
         {
             _hubContext = hubContext;
         }
@@ -74,6 +74,7 @@ namespace backend.communication.signalR
         {
             await _hubContext.Clients.Client(connection).SendAsync("YouRejectedMatch", playerId);
         }
+
         private readonly IHubContext<THub> _hubContext;
     }
 }

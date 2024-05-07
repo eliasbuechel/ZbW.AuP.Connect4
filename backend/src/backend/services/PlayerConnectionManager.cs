@@ -1,18 +1,13 @@
-﻿using backend.Data;
+﻿using backend.communication.signalR;
+using backend.Data;
 using backend.game;
 using System.Diagnostics;
+using System.Security.Principal;
 
 namespace backend.services
 {
     internal class PlayerConnectionManager : IOnlinePlayerProvider
     {
-        private static int instanceCount = 0;
-        public PlayerConnectionManager()
-        {
-            instanceCount++;
-            Debug.Assert(instanceCount < 2); // only one instance allowed
-        }
-
         public IEnumerable<IPlayer> OnlinePlayers
         {
             get
@@ -83,11 +78,7 @@ namespace backend.services
             });
         }
 
-        public IPlayer GetPlayer(PlayerIdentity identity)
-        {
-            return GetPlayer(identity.Id);
-        }
-        public IPlayer GetPlayer(string playerId)
+        public IPlayer GetOnlinePlayer(string playerId)
         {
             lock(_onlinePlayersLock)
             {
@@ -96,11 +87,11 @@ namespace backend.services
                 return player;
             }
         }
-        public IPlayer? GetPlayerOrDefault(PlayerIdentity identity)
+        public IPlayer? GetOnlinePlayerOrDefault(string playerId)
         {
-            lock(_onlinePlayersLock)
+            lock (_onlinePlayersLock)
             {
-                return _onlinePlayers.FirstOrDefault(p => p.Id == identity.Id);
+                return _onlinePlayers.FirstOrDefault(p => p.Id == playerId);
             }
         }
 

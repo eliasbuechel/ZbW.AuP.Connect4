@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System.Diagnostics;
-using System.Net;
 
 
 namespace backend
@@ -77,11 +75,20 @@ namespace backend
 
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddSingleton<PlayerRequestLock>();
-            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<PlayerHub>>>(s => {
+            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
-                IHubContext<PlayerHub> hubContext = s.GetRequiredService<IHubContext<PlayerHub>>();
-                return (identity) => new ToPlayerHub<PlayerHub>(identity, gameManager, hubContext);
+                IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
+                return (identity) => new ToPlayerHub<WebPlayerHub>(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
             });
+            services.AddSingleton<ToPlayerHub<OpponentRoboterPlayerHub>>(s =>
+            {
+                GameManager gameManager = s.GetRequiredService<GameManager>();
+                IHubContext<OpponentRoboterPlayerHub> hubContext = s.GetRequiredService<IHubContext<OpponentRoboterPlayerHub>>();
+                string roboterName = "Opponent roboter";
+                string roboterId = Guid.NewGuid().ToString();
+                return new ToPlayerHub<OpponentRoboterPlayerHub>(roboterId, roboterName, gameManager, hubContext);
+            });
+
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
@@ -127,7 +134,7 @@ namespace backend
                 endpoints.MapControllers();
 
                 endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
-                endpoints.MapHub<PlayerHub>("/playerHub");
+                endpoints.MapHub<WebPlayerHub>("/playerHub");
             });
         }
 

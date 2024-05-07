@@ -1,4 +1,6 @@
-﻿using backend.game;
+﻿using backend.communication.DOTs;
+using backend.game;
+using Microsoft.AspNetCore.SignalR;
 
 namespace backend.communication.signalR
 {
@@ -14,17 +16,5 @@ namespace backend.communication.signalR
         void PlayMove(int column);
         void QuitGame();
         public void HasGameStarted();
-    }
-
-    internal interface IToPlayerHubAPI
-    {
-        void PlayerConnected(IPlayer player);
-        void PlayerDisconnected(IPlayer player);
-        void RequestedMatch(IPlayer player);
-        void RejectedMatch(IPlayer player);
-        void Matched(Match match);
-        void MovePlayed(IPlayer player, Field field);
-        void GameStarted(Connect4Game connect4Game);
-        void GameEnded(GameResult gameResult);
     }
 }
