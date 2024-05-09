@@ -74,7 +74,11 @@ namespace backend.game
                 return;
             if (CheckForWinInRow(field))
                 return;
-            if (CheckForWinDiagonally(field))
+            if (CheckForWinDiagonallyUp(field))
+                return;
+            if (CheckForWinDiagonallyDown(field))
+                return;
+            if (CheckForNoMoveLeft())
                 return;
         }
         private bool CheckForWinInColumn(Field lastPlacedStone)
@@ -130,7 +134,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonally(Field lastPlacedStone)
+        private bool CheckForWinDiagonallyUp(Field lastPlacedStone)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = lastPlacedStone.Column;
@@ -169,9 +173,73 @@ namespace backend.game
 
             return false;
         }
+        private bool CheckForWinDiagonallyDown(Field lastPlacedStone)
+        {
+            Connect4Line connect4Line = new Connect4Line();
+            int c = lastPlacedStone.Column;
+            int r = lastPlacedStone.Row;
+
+            while (true)
+            {
+                if (c <= 0 || r >= _connect4Board.Rows - 1)
+                    break;
+
+                c--;
+                r++;
+            }
+
+            int count = 0;
+            while (c < _connect4Board.Columns && r >= 0)
+            {
+                if (_connect4Board[c][r] == _activePlayer)
+                {
+                    connect4Line[count].Column = c;
+                    connect4Line[count].Row = r;
+                    count++;
+                }
+                else
+                    count = 0;
+
+                if (count == 4)
+                {
+                    OnConnect4(connect4Line);
+                    return true;
+                }
+
+                c++;
+                r--;
+            }
+
+            return false;
+        }
+        private bool CheckForNoMoveLeft()
+        {
+            bool allCollumnsFull = true;
+            for (int i = 0; i  < _connect4Board.Columns; i++)
+            {
+                IPlayer?[] column = _connect4Board[i];
+
+                if (column[_connect4Board[i].Length - 1] == null)
+                    allCollumnsFull = false;
+            }
+
+            if (!allCollumnsFull)
+                return false;
+
+            OnNoMoveLeft();
+            return true;
+        }
         private void OnConnect4(Connect4Line connect4Line)
         {
             GameResult gameResult = new GameResult(_activePlayer, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            _match.Player1.GameEnded(gameResult);
+            _match.Player2.GameEnded(gameResult);
+
+            OnGameEnded?.Invoke();
+        }
+        private void OnNoMoveLeft()
+        {
+            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
             _match.Player1.GameEnded(gameResult);
             _match.Player2.GameEnded(gameResult);
 
