@@ -93,7 +93,7 @@ namespace backend.game
 
         private readonly IPlayer?[][] _field;
         private readonly IRoboterAPI _roboterAPI;
-        private const int ROWS = 7;
-        private const int COLUMNS = 6;
+        private const int ROWS = 6;
+        private const int COLUMNS = 7;
     }
 }

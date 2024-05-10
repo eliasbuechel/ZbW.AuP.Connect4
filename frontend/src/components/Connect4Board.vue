@@ -4,7 +4,7 @@
       <div
         v-for="(column, colIdx) in connect4Board"
         :key="colIdx"
-        :class="{ column: true, playableColumn: isYourTurn }"
+        :class="{ column: true, playableColumn: isYourTurn && !columnIsFull(colIdx) }"
         @click="placeStone(colIdx)"
       >
         <div
@@ -48,7 +48,11 @@ export default defineComponent({
   methods: {
     placeStone(column: number): void {
       if (!this.isYourTurn) return;
+      if (this.columnIsFull(column)) return;
       this.$emit("place-stone", column);
+    },
+    columnIsFull(colIdx: number): boolean {
+      return this.connect4Board[colIdx][this.connect4Board[colIdx].length - 1] != "";
     },
   },
   computed: {

@@ -55,7 +55,7 @@ export default defineComponent({
   },
   mounted() {
     for (let i = 0; i < this.connect4Board.length; i++) {
-      this.connect4Board[i] = new Array(7);
+      this.connect4Board[i] = new Array(6);
       for (let j = 0; j < this.connect4Board[i].length; j++) this.connect4Board[i][j] = "";
     }
 
