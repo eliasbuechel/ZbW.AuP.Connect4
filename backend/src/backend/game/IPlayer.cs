@@ -7,7 +7,7 @@
 
         string Id { get; }
         string Username { get; }
-        bool HasConfirmedGameStart { get; }
+        bool HasConfirmedGameStart { get; set; }
         public IEnumerable<string> Connections { get; }
 
         void ConfirmGameStart();
@@ -37,5 +37,8 @@
         Task GetOnlinePlayers(string connection);
         Task GetGamePlan(string connection);
         Task GetCurrentGame(string connection);
+        void OpponentConfirmedGameStart();
+        void GameStartConfirmed();
+        void YouConfirmedGameStart();
     }
 }

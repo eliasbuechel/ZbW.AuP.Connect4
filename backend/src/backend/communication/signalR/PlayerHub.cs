@@ -70,6 +70,13 @@ namespace backend.communication.signalR
                 ThisPlayer.RejectMatch(player).Wait();
             }
         }
+        public void ConfirmGameStart()
+        {
+            lock (RequestLock)
+            {
+                ThisPlayer.ConfirmGameStart();
+            }
+        }
         public void PlayMove(int column)
         {
             lock (RequestLock)

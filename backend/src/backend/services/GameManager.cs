@@ -231,6 +231,12 @@ namespace backend.services
             StartNewGame(match);
         }
 
+        internal void ConfirmedGameStart(IPlayer player)
+        {
+            Debug.Assert(_activeGame != null);
+            _activeGame.ConnfirmedGameStart(player);
+        }
+
         private object _gamePlanLock = new object();
         private object _matchRequestsLock = new object();
         private Connect4Game? _activeGame = null;

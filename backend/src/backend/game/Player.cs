@@ -15,7 +15,7 @@ namespace backend.game
             _gameManager = gameManager;
         }
 
-        public bool HasConfirmedGameStart { get; private set; }
+        public bool HasConfirmedGameStart { get; set; }
         public string Id { get; }
         public string Username { get; }
         public IEnumerable<string> Connections => _connections;
@@ -48,8 +48,14 @@ namespace backend.game
         }
         public void ConfirmGameStart()
         {
-            Debug.Assert(!HasConfirmedGameStart);
+            if (HasConfirmedGameStart)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
             HasConfirmedGameStart = true;
+            _gameManager.ConfirmedGameStart(this);
         }
         public bool HasRequestedMatch(IPlayer you)
         {
@@ -118,7 +124,6 @@ namespace backend.game
             await SendGame(connection, game);
         }
 
-
         public async void PlayerConnected(IPlayer player)
         {
             OnlinePlayerDTO onlinePlayer = new OnlinePlayerDTO(player, this);
@@ -174,6 +179,22 @@ namespace backend.game
             foreach (string connection in Connections)
                 await MovePlayed(connection, playerId, fieldDTO);
         }
+        public void OpponentConfirmedGameStart()
+        {
+            foreach (string connection in Connections)
+                OpponentConfirmedGameStart(connection);
+
+        }
+        public void GameStartConfirmed()
+        {
+            foreach (string connection in Connections)
+                GameStartConfirmed(connection);
+        }
+        public async void YouConfirmedGameStart()
+        {
+            foreach (var connection in Connections)
+                await YouConfirmedGameStart(connection);
+        }
 
         protected abstract Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer);
         protected abstract Task PlayerDisconnected(string connection, string playerId);
@@ -190,6 +211,10 @@ namespace backend.game
         protected abstract Task SendGame(string connection, Connect4GameDTO game);
         protected abstract Task YouRequestedMatch(string connection, string playerId);
         protected abstract Task YouRejectedMatch(string connection, string playerId);
+        protected abstract Task OpponentConfirmedGameStart(string connection);
+        protected abstract Task GameStartConfirmed(string connection);
+        protected abstract Task YouConfirmedGameStart(string connection);
+
 
         private readonly GameManager _gameManager;
         private readonly ICollection<string> _connections = new List<string>();

@@ -1,4 +1,4 @@
-import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import eventBus from "./eventBus";
 
 type Callback = (...arg: any[]) => void;
@@ -7,6 +7,8 @@ class SignalRHub {
   constructor() {
     this._client = new HubConnectionBuilder()
       .withUrl("http://localhost:5000/playerHub", { withCredentials: true })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Error)
       .build();
 
     this._client.onreconnected(this.onReconnected.bind(this));
@@ -19,7 +21,7 @@ class SignalRHub {
       .then(() => this.onConnected())
       .catch((error) => {
         console.error("Error starting SignalR connection: ", error);
-        setTimeout(() => this.start(), 10000);
+        // setTimeout(() => this.start(), 10000);
       });
   }
 

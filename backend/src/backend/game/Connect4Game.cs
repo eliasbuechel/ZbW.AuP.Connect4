@@ -22,6 +22,7 @@ namespace backend.game
         public Match Match => _match;
         public IPlayer ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
+        public bool StartConfirmed => _match.Player1.HasConfirmedGameStart && _match.Player2.HasConfirmedGameStart;
 
         public void PlayMove(IPlayer player, int column)
         {
@@ -42,13 +43,34 @@ namespace backend.game
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
-            _match.Player1.GameEnded(gameResult);
-            _match.Player2.GameEnded(gameResult);
-            OnGameEnded?.Invoke();
+            GameEndet(gameResult);
         }
         public void Initialize()
         {
             _connect4Board.Reset();
+        }
+        public void ConnfirmedGameStart(IPlayer player)
+        {
+            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
+            player.YouConfirmedGameStart();
+            opponent.OpponentConfirmedGameStart();
+            if (opponent.HasConfirmedGameStart)
+            {
+                _match.Player1.GameStartConfirmed();
+                _match.Player2.GameStartConfirmed();
+            }
+        }
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _connect4Board.OnStonePlaced -= OnStonePlaced;
+            _connect4Board.OnBoardReset -= OnBoardReset;
+            _disposed = true;
         }
 
         private void OnBoardReset()
@@ -232,31 +254,20 @@ namespace backend.game
         private void OnConnect4(Connect4Line connect4Line)
         {
             GameResult gameResult = new GameResult(_activePlayer, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
-            _match.Player1.GameEnded(gameResult);
-            _match.Player2.GameEnded(gameResult);
-
-            OnGameEnded?.Invoke();
+            GameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
             GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameEndet(gameResult);
+        }
+        private void GameEndet(GameResult gameResult)
+        {
             _match.Player1.GameEnded(gameResult);
             _match.Player2.GameEnded(gameResult);
-
+            _match.Player1.HasConfirmedGameStart = false;
+            _match.Player2.HasConfirmedGameStart = false;
             OnGameEnded?.Invoke();
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _connect4Board.OnStonePlaced -= OnStonePlaced;
-            _connect4Board.OnBoardReset -= OnBoardReset;
-            _disposed = true;
         }
 
         private bool _disposed = false;

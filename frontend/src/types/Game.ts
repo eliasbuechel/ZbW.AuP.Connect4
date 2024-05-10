@@ -1,7 +1,8 @@
-import { Match } from "./Match";
+import { InGameMatch } from "./InGameMatch";
 
 export interface Game {
-  match: Match;
+  match: InGameMatch;
   activePlayerId: string;
   connect4Board: string[][];
+  startConfirmed: boolean;
 }

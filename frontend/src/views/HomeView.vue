@@ -13,6 +13,7 @@
     @place-stone="placeStone"
     @quit-game="quitGame"
     @leave-game-result-view="leaveGameResultView"
+    @confirm-game-start="confirmGameStart"
   />
 </template>
 
@@ -89,6 +90,9 @@ export default defineComponent({
       signalRHub.on("SendGame", this.updateGame);
       signalRHub.on("YouRequestedMatch", this.onYouRequestedMatch);
       signalRHub.on("YouRejectedMatch", this.onYouRejectedMatch);
+      signalRHub.on("OpponentConfirmedGameStart", this.onOpponentConfirmedGameStart);
+      signalRHub.on("GameStartConfirmed", this.onGameStartConfirmed);
+      signalRHub.on("YouConfirmedGameStart", this.onYouConfirmedGameStart);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -107,9 +111,15 @@ export default defineComponent({
       signalRHub.off("SendGame", this.updateGame);
       signalRHub.off("YouRequestedMatch", this.onYouRequestedMatch);
       signalRHub.off("YouRejectedMatch", this.onYouRejectedMatch);
+      signalRHub.off("OpponentConfirmedGameStart", this.onOpponentConfirmedGameStart);
+      signalRHub.off("GameStartConfirmed", this.onGameStartConfirmed);
+      signalRHub.off("YouConfirmedGameStart", this.onYouConfirmedGameStart);
     },
     leaveGameResultView(): void {
       this.gameResult = undefined;
+    },
+    confirmGameStart(): void {
+      signalRHub.invoke("ConfirmGameStart");
     },
     placeStone(column: number): void {
       signalRHub.invoke("PlayMove", column);
@@ -127,12 +137,10 @@ export default defineComponent({
     onGameStarted(game: Game): void {
       this.gameResult = undefined;
       this.game = game;
-      console.log(game);
     },
     onYouQuitGame(): void {
       if (this.game === undefined) {
         this.game = undefined;
-        // this.popGamePlan();
         return;
       }
       this.gameResult = undefined;
@@ -140,7 +148,6 @@ export default defineComponent({
     onQuitGame(): void {
       if (this.game === undefined) {
         this.game = undefined;
-        // this.popGamePlan();
         return;
       }
     },
@@ -242,6 +249,22 @@ export default defineComponent({
           return;
         }
       });
+    },
+    onOpponentConfirmedGameStart(): void {
+      if (this.identity == null) return;
+      if (this.game == null) return;
+      if (this.game.match.player1.id === this.identity.id) this.game.match.player2.hasConfirmedGameStart = true;
+      else if (this.game.match.player2.id === this.identity.id) this.game.match.player1.hasConfirmedGameStart = true;
+    },
+    onGameStartConfirmed(): void {
+      if (this.game == null) return;
+      this.game.startConfirmed = true;
+    },
+    onYouConfirmedGameStart(): void {
+      if (this.game == null) return;
+      if (this.identity == null) return;
+      if (this.game.match.player1.id === this.identity.id) this.game.match.player1.hasConfirmedGameStart = true;
+      else if (this.game.match.player2.id === this.identity.id) this.game.match.player2.hasConfirmedGameStart = true;
     },
     onSignalRConnected(): void {
       this.subscribe();

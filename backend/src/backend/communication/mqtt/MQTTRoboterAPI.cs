@@ -46,13 +46,13 @@ namespace backend.communication.mqtt
             _mqttTopicClient.OnConnected += RequestConnect4BoardReset;
         }
 
+
         private void RequestConnect4BoardReset()
         {
             _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString()).Wait();
             _mqttTopicClient.OnConnected -= RequestConnect4BoardReset;
         }
-
-        private async Task TopicColumnChanged(string value)
+        private Task TopicColumnChanged(string value)
         {
             int column;
             try
@@ -62,21 +62,31 @@ namespace backend.communication.mqtt
             catch
             {
                 Debug.Assert(false);
-                return;
+                return Task.CompletedTask;
             }
 
             if (column == -1)
             {
-               Debug.Assert(_placingField != null);
-                Debug.Assert(_placingPlayer != null);
+                if (_placingField == null)
+                {
+                    //Debug.Assert(false);
+                    return Task.CompletedTask;
+                }
+                if (_placingPlayer == null)
+                {
+                    //Debug.Assert(false);
+                    return Task.CompletedTask;
+                }
 
                 OnStonePlaced?.Invoke(_placingPlayer, _placingField);
                 _placingField = null;
                 _placingPlayer = null;
-                return;
+                return Task.CompletedTask;
             }
+
+            return Task.CompletedTask;
         }
-        private async Task TopicResetChanged(string value)
+        private Task TopicResetChanged(string value)
         {
             bool resetValue;
             try
@@ -86,18 +96,23 @@ namespace backend.communication.mqtt
             catch
             {
                 Debug.Assert(false);
-                return;
+                return Task.CompletedTask;
             }
 
-            if (!resetValue)
+            if (resetValue)
+                return Task.CompletedTask;
+
+            if (!_resettingBoard)
             {
-                Debug.Assert(_resettingBoard);
-                OnBoardReset?.Invoke();
-                _resettingBoard = false;
-                return;
+                Debug.Assert(true);
+                return Task.CompletedTask;
             }
+
+            OnBoardReset?.Invoke();
+            _resettingBoard = false;
+            return Task.CompletedTask;
         }
-        private async Task TopicManualColumnChanged(string value)
+        private Task TopicManualColumnChanged(string value)
         {
             throw new NotImplementedException();
         }

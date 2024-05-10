@@ -17,12 +17,19 @@
         Quit game
       </button>
     </div>
+    <button
+      v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
+      class="button-light"
+      @click="confirmGameStart"
+    >
+      Confirm game start
+    </button>
     <Connect4Board
-      v-if="game != null"
+      v-if="game != null && game.startConfirmed"
       :identity="identity"
       :connect4Board="game.connect4Board"
-      :playerLeftId="playerLeft!.id"
-      :playerRightId="playerRight!.id"
+      :playerLeftId="inGamePlayerLeft!.id"
+      :playerRightId="inGamePlayerRight!.id"
       :activePlayerId="game.activePlayerId"
       @place-stone="reemitPlaceStone"
       @quit-game="reemitQuitGame"
@@ -45,6 +52,7 @@ import { Game } from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import Connect4Board from "./Connect4Board.vue";
 import GameResultView from "./GameResultView.vue";
+import { InGamePlayer } from "@/types/InGamePlayer";
 
 export default defineComponent({
   props: {
@@ -73,6 +81,9 @@ export default defineComponent({
       if (this.game.activePlayerId !== this.identity.id) return;
       this.$emit("place-stone", column);
     },
+    confirmGameStart(): void {
+      this.$emit("confirm-game-start");
+    },
     reemitQuitGame(): void {
       if (this.game === undefined) return;
       if (this.gameResult !== undefined) return;
@@ -93,10 +104,19 @@ export default defineComponent({
       if (this.gameResult!.winnerId === this.identity.id) return "You won!";
       return "You lost!";
     },
-    playerLeft(): PlayerIdentity | undefined {
+    inGamePlayerLeft(): InGamePlayer | undefined {
       if (this.game != null)
         return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
 
+      return undefined;
+    },
+    inGamePlayerRight(): InGamePlayer | undefined {
+      if (this.game != null)
+        return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
+
+      return undefined;
+    },
+    gameResultPlayerLeft(): PlayerIdentity | undefined {
       if (this.gameResult != null)
         return this.gameResult.match.player1.id == this.identity.id
           ? this.gameResult.match.player1
@@ -104,10 +124,7 @@ export default defineComponent({
 
       return undefined;
     },
-    playerRight(): PlayerIdentity | undefined {
-      if (this.game != null)
-        return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
-
+    gameResultPlayerRight(): PlayerIdentity | undefined {
       if (this.gameResult != null)
         return this.gameResult.match.player1.id == this.identity.id
           ? this.gameResult.match.player2
@@ -116,29 +133,51 @@ export default defineComponent({
       return undefined;
     },
     namePlayerLeft(): string {
-      if (this.playerLeft == null) return "";
-      if (this.playerLeft.id == this.identity.id) return "you";
-      return this.playerLeft.username;
+      if (this.inGamePlayerLeft != null) {
+        if (this.inGamePlayerLeft.id == this.identity.id) return "you";
+        return this.inGamePlayerLeft.username;
+      } else if (this.gameResultPlayerLeft != null) {
+        if (this.gameResultPlayerLeft.id == this.identity.id) return "you";
+        return this.gameResultPlayerLeft.username;
+      }
+
+      return "";
     },
     namePlayerRight(): string {
-      if (this.playerRight == undefined) return "";
-      if (this.playerRight.id == this.identity.id) return "you";
-      return this.playerRight.username;
+      if (this.inGamePlayerRight != null) {
+        if (this.inGamePlayerRight.id == this.identity.id) return "you";
+        return this.inGamePlayerRight.username;
+      } else if (this.gameResultPlayerRight != null) {
+        if (this.gameResultPlayerRight.id == this.identity.id) return "you";
+        return this.gameResultPlayerRight.username;
+      }
+
+      return "";
     },
     gameStatePlayerLeft(): string {
       if (this.game == null) return "";
-      if (this.playerLeft == null) return "";
-      if (this.game.activePlayerId === this.playerLeft.id) {
-        if (this.playerLeft.id == this.identity.id) return "your turn!";
+      if (this.inGamePlayerLeft == null) return "";
+      if (!this.inGamePlayerLeft.hasConfirmedGameStart)
+        return this.inGamePlayerLeft.id === this.identity.id
+          ? "confirm to start the game"
+          : "confirming game start ...";
+      if (!this.game.startConfirmed) return "";
+      if (this.game.activePlayerId === this.inGamePlayerLeft.id) {
+        if (this.inGamePlayerLeft.id == this.identity.id) return "your turn!";
         return "playing...";
       }
       return "";
     },
     gameStatePlayerRight(): string {
       if (this.game == null) return "";
-      if (this.playerRight == null) return "";
-      if (this.game.activePlayerId === this.playerRight.id) {
-        if (this.playerRight.id == this.identity.id) return "your turn!";
+      if (this.inGamePlayerRight == null) return "";
+      if (!this.inGamePlayerRight.hasConfirmedGameStart)
+        return this.inGamePlayerRight.id === this.identity.id
+          ? "confirm to start the game"
+          : "confirming game start ...";
+      if (!this.game.startConfirmed) return "";
+      if (this.game.activePlayerId === this.inGamePlayerRight.id) {
+        if (this.inGamePlayerRight.id == this.identity.id) return "your turn!";
         return "playing...";
       }
       return "";
