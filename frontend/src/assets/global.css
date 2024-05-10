@@ -53,6 +53,7 @@ body {
 }
 
 .login-container > form > .input-field > label {
+  color: black;
   font-size: 0.8rem;
 }
 

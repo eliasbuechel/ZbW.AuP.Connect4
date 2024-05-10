@@ -6,20 +6,20 @@
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
-      <button v-if="game != null && game.match.player1.id === identity.id" class="button-light" @click="quitGame">
+      <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
       </button>
     </div>
     <div class="grid-item-player2 player-info player-info-right">
       <label> {{ namePlayerRight }}</label>
       <div class="playing-state">{{ gameStatePlayerRight }}</div>
-      <button v-if="game != null && game.match.player2.id === identity.id" class="button-light" @click="quitGame">
+      <button v-if="game != null && inGamePlayerRight!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
       </button>
     </div>
     <button
       v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
-      class="button-light"
+      class="button-light grid-item-connect4-board confirm-game-start-button"
       @click="confirmGameStart"
     >
       Confirm game start
@@ -206,5 +206,13 @@ export default defineComponent({
 .grid-item-game-result {
   grid-column: 2 / span 10;
   grid-row: 3 / span 10;
+}
+
+.confirm-game-start-button {
+  height: 3rem;
+  padding: 1rem;
+  width: fit-content;
+  justify-self: center;
+  align-self: center;
 }
 </style>

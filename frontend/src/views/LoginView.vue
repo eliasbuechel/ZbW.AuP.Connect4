@@ -1,21 +1,23 @@
 <template>
   <div class="login-container">
     <img id="logo-login" src="@/assets/images/Logo.png" alt="r4d4-logo" />
-    <form @submit.prevent="login">
-      <div class="input-field">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="credentials.email" @focusout="validateEmail" required />
-        <span v-if="errors.email" class="error">{{ errors.email }}</span>
-      </div>
-      <div class="input-field">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="credentials.password" @focusout="validatePassword" required />
-        <span v-if="errors.password" class="error">{{ errors.password }}</span>
-      </div>
-      <span v-if="errors.login" class="error">{{ errors.login }}</span>
-      <button class="button-submit" type="submit" :disabled="!allowLogin">Login</button>
-      <button class="button-link" type="button" @click="redirectToRegister">Registration</button>
-    </form>
+    <div class="login-container">
+      <form @submit.prevent="login">
+        <div class="input-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" v-model="credentials.email" @focusout="validateEmail" required />
+          <span v-if="errors.email" class="error">{{ errors.email }}</span>
+        </div>
+        <div class="input-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" v-model="credentials.password" @focusout="validatePassword" required />
+          <span v-if="errors.password" class="error">{{ errors.password }}</span>
+        </div>
+        <span v-if="errors.login" class="error">{{ errors.login }}</span>
+        <button class="button-submit" type="submit" :disabled="!allowLogin">Login</button>
+        <button class="button-link" type="button" @click="redirectToRegister">Registration</button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -39,10 +41,14 @@ export default defineComponent({
   methods: {
     async login() {
       try {
-        const response = await this.$axios.post("http://localhost:5000/account/login?useCookies=true", this.credentials, {
-          withCredentials: true,
-        });
-        localStorage.setItem('authToken', response.data.token);
+        const response = await this.$axios.post(
+          "http://localhost:5000/account/login?useCookies=true",
+          this.credentials,
+          {
+            withCredentials: true,
+          }
+        );
+        localStorage.setItem("authToken", response.data.token);
         this.errors.login = "";
         this.$router.push({ name: "Home" });
       } catch (error: any) {
