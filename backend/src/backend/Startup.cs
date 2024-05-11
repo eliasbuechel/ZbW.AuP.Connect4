@@ -28,7 +28,8 @@ namespace backend
             {
                 options.AddPolicy("MyCorsPolicy", builder =>
                 {
-                    builder.WithOrigins("http://localhost:3000")
+                    string cors = DotNetEnv.Env.GetString("CORS");
+                    builder.WithOrigins(cors)
                            .AllowAnyHeader()
                            .AllowAnyMethod()
                            .AllowCredentials();

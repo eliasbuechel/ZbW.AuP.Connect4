@@ -41,13 +41,9 @@ export default defineComponent({
   methods: {
     async login() {
       try {
-        const response = await this.$axios.post(
-          "http://localhost:5000/account/login?useCookies=true",
-          this.credentials,
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await this.$axios.post("/account/login?useCookies=true", this.credentials, {
+          withCredentials: true,
+        });
         localStorage.setItem("authToken", response.data.token);
         this.errors.login = "";
         this.$router.push({ name: "Home" });
