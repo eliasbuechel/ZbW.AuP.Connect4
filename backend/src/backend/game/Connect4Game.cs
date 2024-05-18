@@ -18,7 +18,6 @@ namespace backend.game
 
         public event Action? OnGameEnded;
 
-        public Guid Id { get; } = new Guid();
         public Match Match => _match;
         public IPlayer ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
@@ -60,6 +59,40 @@ namespace backend.game
                 _match.Player2.GameStartConfirmed();
             }
         }
+        public int GetBestMove()
+        {
+            IPlayer?[][] board = GetBoardDeepCopy(_connect4Board.Board);
+
+            IPlayer maxPlayer = _match.Player1 == _activePlayer ? _match.Player1 : _match.Player2;
+            IPlayer minPlayer = _match.Player1 == _activePlayer ? _match.Player2 : _match.Player1;
+
+            int value = int.MinValue;
+            int bestColumn = 0;
+
+            for (int i = 0; i < board.Length; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    if (board[i][j] != null)
+                        continue;
+
+                    board[i][j] = _activePlayer;
+
+                    int miniMaxValue = MiniMax(board, 1, maxPlayer, minPlayer, _activePlayer, i, j);
+                    if (miniMaxValue > value)
+                    {
+                        value = miniMaxValue;
+                        bestColumn = i;
+                    }
+
+                    board[i][j] = null;
+                    break;
+                }
+            }
+
+            return bestColumn;
+        }
+
         public void Dispose()
         {
             if (_disposed)
@@ -73,6 +106,20 @@ namespace backend.game
             _disposed = true;
         }
 
+        private IPlayer?[][] GetBoardDeepCopy(IPlayer?[][] field)
+        {
+            IPlayer?[][] newField = new IPlayer[field.Length][];
+            for (int i = 0; i < newField.Length; i++)
+            {
+                newField[i] = new IPlayer?[field[i].Length];
+                for (int j = 0; j < newField[i].Length; j++)
+                {
+                    newField[i][j] = field[i][j];
+                }
+            }
+            return newField;
+        }
+
         private void OnBoardReset()
         {
             _match.Player1.GameStarted(this);
@@ -80,30 +127,30 @@ namespace backend.game
         }
         private void OnStonePlaced(IPlayer player, Field field)
         {
+            SwapActivePlayer();
+            CheckForWin(field, player);
+
             Match.Player1.MovePlayed(player, field);
             Match.Player2.MovePlayed(player, field);
-
-            CheckForWin(field);
-            SwapActivePlayer();
         }
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
         }
-        private void CheckForWin(Field field)
+        private void CheckForWin(Field field, IPlayer player)
         {
-            if (CheckForWinInColumn(field))
+            if (CheckForWinInColumn(field, player))
                 return;
-            if (CheckForWinInRow(field))
+            if (CheckForWinInRow(field, player))
                 return;
-            if (CheckForWinDiagonallyUp(field))
+            if (CheckForWinDiagonallyUp(field, player))
                 return;
-            if (CheckForWinDiagonallyDown(field))
+            if (CheckForWinDiagonallyDown(field, player))
                 return;
             if (CheckForNoMoveLeft())
                 return;
         }
-        private bool CheckForWinInColumn(Field lastPlacedStone)
+        private bool CheckForWinInColumn(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
 
@@ -114,7 +161,7 @@ namespace backend.game
 
             for (int rowDown = lastPlacedStone.Row - 1; rowDown >= 0; rowDown--)
             {
-                if (_connect4Board[lastPlacedStone.Column][rowDown] != _activePlayer)
+                if (_connect4Board[lastPlacedStone.Column][rowDown] != player)
                     break;
 
                 Field field = new Field(lastPlacedStone.Column, rowDown);
@@ -131,14 +178,14 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinInRow(Field lastPlacedStone)
+        private bool CheckForWinInRow(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
             int count = 0;
 
             for (int i = 0; i < _connect4Board.Columns; i++)
             {
-                if (_connect4Board[i][lastPlacedStone.Row] == _activePlayer)
+                if (_connect4Board[i][lastPlacedStone.Row] == player)
                 {
                     connect4Line[count].Column = i;
                     connect4Line[count].Row = lastPlacedStone.Row;
@@ -156,7 +203,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonallyUp(Field lastPlacedStone)
+        private bool CheckForWinDiagonallyUp(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = lastPlacedStone.Column;
@@ -174,7 +221,7 @@ namespace backend.game
             int count = 0;
             while (c < _connect4Board.Columns && r < _connect4Board.Rows)
             {
-                if (_connect4Board[c][r] == _activePlayer)
+                if (_connect4Board[c][r] == player)
                 {
                     connect4Line[count].Column = c;
                     connect4Line[count].Row = r;
@@ -195,7 +242,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonallyDown(Field lastPlacedStone)
+        private bool CheckForWinDiagonallyDown(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = lastPlacedStone.Column;
@@ -213,7 +260,7 @@ namespace backend.game
             int count = 0;
             while (c < _connect4Board.Columns && r >= 0)
             {
-                if (_connect4Board[c][r] == _activePlayer)
+                if (_connect4Board[c][r] == player)
                 {
                     connect4Line[count].Column = c;
                     connect4Line[count].Row = r;
@@ -236,16 +283,7 @@ namespace backend.game
         }
         private bool CheckForNoMoveLeft()
         {
-            bool allCollumnsFull = true;
-            for (int i = 0; i  < _connect4Board.Columns; i++)
-            {
-                IPlayer?[] column = _connect4Board[i];
-
-                if (column[_connect4Board[i].Length - 1] == null)
-                    allCollumnsFull = false;
-            }
-
-            if (!allCollumnsFull)
+            if (!HasNoMoveLeft(_connect4Board.Board))
                 return false;
 
             OnNoMoveLeft();
@@ -268,6 +306,199 @@ namespace backend.game
             _match.Player1.HasConfirmedGameStart = false;
             _match.Player2.HasConfirmedGameStart = false;
             OnGameEnded?.Invoke();
+        }
+
+
+        private int MiniMax(IPlayer?[][] board, int depth, IPlayer maxPlayer, IPlayer minPlayer, IPlayer activePlayer, int colLastMove, int rowLastMove)
+        {
+            const int MAX_DEPTH = 6;
+
+            if (depth >= MAX_DEPTH) return 0;
+
+            IPlayer lastMovePlayer = maxPlayer == activePlayer ? minPlayer : maxPlayer;
+            if (HasNoMoveLeft(board))
+                return 0;
+            else if (HasWon(board, lastMovePlayer, colLastMove, rowLastMove))
+            {
+                if (lastMovePlayer == maxPlayer)
+                    return MAX_DEPTH - depth;
+
+                return -MAX_DEPTH + depth;
+            }
+
+
+            if (maxPlayer == activePlayer)
+            {
+                int value = int.MinValue;
+
+                for (int i = 0; i < board.Length; i++)
+                {
+                    for (int j = 0; j < board[i].Length; j++)
+                    {
+                        if (board[i][j] != null)
+                            continue;
+
+                        board[i][j] = activePlayer;
+                        Max(value, MiniMax(board, depth + 1, maxPlayer, minPlayer, minPlayer, i, j));
+                        board[i][j] = null;
+                    }
+                }
+
+                return value;
+            }
+            else
+            {
+                int value = int.MaxValue;
+
+                for (int i = 0; i < board.Length; i++)
+                {
+                    for (int j = 0; j < board[i].Length; j++)
+                    {
+                        if (board[i][j] != null)
+                            continue;
+
+                        board[i][j] = activePlayer;
+                        Min(value, MiniMax(board, depth + 1, maxPlayer, minPlayer, maxPlayer, i, j));
+                        board[i][j] = null;
+                    }
+                }
+
+                return value;
+            }
+        }
+
+        private bool HasWon(IPlayer?[][] board, IPlayer lastMovePlayer, int col, int row)
+        {
+            // column
+            int count = 1;
+            int i = row - 1;
+            while (i >= 0)
+            {
+                if (board[col][i] != lastMovePlayer)
+                    break;
+
+                count++;
+                i--;
+            }
+
+            if (count >= 4)
+                return true;
+
+            // row
+            count = 1;
+            i = col - 1;
+            while(i >= 0)
+            {
+                if (board[i][row] != lastMovePlayer)
+                    break;
+
+                count++;
+                i--;
+            }
+
+            i = col + 1;
+            while (i < board.Length)
+            {
+                if (board[i][row] != lastMovePlayer)
+                    break;
+
+                count++;
+                i++;
+            }
+
+            if (count >= 4)
+                return true;
+
+            // diagonally up
+            count = 1;
+            i = col - 1;
+            int j = row - 1;
+
+            while (i >= 0 && j >= 0)
+            {
+                if (board[i][j] != lastMovePlayer)
+                    break;
+
+                count++;
+                i--;
+                j--;
+            }
+
+            i = col + 1;
+            j = row + 1;
+
+            while (i < board.Length && j < board[i].Length)
+            {
+                if (board[i][j] != lastMovePlayer)
+                    break;
+
+                count++;
+                i++;
+                j++;
+            }
+
+            if (count >= 4)
+                return true;
+
+            // diagonally down
+
+            count = 1;
+            i = col - 1;
+            j = row + 1;
+
+            while (i >= 0 && j < board[i].Length)
+            {
+                if (board[i][j] != lastMovePlayer)
+                    break;
+
+                count++;
+                i--;
+                j++;
+            }
+
+            i = col + 1;
+            j = row - 1;
+
+            while (i < board.Length && j >= 0)
+            {
+                if (board[i][j] != lastMovePlayer)
+                    break;
+
+                count++;
+                i++;
+                j--;
+            }
+
+            if (count >= 4)
+                return true;
+
+
+            return false;
+        }
+
+        private bool HasNoMoveLeft(IPlayer?[][] board)
+        {
+            for (int i = 0; i < board.Length; i++)
+                if (board[i][board[i].Length - 1] == null)
+                    return false;
+
+            return true;
+        }
+
+        private int Max(int a, int b)
+        {
+            if (a > b)
+                return a;
+
+            return b;
+        }
+
+        private int Min(int a, int b)
+        {
+            if (a < b)
+                return a;
+
+            return b;
         }
 
         private bool _disposed = false;

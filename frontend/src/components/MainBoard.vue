@@ -5,6 +5,7 @@
       <h1 class="home">R4D4 - Connect4</h1>
     </div>
     <UserInfo :identity="identity" class="grid-item-user-info" />
+    <SinglePlayerModeSelection class="grid-item-single-player-mode-selection" />
     <OnlinePlayersListing :onlinePlayers="onlinePlayers" :identity="identity" class="grid-item-online-player-listing" />
     <GamePlan class="grid-item-game-plan" :gamePlan="gamePlan" />
     <PvE class="grid-item-pve" />
@@ -19,7 +20,11 @@ import UserInfo from "@/components/UserInfo.vue";
 import { Match } from "@/types/Match";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
+<<<<<<< HEAD
 import PvE from "@/components/PvE.vue";
+=======
+import SinglePlayerModeSelection from "./SinglePlayerModeSelection.vue";
+>>>>>>> f0d448a43b82b8d0c17316487500f3c7ac5425bb
 
 interface MainBoardState {
   isSubscribed: boolean;
@@ -48,6 +53,12 @@ export default defineComponent({
     };
   },
   components: {
+<<<<<<< HEAD
+=======
+    UserInfo,
+    SinglePlayerModeSelection,
+    OnlinePlayersListing,
+>>>>>>> f0d448a43b82b8d0c17316487500f3c7ac5425bb
     GamePlan,
     OnlinePlayersListing,
     PvE,
@@ -67,13 +78,21 @@ export default defineComponent({
   grid-row: 1 / span 3;
 }
 
+<<<<<<< HEAD
+=======
+.grid-item-single-player-mode-selection {
+  grid-column: 4 / span 6;
+  grid-row: 4 / span 2;
+}
+
+>>>>>>> f0d448a43b82b8d0c17316487500f3c7ac5425bb
 .grid-item-online-player-listing {
   grid-column: 1 / span 6;
-  grid-row: 4 / span 9;
+  grid-row: 7 / span 6;
 }
 
 .grid-item-game-plan {
   grid-column: 7 / span 6;
-  grid-row: 4 / span 9;
+  grid-row: 7 / span 6;
 }
 </style>
