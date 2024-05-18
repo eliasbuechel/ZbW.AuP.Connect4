@@ -30,7 +30,7 @@
         void PlayMove(int column);
         void GameStarted(Connect4Game connect4Game);
         Connect4Game GetCurrentGameState();
-        void QuitGame();
+        void QuitGame(); 
         void GameEnded(GameResult gameResult);
         Task GetGame(string connection);
         Task GetUserDataAsync(string connection);

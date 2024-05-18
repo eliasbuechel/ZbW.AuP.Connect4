@@ -7,6 +7,7 @@
     <UserInfo :identity="identity" class="grid-item-user-info" />
     <OnlinePlayersListing :onlinePlayers="onlinePlayers" :identity="identity" class="grid-item-online-player-listing" />
     <GamePlan class="grid-item-game-plan" :gamePlan="gamePlan" />
+    <PvE class="grid-item-pve" />
   </div>
 </template>
 
@@ -18,6 +19,7 @@ import UserInfo from "@/components/UserInfo.vue";
 import { Match } from "@/types/Match";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
+import PvE from "@/components/PvE.vue";
 
 interface MainBoardState {
   isSubscribed: boolean;
@@ -46,9 +48,10 @@ export default defineComponent({
     };
   },
   components: {
-    UserInfo,
-    OnlinePlayersListing,
     GamePlan,
+    OnlinePlayersListing,
+    PvE,
+    UserInfo,
   },
 });
 </script>
@@ -58,14 +61,17 @@ export default defineComponent({
   grid-column: 4 / span 6;
   grid-row: 1 / span 3;
 }
+
 .grid-item-user-info {
   grid-column: 10 / span 3;
   grid-row: 1 / span 3;
 }
+
 .grid-item-online-player-listing {
   grid-column: 1 / span 6;
   grid-row: 4 / span 9;
 }
+
 .grid-item-game-plan {
   grid-column: 7 / span 6;
   grid-row: 4 / span 9;
