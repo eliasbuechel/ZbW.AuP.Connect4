@@ -1,8 +1,5 @@
-﻿using backend.communication.signalR;
-using backend.Data;
-using backend.game;
+﻿using backend.game;
 using System.Diagnostics;
-using System.Security.Principal;
 
 namespace backend.services
 {
