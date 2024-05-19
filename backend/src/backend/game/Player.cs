@@ -136,7 +136,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await PlayerDisconnected(connection, playerId);
         }
-        public async void RequestedMatch(IPlayer player)
+        public virtual async void RequestedMatch(IPlayer player)
         {
             string playerId = player.Id;
             foreach (string connection in Connections)
@@ -160,7 +160,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await MatchingEnded(connection, matchId);
         }
-        public async void GameStarted(Connect4Game connect4Game)
+        public virtual async void GameStarted(Connect4Game connect4Game)
         {
             Connect4GameDTO connect4GameDTO = new Connect4GameDTO(connect4Game);
             foreach (string connection in Connections)
@@ -172,7 +172,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await GameEnded(connection, gameResultDTO);
         }
-        public async void MovePlayed(IPlayer player, Field field)
+        public virtual async void MovePlayed(IPlayer player, Field field)
         {
             string playerId = player.Id;
             FieldDTO fieldDTO = new FieldDTO(field);
@@ -185,7 +185,7 @@ namespace backend.game
                 OpponentConfirmedGameStart(connection);
 
         }
-        public void GameStartConfirmed()
+        public virtual void GameStartConfirmed()
         {
             foreach (string connection in Connections)
                 GameStartConfirmed(connection);
@@ -196,27 +196,81 @@ namespace backend.game
                 await YouConfirmedGameStart(connection);
         }
 
-        protected abstract Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer);
-        protected abstract Task PlayerDisconnected(string connection, string playerId);
-        protected abstract Task PlayerRequestedMatch(string connection, string playerId);
-        protected abstract Task PlayerRejectedMatch(string connection, string playerId);
-        protected abstract Task Matched(string connection, MatchDTO match);
-        protected abstract Task MatchingEnded(string connection, string matchId);
-        protected abstract Task GameStarted(string connection, Connect4GameDTO connect4Game);
-        protected abstract Task GameEnded(string connection, GameResultDTO gameResult);
-        protected abstract Task MovePlayed(string connection, string playerId, FieldDTO field);
-        protected abstract Task SendUserData(string connection, PlayerIdentityDTO userData);
-        protected abstract Task SendOnlinePlayers(string connection, IEnumerable<OnlinePlayerDTO> onlinePlayers);
-        protected abstract Task SendGamePlan(string connection, IEnumerable<MatchDTO> gamePlan);
-        protected abstract Task SendGame(string connection, Connect4GameDTO game);
-        protected abstract Task YouRequestedMatch(string connection, string playerId);
-        protected abstract Task YouRejectedMatch(string connection, string playerId);
-        protected abstract Task OpponentConfirmedGameStart(string connection);
-        protected abstract Task GameStartConfirmed(string connection);
-        protected abstract Task YouConfirmedGameStart(string connection);
+        protected virtual Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task PlayerDisconnected(string connection, string playerId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task PlayerRequestedMatch(string connection, string playerId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task PlayerRejectedMatch(string connection, string playerId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task Matched(string connection, MatchDTO match)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task MatchingEnded(string connection, string matchId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task GameStarted(string connection, Connect4GameDTO connect4Game)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task GameEnded(string connection, GameResultDTO gameResult)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task MovePlayed(string connection, string playerId, FieldDTO field)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task SendUserData(string connection, PlayerIdentityDTO userData)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task SendOnlinePlayers(string connection, IEnumerable<OnlinePlayerDTO> onlinePlayers)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task SendGamePlan(string connection, IEnumerable<MatchDTO> gamePlan)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task SendGame(string connection, Connect4GameDTO game)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task YouRequestedMatch(string connection, string playerId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task YouRejectedMatch(string connection, string playerId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task OpponentConfirmedGameStart(string connection)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task GameStartConfirmed(string connection)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task YouConfirmedGameStart(string connection)
+        {
+            return Task.CompletedTask;
+        }
 
 
-        private readonly GameManager _gameManager;
+        protected readonly GameManager _gameManager;
         private readonly ICollection<string> _connections = new List<string>();
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Google.Protobuf.WellKnownTypes;
+using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.game
 {
@@ -28,7 +30,6 @@ namespace backend.game
         {
             if (_activePlayer != player)
             {
-                Debug.Assert(false);
                 return;
             }
             
@@ -80,30 +81,29 @@ namespace backend.game
         }
         private void OnStonePlaced(IPlayer player, Field field)
         {
+            SwapActivePlayer();
+            CheckForWin(field, player);
             Match.Player1.MovePlayed(player, field);
             Match.Player2.MovePlayed(player, field);
-
-            CheckForWin(field);
-            SwapActivePlayer();
         }
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
         }
-        private void CheckForWin(Field field)
+        private void CheckForWin(Field field, IPlayer player)
         {
-            if (CheckForWinInColumn(field))
+            if (CheckForWinInColumn(field, player))
                 return;
-            if (CheckForWinInRow(field))
+            if (CheckForWinInRow(field, player))
                 return;
-            if (CheckForWinDiagonallyUp(field))
+            if (CheckForWinDiagonallyUp(field, player))
                 return;
-            if (CheckForWinDiagonallyDown(field))
+            if (CheckForWinDiagonallyDown(field, player))
                 return;
             if (CheckForNoMoveLeft())
                 return;
         }
-        private bool CheckForWinInColumn(Field lastPlacedStone)
+        private bool CheckForWinInColumn(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
 
@@ -114,7 +114,7 @@ namespace backend.game
 
             for (int rowDown = lastPlacedStone.Row - 1; rowDown >= 0; rowDown--)
             {
-                if (_connect4Board[lastPlacedStone.Column][rowDown] != _activePlayer)
+                if (_connect4Board[lastPlacedStone.Column][rowDown] != player)
                     break;
 
                 Field field = new Field(lastPlacedStone.Column, rowDown);
@@ -124,21 +124,21 @@ namespace backend.game
 
                 if (count == 0)
                 {
-                    OnConnect4(connect4Line);
+                    OnConnect4(connect4Line, player);
                     return true;
                 }
             }
 
             return false;
         }
-        private bool CheckForWinInRow(Field lastPlacedStone)
+        private bool CheckForWinInRow(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
             int count = 0;
 
             for (int i = 0; i < _connect4Board.Columns; i++)
             {
-                if (_connect4Board[i][lastPlacedStone.Row] == _activePlayer)
+                if (_connect4Board[i][lastPlacedStone.Row] == player)
                 {
                     connect4Line[count].Column = i;
                     connect4Line[count].Row = lastPlacedStone.Row;
@@ -149,14 +149,14 @@ namespace backend.game
 
                 if (count == 4)
                 {
-                    OnConnect4(connect4Line);
+                    OnConnect4(connect4Line, player);
                     return true;
                 }
             }
 
             return false;
         }
-        private bool CheckForWinDiagonallyUp(Field lastPlacedStone)
+        private bool CheckForWinDiagonallyUp(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = lastPlacedStone.Column;
@@ -174,7 +174,7 @@ namespace backend.game
             int count = 0;
             while (c < _connect4Board.Columns && r < _connect4Board.Rows)
             {
-                if (_connect4Board[c][r] == _activePlayer)
+                if (_connect4Board[c][r] == player)
                 {
                     connect4Line[count].Column = c;
                     connect4Line[count].Row = r;
@@ -185,7 +185,7 @@ namespace backend.game
 
                 if (count == 4)
                 {
-                    OnConnect4(connect4Line);
+                    OnConnect4(connect4Line, player);
                     return true;
                 }
 
@@ -195,7 +195,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonallyDown(Field lastPlacedStone)
+        private bool CheckForWinDiagonallyDown(Field lastPlacedStone, IPlayer player)
         {
             Connect4Line connect4Line = new Connect4Line();
             int c = lastPlacedStone.Column;
@@ -213,7 +213,7 @@ namespace backend.game
             int count = 0;
             while (c < _connect4Board.Columns && r >= 0)
             {
-                if (_connect4Board[c][r] == _activePlayer)
+                if (_connect4Board[c][r] == player)
                 {
                     connect4Line[count].Column = c;
                     connect4Line[count].Row = r;
@@ -224,7 +224,7 @@ namespace backend.game
 
                 if (count == 4)
                 {
-                    OnConnect4(connect4Line);
+                    OnConnect4(connect4Line, player);
                     return true;
                 }
 
@@ -251,9 +251,9 @@ namespace backend.game
             OnNoMoveLeft();
             return true;
         }
-        private void OnConnect4(Connect4Line connect4Line)
+        private void OnConnect4(Connect4Line connect4Line, IPlayer player)
         {
-            GameResult gameResult = new GameResult(_activePlayer, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             GameEndet(gameResult);
         }
         private void OnNoMoveLeft()
@@ -270,11 +270,278 @@ namespace backend.game
             OnGameEnded?.Invoke();
         }
 
+        public int GetBestMove(IPlayer player)
+        {
+            const int LOOK_AHEAD_MOVES = 8;
+            const int INVALID_BEST_MOVE = -1;
+
+            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
+
+            int value = int.MinValue;
+            int bestMove = INVALID_BEST_MOVE;
+
+            foreach (int col in _columnOrder)
+            {
+                int row;
+
+                if (!GetNextFreeRow(col, out row))
+                    continue;
+
+                Debug.Assert(row >= 0);
+
+                _connect4Board[col][row] = player;
+
+                int miniMaxValue;
+
+                if (NoMoveLeft())
+                    miniMaxValue = 0;
+                else if (HasWon(player, col, row))
+                    miniMaxValue = LOOK_AHEAD_MOVES * 1000;
+                else if (LOOK_AHEAD_MOVES <= 1)
+                    miniMaxValue = CalculateBoardValue(player);
+                else
+                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false);
+
+                _connect4Board[col][row] = null;
+
+                if (miniMaxValue > value)
+                {
+                    bestMove = col;
+                    value = miniMaxValue;
+                }
+            }
+
+            Debug.Assert(bestMove != INVALID_BEST_MOVE);
+            return bestMove;
+        }
+
+        private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing)
+        {
+            int value;
+
+            if (maximizing)
+            {
+                value = int.MinValue;
+
+
+                foreach (int col in _columnOrder)
+                {
+                    int row;
+
+                    if (!GetNextFreeRow(col, out row))
+                        continue;
+
+                    Debug.Assert(row >= 0);
+
+                    _connect4Board[col][row] = maxPlayer;
+
+                    int miniMaxValue;
+
+                    if (NoMoveLeft())
+                        miniMaxValue = 0;
+                    else if (HasWon(maxPlayer, col, row))
+                        miniMaxValue = depth * 1000;
+                    else if (depth <= 1)
+                        miniMaxValue = CalculateBoardValue(maxPlayer);
+                    else
+                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, false);
+
+                    _connect4Board[col][row] = null;
+
+                    if (miniMaxValue > value)
+                        value = miniMaxValue;
+                }
+            }
+            else
+            {
+                value = int.MaxValue;
+
+                foreach (int col in _columnOrder)
+                {
+                    int row;
+
+                    if (!GetNextFreeRow(col, out row))
+                        continue;
+
+                    Debug.Assert(row >= 0);
+
+                    _connect4Board[col][row] = minPlayer;
+
+                    int miniMaxValue;
+
+                    if (NoMoveLeft())
+                        miniMaxValue = 0;
+                    else if (HasWon(minPlayer, col, row))
+                        miniMaxValue = depth * -1000;
+                    else if (depth <= 1)
+                        miniMaxValue = CalculateBoardValue(maxPlayer);
+                    else
+                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, true);
+
+                    _connect4Board[col][row] = null;
+
+                    if (miniMaxValue < value)
+                        value = miniMaxValue;
+                }
+            }
+
+            return value;
+        }
+
+        private bool GetNextFreeRow(int col, out int row)
+        {
+            int j = 0;
+            while (j < _connect4Board.Rows)
+            {
+                if (_connect4Board[col][j] == null)
+                {
+                    row = j;
+                    return true;
+                }
+
+                j++;
+            }
+
+            row = -1;
+            return false;
+        }
+        private int CalculateBoardValue(IPlayer maxPlayer)
+        {
+            int boardValue = 0;
+
+            for (int i = 0; i < _connect4Board.Columns; i++)
+            {
+                for (int j = 0; j < _connect4Board.Rows; j++)
+                {
+                    if (_connect4Board[i][j] == maxPlayer)
+                        boardValue += _propabilityMatrix[i][j];
+                    else if (_connect4Board[i][j] != null)
+                        boardValue -= _propabilityMatrix[i][j];
+                    else
+                        break;
+                }
+            }
+
+            return boardValue;
+        }
+        private bool NoMoveLeft()
+        {
+            for (int i = 0; i < _connect4Board.Columns; i++)
+                if (_connect4Board[i][_connect4Board.Rows - 1] == null)
+                    return false;
+
+            return true;
+        }
+        private bool HasWon(IPlayer player, int col, int row)
+        {
+            // vertically
+
+            int count = 1;
+            int j = row - 1;
+            while (j >= 0)
+            {
+                if (_connect4Board[col][j] != player)
+                    break;
+
+                j--;
+                count++;
+            }
+            if (count >= 4)
+                return true;
+
+            // horizontally
+            count = 1;
+            int i = col - 1;
+            while (i >= 0)
+            {
+                if (_connect4Board[i][row] != player)
+                    break;
+
+                i--;
+                count++;
+            }
+            i = col + 1;
+            while(i < _connect4Board.Columns)
+            {
+                if (_connect4Board[i][row] != player)
+                    break;
+
+                i++;
+                count++;
+            }
+            if (count >= 4)
+                return true;
+
+            // diagonally up
+            count = 1;
+            i = col - 1;
+            j = row - 1;
+            while (i >= 0 && j >= 0)
+            {
+                if (_connect4Board[i][j] != player)
+                    break;
+
+                i--;
+                j--;
+                count++;
+            }
+            i = col + 1;
+            j = row + 1;
+            while (i < _connect4Board.Columns && j < _connect4Board.Rows)
+            {
+                if (_connect4Board[i][j] != player)
+                    break;
+
+                i++;
+                j++;
+                count++;
+            }
+            if (count >= 4)
+                return true;
+
+            // diagonally down
+            count = 1;
+            i = col - 1;
+            j = row + 1;
+            while (i >= 0 && j < _connect4Board.Rows)
+            {
+                if (_connect4Board[i][j] != player)
+                    break;
+
+                i--;
+                j++;
+                count++;
+            }
+            i = col + 1;
+            j = row - 1;
+            while (i < _connect4Board.Columns && j >= 0)
+            {
+                if (_connect4Board[i][j] != player)
+                    break;
+
+                i++;
+                j--;
+                count++;
+            }
+            if (count >= 4)
+                return true;
+
+            return false;
+        }
+
         private bool _disposed = false;
         private IPlayer _activePlayer;
         private readonly IPlayer _startingPlayer;
         private readonly Match _match;
         private readonly Connect4Board _connect4Board;
         private readonly ICollection<int> _playedMoves = new List<int>();
+        private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
+        private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],
+                                                       [4, 6, 8, 8, 6, 4],
+                                                       [5, 8, 11, 11, 8, 5],
+                                                       [7, 10, 13, 13, 10, 7],
+                                                       [5, 8, 11, 11, 8, 5],
+                                                       [4, 6, 8, 8, 6, 4],
+                                                       [3, 4, 5, 5, 4, 3]];
     }
 }

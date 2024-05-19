@@ -118,7 +118,6 @@ namespace backend.services
         {
             if (_activeGame == null)
             {
-                Debug.Assert(false);
                 return;
             }
 
@@ -231,10 +230,20 @@ namespace backend.services
             StartNewGame(match);
         }
 
-        internal void ConfirmedGameStart(IPlayer player)
+        public void ConfirmedGameStart(IPlayer player)
         {
             Debug.Assert(_activeGame != null);
             _activeGame.ConnfirmedGameStart(player);
+        }
+
+        public int GetBestMove(IPlayer player)
+        {
+            if (_activeGame == null)
+            {
+                return -1;
+            }
+
+            return _activeGame.GetBestMove(player);
         }
 
         private object _gamePlanLock = new object();
