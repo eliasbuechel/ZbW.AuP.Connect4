@@ -279,6 +279,8 @@ namespace backend.game
 
             int value = int.MinValue;
             int bestMove = INVALID_BEST_MOVE;
+            int alpha = int.MinValue;
+            int beta = int.MaxValue;
 
             foreach (int col in _columnOrder)
             {
@@ -300,7 +302,7 @@ namespace backend.game
                 else if (LOOK_AHEAD_MOVES <= 1)
                     miniMaxValue = CalculateBoardValue(player);
                 else
-                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false);
+                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
 
                 _connect4Board[col][row] = null;
 
@@ -309,13 +311,17 @@ namespace backend.game
                     bestMove = col;
                     value = miniMaxValue;
                 }
+
+                alpha = Math.Max(alpha, value);
+                if (alpha >= beta)
+                    break;
             }
 
             Debug.Assert(bestMove != INVALID_BEST_MOVE);
             return bestMove;
         }
 
-        private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing)
+        private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing, int alpha, int beta)
         {
             int value;
 
@@ -344,12 +350,14 @@ namespace backend.game
                     else if (depth <= 1)
                         miniMaxValue = CalculateBoardValue(maxPlayer);
                     else
-                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, false);
+                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, false, alpha, beta);
 
                     _connect4Board[col][row] = null;
 
-                    if (miniMaxValue > value)
-                        value = miniMaxValue;
+                    value = Math.Max(value, miniMaxValue);
+                    alpha = Math.Max(alpha, value);
+                    if (alpha >= beta)
+                        break;
                 }
             }
             else
@@ -376,12 +384,14 @@ namespace backend.game
                     else if (depth <= 1)
                         miniMaxValue = CalculateBoardValue(maxPlayer);
                     else
-                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, true);
+                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, true, alpha, beta);
 
                     _connect4Board[col][row] = null;
 
-                    if (miniMaxValue < value)
-                        value = miniMaxValue;
+                    value = Math.Min(value, miniMaxValue);
+                    beta = Math.Min(beta, value);
+                    if (alpha >= beta)
+                        break;
                 }
             }
 
