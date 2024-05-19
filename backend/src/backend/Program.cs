@@ -18,8 +18,11 @@ namespace backend
             return Host.CreateDefaultBuilder(args)
               .ConfigureWebHostDefaults(webBuilder =>
               {
+                  DotNetEnv.Env.Load();
+
                   webBuilder.UseStartup(builder => new Startup(builder.Configuration));
-                  webBuilder.UseUrls("http://localhost:5000");
+                  string url = DotNetEnv.Env.GetString("URL");
+                  webBuilder.UseUrls(url);
               });
         }
     }
