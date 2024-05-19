@@ -6,10 +6,10 @@ namespace backend.game
     {
         public Connect4Board(IRoboterAPI roboterAPI)
         {
-            _field = new IPlayer?[COLUMNS][];
+            _board = new IPlayer?[COLUMN_COUNT][];
 
-            for (int i = 0; i < _field.Length; i++)
-                _field[i] = new IPlayer?[ROWS];
+            for (int i = 0; i < _board.Length; i++)
+                _board[i] = new IPlayer?[ROW_COUNT];
             _roboterAPI = roboterAPI;
 
             _roboterAPI.OnStonePlaced += OnStonePlacedOnRoboter;
@@ -28,15 +28,15 @@ namespace backend.game
         {
             get
             {
-                string[][] fieldAsIds = new string[_field.Length][];
+                string[][] fieldAsIds = new string[_board.Length][];
 
-                for (int i = 0; i < _field.Length; i++)
+                for (int i = 0; i < _board.Length; i++)
                 {
-                    fieldAsIds[i] = new string[_field[i].Length];
+                    fieldAsIds[i] = new string[_board[i].Length];
 
-                    for (int j = 0; j < _field[i].Length; j++)
+                    for (int j = 0; j < _board[i].Length; j++)
                     {
-                        IPlayer? player = _field[i][j];
+                        IPlayer? player = _board[i][j];
                         fieldAsIds[i][j] = player == null ? "" : player.Id;
                     }
                 }
@@ -44,19 +44,19 @@ namespace backend.game
                 return fieldAsIds;
             }
         }
-        public int Columns => COLUMNS;
-        public int Rows => ROWS;
+        public int ColumnCount => COLUMN_COUNT;
+        public int RowCount => ROW_COUNT;
         public IPlayer?[] this[int index]
         {
-            get { return _field[index]; }
+            get { return _board[index]; }
         }
 
         public bool PlaceStone(IPlayer player, int column)
         {
-            if (column < 0 || column >= COLUMNS)
+            if (column < 0 || column >= COLUMN_COUNT)
                 return false;
 
-            var col = _field[column];
+            var col = _board[column];
             if (col[col.Length - 1] != null)
                 return false;
 
@@ -75,11 +75,26 @@ namespace backend.game
         }
         public void Reset()
         {
-            for (int i = 0; i < _field.Length; i++)
-                for (int j = 0 ; j < _field[i].Length; j++)
-                    _field[i][j] = null;
+            for (int i = 0; i < _board.Length; i++)
+                for (int j = 0 ; j < _board[i].Length; j++)
+                    _board[i][j] = null;
 
             _roboterAPI.ResetConnect4Board();
+        }
+
+        public IPlayer?[][] GetCurrentBoardState()
+        {
+            IPlayer?[][] boardState = new IPlayer?[COLUMN_COUNT][];
+            for (int i = 0; i < COLUMN_COUNT; i++)
+            {
+                boardState[i] = new IPlayer?[ROW_COUNT];
+                for (int j = 0; j < ROW_COUNT; j++)
+                {
+                    boardState[i][j] = _board[i][j];
+                }
+            }
+
+            return boardState;
         }
 
         private void OnStonePlacedOnRoboter(IPlayer player, Field field)
@@ -91,9 +106,9 @@ namespace backend.game
             OnBoardReset?.Invoke();
         }
 
-        private readonly IPlayer?[][] _field;
+        private readonly IPlayer?[][] _board;
         private readonly IRoboterAPI _roboterAPI;
-        private const int ROWS = 6;
-        private const int COLUMNS = 7;
+        public const int ROW_COUNT = 6;
+        public const int COLUMN_COUNT = 7;
     }
 }
