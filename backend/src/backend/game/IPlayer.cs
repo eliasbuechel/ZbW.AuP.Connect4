@@ -8,6 +8,8 @@
         string Id { get; }
         string Username { get; }
         bool HasConfirmedGameStart { get; set; }
+        public int HintsLeft { get; }
+        public int? CurrentHint { get; }
         public IEnumerable<string> Connections { get; }
 
         void ConfirmGameStart();
@@ -40,5 +42,6 @@
         void OpponentConfirmedGameStart();
         void GameStartConfirmed();
         void YouConfirmedGameStart();
+        void GetHint();
     }
 }

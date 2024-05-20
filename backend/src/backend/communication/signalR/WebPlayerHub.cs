@@ -26,6 +26,13 @@ namespace backend.communication.signalR
                 ThisPlayer.RequestMatch(algorythmPlayer);
             }
         }
+        public void GetHint()
+        {
+            lock (RequestLock)
+            {
+                ThisPlayer.GetHint();
+            }
+        }
 
         protected override IPlayer ThisPlayer => _onlinePlayerProvider.GetOnlinePlayer(Identity.Id);
         protected override object RequestLock => _playerRequestLock[Identity];

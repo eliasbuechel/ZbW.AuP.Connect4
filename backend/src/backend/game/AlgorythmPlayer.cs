@@ -11,16 +11,19 @@ namespace backend.game
 
         public override void RequestedMatch(IPlayer player)
         {
+            base.RequestedMatch(player);
             AcceptMatch(player);
         }
 
         public override void GameStarted(Connect4Game connect4Game)
         {
+            base.GameStarted(connect4Game);
             _startingPlayer = connect4Game.ActivePlayer;
             ConfirmGameStart();
         }
         public override void GameStartConfirmed()
         {
+            base.GameStartConfirmed();
             if (_startingPlayer != this)
                 return;
 

@@ -193,6 +193,25 @@ button:active:enabled {
   background-color: transparent;
 }
 
+.button-glowing {
+  color: whitesmoke;
+  border: 2px solid #fff20088;
+  background-color: #fff20088;
+}
+
+.button-glowing:hover:enabled,
+.button-glowing:focus:enabled {
+  border: 2px solid whitesmoke;
+  background-color: #fff200aa;
+  color: whitesmoke;
+}
+
+.button-glowing:disabled {
+  color: #fff20088;
+  border-color: #fff20088;
+  background-color: transparent;
+}
+
 .button-link:hover:enabled,
 .button-link:focus:enabled {
   color: #21374c;
@@ -263,6 +282,11 @@ button:active:enabled {
   padding: 0 0.3rem;
   border: 2px solid transparent;
   border-radius: 0.5rem;
+}
+
+.hint {
+  background-color: #fff20033;
+  border: 2px solid #fff20088;
 }
 
 .playableColumn:hover {

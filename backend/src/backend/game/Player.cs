@@ -15,9 +15,11 @@ namespace backend.game
             _gameManager = gameManager;
         }
 
-        public bool HasConfirmedGameStart { get; set; }
         public string Id { get; }
         public string Username { get; }
+        public bool HasConfirmedGameStart { get; set; }
+        public int HintsLeft => _hintsLeft;
+        public int? CurrentHint => _currentHint;
         public IEnumerable<string> Connections => _connections;
 
         public event Action<IPlayer, int>? OnMovePlayed;
@@ -162,6 +164,8 @@ namespace backend.game
         }
         public virtual async void GameStarted(Connect4Game connect4Game)
         {
+            _hintsLeft = MAX_HINTS;
+
             Connect4GameDTO connect4GameDTO = new Connect4GameDTO(connect4Game);
             foreach (string connection in Connections)
                 await GameStarted(connection, connect4GameDTO);
@@ -174,6 +178,8 @@ namespace backend.game
         }
         public virtual async void MovePlayed(IPlayer player, Field field)
         {
+            _currentHint = null;
+
             string playerId = player.Id;
             FieldDTO fieldDTO = new FieldDTO(field);
             foreach (string connection in Connections)
@@ -194,6 +200,18 @@ namespace backend.game
         {
             foreach (var connection in Connections)
                 await YouConfirmedGameStart(connection);
+        }
+        public async void GetHint()
+        {
+            if (_hintsLeft <= 0)
+                return;
+
+            _hintsLeft--;
+            int hint = _gameManager.GetBestMove(this);
+            _currentHint = hint;
+            
+            foreach (var connection in Connections)
+                await SendHint(connection, hint);
         }
 
         protected virtual Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer)
@@ -268,9 +286,16 @@ namespace backend.game
         {
             return Task.CompletedTask;
         }
+        protected virtual Task SendHint(string connection, int hint)
+        {
+            return Task.CompletedTask;
+        }
 
 
         protected readonly GameManager _gameManager;
         private readonly ICollection<string> _connections = new List<string>();
+        private int _hintsLeft = MAX_HINTS;
+        private int? _currentHint = null;
+        private const int MAX_HINTS = 3;
     }
 }
