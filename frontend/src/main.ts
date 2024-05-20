@@ -14,15 +14,15 @@ const router = createRouter({
 });
 export default router;
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !authService.isAuthenticated()) {
-    next("/login");
-  } else if (to.name === "Login" && authService.isAuthenticated()) {
-    next("/home");
-  } else {
-    next();
-  }
-});
+// router.beforeEach((to, from, next) => {
+//   if (to.meta.requiresAuth && !authService.isAuthenticated()) {
+//     next("/login");
+//   } else if (to.name === "Login" && authService.isAuthenticated()) {
+//     next("/home");
+//   } else {
+//     next();
+//   }
+// });
 
 // Register (main)App
 const app: App = createApp(AppVue);
@@ -33,7 +33,7 @@ declare module "@vue/runtime-core" {
   }
 }
 app.config.globalProperties.$axios = axios;
-axios.defaults.baseURL = "https://api.r4d4.work";
+axios.defaults.baseURL = "http://localhost:5000"; // https://api.r4d4.work
 
 app.use(router);
 app.mount("#app");
