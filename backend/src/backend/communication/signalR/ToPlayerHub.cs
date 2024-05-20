@@ -86,6 +86,10 @@ namespace backend.communication.signalR
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(YouConfirmedGameStart));
         }
+        protected override async Task SendHint(string connection, int hint)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync(nameof(SendHint), hint);
+        }
 
         private readonly IHubContext<THub> _hubContext;
     }

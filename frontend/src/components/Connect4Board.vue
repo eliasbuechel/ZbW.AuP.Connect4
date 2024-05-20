@@ -1,16 +1,24 @@
 <template>
-  <div>
+  <div class="game-board-container">
+    <button
+      v-if="activePlayerId === identity.id"
+      class="button-glowing"
+      @click="getHint"
+      :disabled="activePlayer.currentHint != null || activePlayer.hintsLeft <= 0"
+    >
+      Hints {{ activePlayer.hintsLeft }}/3
+    </button>
     <div class="board">
       <div
         v-for="(column, colIdx) in connect4Board"
         :key="colIdx"
-        :class="{ column: true, playableColumn: isYourTurn && !columnIsFull(colIdx) }"
+        :class="{ column: true, playableColumn: isYourTurn && !columnIsFull(colIdx), hint: isHint(colIdx) }"
         @click="placeStone(colIdx)"
       >
         <div
           v-for="(cell, rowIdx) in column"
           :key="rowIdx"
-          :class="{ cell: true, colorPlayerLeft: cell === playerLeftId, colorPlayerRight: cell === playerRightId }"
+          :class="{ cell: true, colorPlayerLeft: cell === playerLeft.id, colorPlayerRight: cell === playerRight.id }"
         ></div>
       </div>
     </div>
@@ -18,6 +26,8 @@
 </template>
 
 <script lang="ts">
+import signalRHub from "@/services/signalRHub";
+import { InGamePlayer } from "@/types/InGamePlayer";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { PropType, defineComponent } from "vue";
 
@@ -32,13 +42,13 @@ export default defineComponent({
       required: true,
       type: Array as PropType<String[][]>,
     },
-    playerLeftId: {
+    playerLeft: {
       required: true,
-      type: Object as PropType<string>,
+      type: Object as PropType<InGamePlayer>,
     },
-    playerRightId: {
+    playerRight: {
       required: true,
-      type: Object as PropType<string>,
+      type: Object as PropType<InGamePlayer>,
     },
     activePlayerId: {
       required: true,
@@ -51,14 +61,43 @@ export default defineComponent({
       if (this.columnIsFull(column)) return;
       this.$emit("place-stone", column);
     },
+    getHint(): void {
+      if (this.activePlayer.currentHint != null) return;
+      signalRHub.invoke("GetHint");
+    },
     columnIsFull(colIdx: number): boolean {
       return this.connect4Board[colIdx][this.connect4Board[colIdx].length - 1] != "";
+    },
+    isHint(colIdx: number): boolean {
+      if (this.activePlayer.currentHint == null) return false;
+      return this.activePlayer.currentHint == colIdx;
     },
   },
   computed: {
     isYourTurn(): boolean {
       return this.activePlayerId === this.identity.id;
     },
+    activePlayer(): InGamePlayer {
+      return this.playerLeft.id === this.activePlayerId ? this.playerLeft : this.playerRight;
+    },
   },
 });
 </script>
+
+<style scoped>
+.game-board-container {
+  display: grid;
+  grid-template-rows: 4rem auto;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-board-container > button {
+  justify-self: center;
+}
+
+.game-board-container > .board {
+  align-self: flex-start;
+  grid-row-start: 2;
+}
+</style>

@@ -63,7 +63,7 @@ export default defineComponent({
   },
   data(): GameResultState {
     return {
-      connect4Board: new Array(6),
+      connect4Board: new Array(7),
       moveIndex: 0,
     };
   },

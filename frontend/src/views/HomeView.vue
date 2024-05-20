@@ -93,6 +93,7 @@ export default defineComponent({
       signalRHub.on("OpponentConfirmedGameStart", this.onOpponentConfirmedGameStart);
       signalRHub.on("GameStartConfirmed", this.onGameStartConfirmed);
       signalRHub.on("YouConfirmedGameStart", this.onYouConfirmedGameStart);
+      signalRHub.on("SendHint", this.onSendHint);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -114,6 +115,7 @@ export default defineComponent({
       signalRHub.off("OpponentConfirmedGameStart", this.onOpponentConfirmedGameStart);
       signalRHub.off("GameStartConfirmed", this.onGameStartConfirmed);
       signalRHub.off("YouConfirmedGameStart", this.onYouConfirmedGameStart);
+      signalRHub.off("SendHint", this.onSendHint);
     },
     leaveGameResultView(): void {
       this.gameResult = undefined;
@@ -203,6 +205,9 @@ export default defineComponent({
       if (this.game == null) return;
       if (this.identity == null) return;
 
+      this.game.match.player1.currentHint = undefined;
+      this.game.match.player2.currentHint = undefined;
+
       this.game!.connect4Board[field.column][field.row] = playerId;
       this.switchActivePlayer();
     },
@@ -265,6 +270,19 @@ export default defineComponent({
       if (this.identity == null) return;
       if (this.game.match.player1.id === this.identity.id) this.game.match.player1.hasConfirmedGameStart = true;
       else if (this.game.match.player2.id === this.identity.id) this.game.match.player2.hasConfirmedGameStart = true;
+    },
+    onSendHint(hint: number): void {
+      if (this.identity == null) return;
+      if (this.game == null) return;
+
+      if (this.game.match.player1.id === this.identity.id) {
+        this.game.match.player1.currentHint = hint;
+        this.game.match.player1.hintsLeft--;
+      }
+      if (this.game.match.player2.id === this.identity.id) {
+        this.game.match.player2.currentHint = hint;
+        this.game.match.player2.hintsLeft--;
+      }
     },
     onSignalRConnected(): void {
       this.subscribe();

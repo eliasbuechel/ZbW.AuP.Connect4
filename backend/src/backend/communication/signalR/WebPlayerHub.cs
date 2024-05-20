@@ -11,11 +11,27 @@ namespace backend.communication.signalR
     [Authorize]
     internal class WebPlayerHub : PlayerHub
     {
-        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer, PlayerRequestLock playerRequestLock) : base(onlinePlayerProvider)
+        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer, PlayerRequestLock playerRequestLock) : base(onlinePlayerProvider)
         {
             _userManager = userManager;
             _createPlayer = createPlayer;
             _playerRequestLock = playerRequestLock;
+            _algorythmPlayerProvider = algorythmPlayerProvider;
+        }
+        public void RequestSinglePlayerMatch()
+        {
+            lock (RequestLock)
+            {
+                IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer();
+                ThisPlayer.RequestMatch(algorythmPlayer);
+            }
+        }
+        public void GetHint()
+        {
+            lock (RequestLock)
+            {
+                ThisPlayer.GetHint();
+            }
         }
 
         protected override IPlayer ThisPlayer => _onlinePlayerProvider.GetOnlinePlayer(Identity.Id);
@@ -51,6 +67,7 @@ namespace backend.communication.signalR
         }
 
         private readonly PlayerRequestLock _playerRequestLock;
+        private readonly AlgorythmPlayerProvider _algorythmPlayerProvider;
         private readonly UserManager<PlayerIdentity> _userManager;
         private readonly Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> _createPlayer;
     }
