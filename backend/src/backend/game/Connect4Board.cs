@@ -24,6 +24,7 @@ namespace backend.game
         public event Action<IPlayer, Field>? OnStonePlaced;
         public event Action? OnBoardReset;
 
+        public IPlayer?[][] Board => _board;
         public string[][] FieldAsIds
         {
             get

@@ -1,7 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System.Diagnostics;
-using System.Numerics;
-using System.Security.Cryptography.Xml;
+﻿using System.Diagnostics;
 
 namespace backend.game
 {
@@ -77,9 +74,9 @@ namespace backend.game
 
         public int GetBestMove(IPlayer player)
         {
-            IPlayer?[][] boardState = _connect4Board.GetCurrentBoardState();
-            IPlayer opponent = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameLogic gameLogic = new GameLogic(boardState, _activePlayer, opponent);
+            IPlayer?[][] boardState = _connect4Board.Board; // _connect4Board.GetCurrentBoardState();
+            IPlayer opponent = player == _match.Player1 ? _match.Player2 : _match.Player1;
+            GameLogic gameLogic = new GameLogic(boardState, player, opponent);
 
             return gameLogic.GetBestMove();
         }

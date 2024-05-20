@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 
 namespace backend.game
 {
@@ -18,7 +19,9 @@ namespace backend.game
             int alpha = int.MinValue;
             int beta = int.MaxValue;
 
-            foreach (int col in _columnOrder)
+            int[] columnOrder = GetOrderedMoves();
+
+            foreach (int col in columnOrder)
             {
                 int row;
 
@@ -59,14 +62,19 @@ namespace backend.game
 
         private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing, int alpha, int beta)
         {
+            //string boardHash = GetBoardHash();
+            //if (transpositionTable.TryGetValue(boardHash, out int storedValue))
+            //    return storedValue;
+
             int value;
 
             if (maximizing)
             {
                 value = int.MinValue;
 
+                int[] columnOrder = GetOrderedMoves();
 
-                foreach (int col in _columnOrder)
+                foreach (int col in columnOrder)
                 {
                     int row;
 
@@ -100,7 +108,9 @@ namespace backend.game
             {
                 value = int.MaxValue;
 
-                foreach (int col in _columnOrder)
+                int[] columnOrder = GetOrderedMoves();
+
+                foreach (int col in columnOrder)
                 {
                     int row;
 
@@ -131,25 +141,8 @@ namespace backend.game
                 }
             }
 
+            //transpositionTable[boardHash] = value;
             return value;
-        }
-
-        private bool GetNextFreeRow(int col, out int row)
-        {
-            int j = 0;
-            while (j < _boardState[col].Length)
-            {
-                if (_boardState[col][j] == null)
-                {
-                    row = j;
-                    return true;
-                }
-
-                j++;
-            }
-
-            row = -1;
-            return false;
         }
         private int CalculateBoardValue(IPlayer maxPlayer)
         {
@@ -169,6 +162,23 @@ namespace backend.game
             }
 
             return boardValue;
+        }
+        private bool GetNextFreeRow(int col, out int row)
+        {
+            int j = 0;
+            while (j < _boardState[col].Length)
+            {
+                if (_boardState[col][j] == null)
+                {
+                    row = j;
+                    return true;
+                }
+
+                j++;
+            }
+
+            row = -1;
+            return false;
         }
         private bool NoMoveLeft()
         {
@@ -274,20 +284,50 @@ namespace backend.game
 
             return false;
         }
+        private string GetBoardHash()
+        {
+            StringBuilder sb = new StringBuilder();
 
-        private const int LOOK_AHEAD_MOVES = 13;
+            for (int col = 0; col < _boardState.Length; col++)
+            {
+                for (int row = 0; row < _boardState[col].Length; row++)
+                {
+                    IPlayer? player = _boardState[col][row];
+                    int value = player == _activePlayer ? 1 : player == _opponent ? 2 : 0;
+                    sb.Append(value);
+                }
+            }
+
+            return sb.ToString();
+        }
+        private int[] GetOrderedMoves()
+        {
+            List<Tuple<int, int>> columnToHoristic = new List<Tuple<int, int>>();
+
+            for (int col = 0; col < _boardState.Length; col++)
+            {
+                int row;
+                if (GetNextFreeRow(col, out row))
+                    columnToHoristic.Add(new Tuple<int, int>(col, _propabilityMatrix[col][row]));
+            }
+
+            return columnToHoristic.OrderByDescending(x => x.Item2).Select(x => x.Item1).ToArray();
+        }
+
+        private const int LOOK_AHEAD_MOVES = 8;
         private const int INVALID_BEST_MOVE = -1;
 
         private readonly IPlayer?[][] _boardState;
         private readonly IPlayer _activePlayer;
         private readonly IPlayer _opponent;
-        private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],
-            [4, 6, 8, 8, 6, 4],
-            [5, 8, 11, 11, 8, 5],
-            [7, 10, 13, 13, 10, 7],
-            [5, 8, 11, 11, 8, 5],
-            [4, 6, 8, 8, 6, 4],
-            [3, 4, 5, 5, 4, 3]];
+                                                        [4, 6, 8, 8, 6, 4],
+                                                        [5, 8, 11, 11, 8, 5],
+                                                        [7, 10, 13, 13, 10, 7],
+                                                        [5, 8, 11, 11, 8, 5],
+                                                        [4, 6, 8, 8, 6, 4],
+                                                        [3, 4, 5, 5, 4, 3]];
+
+        //private Dictionary<string, int> transpositionTable = new Dictionary<string, int>();
     }
 }
