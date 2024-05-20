@@ -89,7 +89,13 @@ namespace backend
                 string roboterId = Guid.NewGuid().ToString();
                 return new ToPlayerHub<OpponentRoboterPlayerHub>(roboterId, roboterName, gameManager, hubContext);
             });
+            services.AddSingleton<Func<AlgorythmPlayer>>(s => () =>
+            {
+                GameManager gameManager = s.GetRequiredService<GameManager>();
+                return new AlgorythmPlayer(gameManager);
+            });
 
+            services.AddSingleton<AlgorythmPlayerProvider>();
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
