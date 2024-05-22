@@ -45,6 +45,7 @@ export default defineComponent({
           {
             withCredentials: true,
           });
+
         this.errors.login = "";
         this.$router.push({ name: "Home" });
       } catch (error: any) {

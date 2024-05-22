@@ -15,17 +15,21 @@ namespace backend.communication.controller
         }
 
         [HttpGet("checkAuthentication")]
-        [Authorize]
-        public IActionResult CheckAuthentication()
+        public IActionResult CheckAuthentication2()
         {
-            return Ok(new { isAuthenticated = true });
+            if(User.Identity.IsAuthenticated)
+            {
+                return Ok(new { isAuthenticated = true });
+            }
+            return Ok(new { isAuthenticated = false });
         }
 
+        [Authorize()]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return Ok(new { message = "Logged out successfully"});
+            return Ok(new { message = "Logged out successfully" });
         }
 
         private readonly SignInManager<PlayerIdentity> _signInManager;

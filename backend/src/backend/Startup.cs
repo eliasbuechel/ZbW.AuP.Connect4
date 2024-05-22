@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 
 namespace backend
@@ -149,6 +150,7 @@ namespace backend
         {
             services.AddAuthorization();
             services.AddAuthentication();
+                
 
             services.AddIdentityCore<PlayerIdentity>(options =>
             {
