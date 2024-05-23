@@ -1,4 +1,5 @@
 ﻿using backend.communication.mqtt;
+using backend.game.entities;
 
 namespace backend.game
 {

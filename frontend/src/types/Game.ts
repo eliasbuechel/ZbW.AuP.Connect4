@@ -1,7 +1,8 @@
-import { InGameMatch } from "./InGameMatch";
+import { Entity } from "./Entity";
+import { Match } from "./Match";
 
-export interface Game {
-  match: InGameMatch;
+export interface Game extends Entity {
+  match: Match;
   activePlayerId: string;
   connect4Board: string[][];
   startConfirmed: boolean;

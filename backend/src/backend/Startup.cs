@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
+using backend.game.entities;
 
 
 namespace backend
@@ -59,6 +61,13 @@ namespace backend
                 var connectionString = DotNetEnv.Env.GetString("CONNECTIONSTRING");
                 options.UseMySQL(connectionString);
             });
+            services.AddSingleton<BackendDbContextFacory>(s =>
+            {
+                var connectionString = DotNetEnv.Env.GetString("CONNECTIONSTRING");
+                DbContextOptionsBuilder options = new DbContextOptionsBuilder();
+                options.UseMySQL(connectionString);
+                return new BackendDbContextFacory(options.Options);
+            });
 
             ConfigureIdentity(services);
             services.AddSignalR();
@@ -81,6 +90,7 @@ namespace backend
                 IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
                 return (identity) => new ToPlayerHub<WebPlayerHub>(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
             });
+
             services.AddSingleton<ToPlayerHub<OpponentRoboterPlayerHub>>(s =>
             {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
@@ -89,13 +99,15 @@ namespace backend
                 string roboterId = Guid.NewGuid().ToString();
                 return new ToPlayerHub<OpponentRoboterPlayerHub>(roboterId, roboterName, gameManager, hubContext);
             });
+
             services.AddSingleton<Func<AlgorythmPlayer>>(s => () =>
             {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 return new AlgorythmPlayer(gameManager);
             });
-
             services.AddSingleton<AlgorythmPlayerProvider>();
+
+            services.AddSingleton<GameResultsService>();
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
             services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();

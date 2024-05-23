@@ -1,17 +1,18 @@
-﻿using backend.game;
+﻿using backend.game.entities;
 
 namespace backend.communication.DOTs
 {
-    internal class MatchDTO
+    internal class MatchDTO : EntityDTO
     {
-        public MatchDTO(Match match)
+        public MatchDTO(Match match) : base(match)
         {
-            Id = match.Id.ToString();
-            Player1 = new PlayerIdentityDTO(match.Player1);
-            Player2 = new PlayerIdentityDTO(match.Player2);
+            Player1 = new InGamePlayerDTO(match.Player1);
+            Player2 = new InGamePlayerDTO(match.Player2);
         }
-        public string Id { get; }
-        public PlayerIdentityDTO Player1 { get; }
-        public PlayerIdentityDTO Player2 { get; }
+
+        public InGamePlayerDTO Player1 { get; }
+        public InGamePlayerDTO Player2 { get; }
     }
 }
+
+

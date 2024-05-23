@@ -1,4 +1,5 @@
 ﻿using backend.communication.DOTs;
+using backend.game.entities;
 using backend.services;
 
 namespace backend.game

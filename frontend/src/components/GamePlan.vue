@@ -67,4 +67,4 @@ export default defineComponent({
   width: 175px;
 }
 </style>
-@/types/DataTransferObjects
+@/types/DataTransferObjects@/types/GameResultMatch

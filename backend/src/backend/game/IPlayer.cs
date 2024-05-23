@@ -1,4 +1,6 @@
-﻿namespace backend.game
+﻿using backend.game.entities;
+
+namespace backend.game
 {
     internal interface IPlayer
     {
@@ -43,5 +45,7 @@
         void GameStartConfirmed();
         void YouConfirmedGameStart();
         void GetHint();
+        Task GetBestlist(string connection);
+        public void SendBestList(IEnumerable<GameResult> bestlist);
     }
 }

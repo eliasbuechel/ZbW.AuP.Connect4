@@ -1,6 +1,6 @@
-﻿namespace backend.game
+﻿namespace backend.game.entities
 {
-    internal class  MatchRequest
+    internal class MatchRequest : Entity
     {
         public MatchRequest(IPlayer requester, IPlayer opponent)
         {

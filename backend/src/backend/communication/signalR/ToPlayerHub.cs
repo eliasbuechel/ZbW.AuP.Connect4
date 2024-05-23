@@ -1,6 +1,7 @@
 ﻿using backend.communication.DOTs;
 using backend.Data;
 using backend.game;
+using backend.game.entities;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
 using MySqlX.XDevAPI;
@@ -50,7 +51,7 @@ namespace backend.communication.signalR
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(GameEnded), gameResult);
         }
-        protected override async Task SendUserData(string connection, PlayerIdentityDTO userData)
+        protected override async Task SendUserData(string connection, PlayerInfoDTO userData)
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(SendUserData), userData);
         }
@@ -65,6 +66,10 @@ namespace backend.communication.signalR
         protected override async Task SendGame(string connection, Connect4GameDTO game)
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(SendGame), game);
+        }
+        protected override async Task SendBestList(string connection, IEnumerable<GameResult> bestlist)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync(nameof(SendBestList), bestlist);
         }
         protected override async Task YouRequestedMatch(string connection, string playerId)
         {

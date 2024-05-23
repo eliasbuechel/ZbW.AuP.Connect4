@@ -5,6 +5,7 @@
       <h1 class="home">R4D4 - Connect4</h1>
     </div>
     <UserInfo :identity="identity" class="grid-item-user-info" />
+    <BestList :bestlist="bestlist" @show-replay="showReplay" class="grid-item-best-list" />
     <SinglePlayerModeSelection class="grid-item-signle-player-mode-selection" />
     <OnlinePlayersListing :onlinePlayers="onlinePlayers" :identity="identity" class="grid-item-online-player-listing" />
     <GamePlan class="grid-item-game-plan" :gamePlan="gamePlan" />
@@ -20,6 +21,8 @@ import { Match } from "@/types/Match";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import SinglePlayerModeSelection from "./SinglePlayerModeSelection.vue";
+import { GameResult } from "@/types/GameResult";
+import BestList from "@/components/BestList.vue";
 
 interface MainBoardState {
   isSubscribed: boolean;
@@ -27,7 +30,6 @@ interface MainBoardState {
 
 export default defineComponent({
   name: "MainBoard",
-
   props: {
     identity: {
       required: true,
@@ -41,6 +43,10 @@ export default defineComponent({
       required: true,
       type: Array as PropType<Match[]>,
     },
+    bestlist: {
+      required: true,
+      type: Array as PropType<GameResult[]>,
+    },
   },
   data(): MainBoardState {
     return {
@@ -49,9 +55,15 @@ export default defineComponent({
   },
   components: {
     UserInfo,
+    BestList,
     SinglePlayerModeSelection,
     OnlinePlayersListing,
     GamePlan,
+  },
+  methods: {
+    showReplay(gameResult: GameResult): void {
+      this.$emit("show-replay", gameResult);
+    },
   },
 });
 </script>
@@ -66,7 +78,12 @@ export default defineComponent({
   grid-row: 1 / span 3;
 }
 .grid-item-signle-player-mode-selection {
-  grid-column: 4 / span 6;
+  grid-column: 7 / span 6;
+  grid-row: 4 / span 3;
+}
+
+.grid-item-best-list {
+  grid-column: 1 / span 6;
   grid-row: 4 / span 3;
 }
 
@@ -79,3 +96,4 @@ export default defineComponent({
   grid-row: 7 / span 6;
 }
 </style>
+./BestList.vue@/types/GameResultMatch

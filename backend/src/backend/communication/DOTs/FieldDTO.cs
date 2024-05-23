@@ -1,10 +1,10 @@
-﻿using backend.game;
+﻿using backend.game.entities;
 
 namespace backend.communication.DOTs
 {
-    internal class FieldDTO
+    internal class FieldDTO : EntityDTO
     {
-        public FieldDTO(Field field)
+        public FieldDTO(Field field) : base(field)
         {
             Column = field.Column;
             Row = field.Row;

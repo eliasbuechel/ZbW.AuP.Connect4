@@ -1,5 +1,5 @@
-import { Field } from "./Field";
+// import { Field } from "./Field";
 
-export interface Connect4Line {
-  fields: Field[];
-}
+// export interface Connect4Line {
+//   fields: Field[];
+// }

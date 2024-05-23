@@ -48,6 +48,13 @@ namespace backend.communication.signalR
         {
             return _onlinePlayerProvider.GetOnlinePlayerOrDefault(Identity.Id);
         }
+        public void GetBestlist()
+        {
+            lock (RequestLock)
+            {
+                ThisPlayer.GetBestlist(Connection);
+            }
+        }
 
         private PlayerIdentity Identity
         {

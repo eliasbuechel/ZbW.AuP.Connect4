@@ -1,10 +1,11 @@
-import { Connect4Line } from "./Connect4Line";
-import { Match } from "./Match";
+import { Entity } from "./Entity";
+import { Field } from "./Field";
+import { GameResultMatch } from "./GameResultMatch";
 
-export interface GameResult {
+export interface GameResult extends Entity {
   winnerId?: string;
-  line?: Connect4Line;
+  line?: Field[];
   playedMoves: number[];
   startingPlayerId: string;
-  match: Match;
+  match: GameResultMatch;
 }

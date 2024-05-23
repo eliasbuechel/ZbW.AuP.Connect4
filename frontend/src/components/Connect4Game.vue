@@ -35,23 +35,14 @@
       @quit-game="reemitQuitGame"
       class="grid-item-connect4-board"
     />
-    <GameResultView
-      v-if="gameResult != null"
-      :gameResult="gameResult"
-      :identity="identity"
-      @leave-game-result-view="reemitLeaveGameResultView"
-      class="grid-item-game-result"
-    />
   </div>
 </template>
 
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
-import { GameResult } from "@/types/GameResult";
 import { Game } from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import Connect4Board from "./Connect4Board.vue";
-import GameResultView from "./GameResultView.vue";
 import { InGamePlayer } from "@/types/InGamePlayer";
 
 export default defineComponent({
@@ -61,11 +52,6 @@ export default defineComponent({
       type: Object as PropType<Game | undefined>,
       default: undefined,
     },
-    gameResult: {
-      required: true,
-      type: Object as PropType<GameResult | undefined>,
-      default: undefined,
-    },
     identity: {
       required: true,
       type: Object as PropType<PlayerIdentity>,
@@ -73,7 +59,6 @@ export default defineComponent({
   },
   components: {
     Connect4Board,
-    GameResultView,
   },
   methods: {
     reemitPlaceStone(column: number): void {
@@ -86,24 +71,14 @@ export default defineComponent({
     },
     reemitQuitGame(): void {
       if (this.game === undefined) return;
-      if (this.gameResult !== undefined) return;
+      // if (this.gameResult !== undefined) return;
       this.$emit("quit-game");
-    },
-    reemitLeaveGameResultView(): void {
-      this.$emit("leave-game-result-view");
     },
     quitGame(): void {
       this.$emit("quit-game");
     },
   },
   computed: {
-    resultMessage(): string {
-      if (this.gameResult === undefined) return "";
-      if (this.identity === undefined) return "";
-      if (this.gameResult!.winnerId === undefined) return "Draw!";
-      if (this.gameResult!.winnerId === this.identity.id) return "You won!";
-      return "You lost!";
-    },
     inGamePlayerLeft(): InGamePlayer | undefined {
       if (this.game != null)
         return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
@@ -116,30 +91,31 @@ export default defineComponent({
 
       return undefined;
     },
-    gameResultPlayerLeft(): PlayerIdentity | undefined {
-      if (this.gameResult != null)
-        return this.gameResult.match.player1.id == this.identity.id
-          ? this.gameResult.match.player1
-          : this.gameResult.match.player2;
+    // gameResultPlayerLeft(): PlayerIdentity | undefined {
+    //   if (this.gameResult != null)
+    //     return this.gameResult.match.player1.id == this.identity.id
+    //       ? this.gameResult.match.player1
+    //       : this.gameResult.match.player2;
 
-      return undefined;
-    },
-    gameResultPlayerRight(): PlayerIdentity | undefined {
-      if (this.gameResult != null)
-        return this.gameResult.match.player1.id == this.identity.id
-          ? this.gameResult.match.player2
-          : this.gameResult.match.player1;
+    //   return undefined;
+    // },
+    // gameResultPlayerRight(): PlayerIdentity | undefined {
+    //   if (this.gameResult != null)
+    //     return this.gameResult.match.player1.id == this.identity.id
+    //       ? this.gameResult.match.player2
+    //       : this.gameResult.match.player1;
 
-      return undefined;
-    },
+    //   return undefined;
+    // },
     namePlayerLeft(): string {
       if (this.inGamePlayerLeft != null) {
         if (this.inGamePlayerLeft.id == this.identity.id) return "you";
         return this.inGamePlayerLeft.username;
-      } else if (this.gameResultPlayerLeft != null) {
-        if (this.gameResultPlayerLeft.id == this.identity.id) return "you";
-        return this.gameResultPlayerLeft.username;
       }
+      // } else if (this.gameResultPlayerLeft != null) {
+      //   if (this.gameResultPlayerLeft.id == this.identity.id) return "you";
+      //   return this.gameResultPlayerLeft.username;
+      // }
 
       return "";
     },
@@ -147,10 +123,11 @@ export default defineComponent({
       if (this.inGamePlayerRight != null) {
         if (this.inGamePlayerRight.id == this.identity.id) return "you";
         return this.inGamePlayerRight.username;
-      } else if (this.gameResultPlayerRight != null) {
-        if (this.gameResultPlayerRight.id == this.identity.id) return "you";
-        return this.gameResultPlayerRight.username;
       }
+      // } else if (this.gameResultPlayerRight != null) {
+      //   if (this.gameResultPlayerRight.id == this.identity.id) return "you";
+      //   return this.gameResultPlayerRight.username;
+      // }
 
       return "";
     },

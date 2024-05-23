@@ -117,7 +117,7 @@ namespace backend.communication.signalR
         protected abstract IPlayer GetOrCreatePlayer();
         protected abstract IPlayer? GetPlayerOrDefault();
 
-        private string Connection => Context.ConnectionId;
+        protected string Connection => Context.ConnectionId;
         protected abstract IPlayer ThisPlayer { get; }
         protected abstract object RequestLock { get; }
 

@@ -1,14 +1,16 @@
 ﻿using backend.game;
+using backend.game.entities;
 using System.Diagnostics;
 
 namespace backend.services
 {
     internal class GameManager
     {
-        public GameManager(PlayerConnectionManager playerConnectionManager, Func<Match, Connect4Game> getConnect4Game)
+        public GameManager(PlayerConnectionManager playerConnectionManager, Func<Match, Connect4Game> getConnect4Game, GameResultsService gameResultsService)
         {
             _playerConnectionManager = playerConnectionManager;
             _getConnect4Game = getConnect4Game;
+            _gameResultsService = gameResultsService;
         }
 
         public event Action<IPlayer, IPlayer>? OnGameStarted;
@@ -23,6 +25,10 @@ namespace backend.services
         public IEnumerable<IPlayer> GetOnlinePlayersExcept(string id)
         {
             return _playerConnectionManager.OnlinePlayers.Where(p => p.Id != id);
+        }
+        internal IEnumerable<GameResult> GetBestlist()
+        {
+            return _gameResultsService.GameResults;
         }
         public void ConnectPlayer(IPlayer player)
         {
@@ -59,7 +65,7 @@ namespace backend.services
             opponent.RequestedMatch(requester);
             return true;
         }
-        public bool HasMatched(Player player1, IPlayer player2)
+        public bool HasMatched(IPlayer player1, IPlayer player2)
         {
             lock (_gamePlanLock)
             {
@@ -152,13 +158,17 @@ namespace backend.services
 
             _activeGame.Initialize();
         }
-        private void OnGameEnded()
+        private async void OnGameEnded(GameResult gameResult)
         {
             if (_activeGame == null)
             {
                 Debug.Assert(false);
                 return;
             }
+
+            await _gameResultsService.Add(gameResult);
+            foreach (var player in _playerConnectionManager.OnlinePlayers)
+                player.SendBestList(_gameResultsService.GameResults);
 
             _activeGame.OnGameEnded -= OnGameEnded;
             _activeGame.Dispose();
@@ -235,7 +245,6 @@ namespace backend.services
             Debug.Assert(_activeGame != null);
             _activeGame.ConnfirmedGameStart(player);
         }
-
         public int GetBestMove(IPlayer player)
         {
             if (_activeGame == null)
@@ -246,11 +255,13 @@ namespace backend.services
             return _activeGame.GetBestMove(player);
         }
 
+
         private object _gamePlanLock = new object();
         private object _matchRequestsLock = new object();
         private Connect4Game? _activeGame = null;
         private readonly PlayerConnectionManager _playerConnectionManager;
         private readonly Func<Match, Connect4Game> _getConnect4Game;
+        private readonly GameResultsService _gameResultsService;
         private Queue<Match> _gamePlan = new Queue<Match>();
         private readonly List<MatchRequest> _matchRequests = new List<MatchRequest>();
     }

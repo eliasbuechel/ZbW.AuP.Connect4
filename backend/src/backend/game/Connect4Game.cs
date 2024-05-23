@@ -1,6 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using backend.game.entities;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace backend.game
 {
@@ -18,7 +17,7 @@ namespace backend.game
             _activePlayer = _startingPlayer;
         }
 
-        public event Action? OnGameEnded;
+        public event Action<GameResult>? OnGameEnded;
 
         public Guid Id { get; } = new Guid();
         public Match Match => _match;
@@ -105,26 +104,21 @@ namespace backend.game
         }
         private bool CheckForWinInColumn(Field lastPlacedStone, IPlayer player)
         {
-            Connect4Line connect4Line = new Connect4Line();
+            Field[] line = new Field[4];
+            int count = 0;
 
-            int count = 4;
-            count--;
-            connect4Line[count].Column = lastPlacedStone.Column;
-            connect4Line[count].Row = lastPlacedStone.Row;
+            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
 
             for (int rowDown = lastPlacedStone.Row - 1; rowDown >= 0; rowDown--)
             {
                 if (_connect4Board[lastPlacedStone.Column][rowDown] != player)
                     break;
 
-                Field field = new Field(lastPlacedStone.Column, rowDown);
-                count--;
-                connect4Line[count].Column = lastPlacedStone.Column;
-                connect4Line[count].Row = rowDown;
+                line[count++] = new Field(lastPlacedStone.Column, rowDown);
 
-                if (count == 0)
+                if (count >= 4)
                 {
-                    OnConnect4(connect4Line, player);
+                    OnConnect4(line, player);
                     return true;
                 }
             }
@@ -133,103 +127,113 @@ namespace backend.game
         }
         private bool CheckForWinInRow(Field lastPlacedStone, IPlayer player)
         {
-            Connect4Line connect4Line = new Connect4Line();
+            Field[] line = new Field[4];
             int count = 0;
 
-            for (int i = 0; i < _connect4Board.Columns; i++)
-            {
-                if (_connect4Board[i][lastPlacedStone.Row] == player)
-                {
-                    connect4Line[count].Column = i;
-                    connect4Line[count].Row = lastPlacedStone.Row;
-                    count++;
-                }
-                else
-                    count = 0;
+            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
 
-                if (count == 4)
-                {
-                    OnConnect4(connect4Line, player);
-                    return true;
-                }
+            int col = lastPlacedStone.Column - 1;
+            while (col >= 0 && count < 4)
+            {
+                if (_connect4Board[col][lastPlacedStone.Row] != player)
+                    break;
+
+                line[count++] = new Field(col, lastPlacedStone.Row);
+                col--;
+            }
+
+            col = lastPlacedStone.Column + 1;
+            while (col < _connect4Board.Columns && count < 4)
+            {
+                if (_connect4Board[col][lastPlacedStone.Row] != player)
+                    break;
+
+                line[count++] = new Field(col, lastPlacedStone.Row);
+                col++;
+            }
+
+            if (count >= 4)
+            {
+                OnConnect4(line, player);
+                return true;
             }
 
             return false;
         }
         private bool CheckForWinDiagonallyUp(Field lastPlacedStone, IPlayer player)
         {
-            Connect4Line connect4Line = new Connect4Line();
-            int c = lastPlacedStone.Column;
-            int r = lastPlacedStone.Row;
+            Field[] line = new Field[4];
+            int count = 0;
 
-            while (true)
+            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
+
+            int col = lastPlacedStone.Column - 1;
+            int row = lastPlacedStone.Row - 1;
+            while (col >= 0 && row >= 0 && count < 4)
             {
-                if (c <= 0 || r <= 0)
+                if (_connect4Board[col][row] != player)
                     break;
-
-                c--;
-                r--;
+                
+                line[count++] = new Field(col, row);
+                col--;
+                row--;
             }
 
-            int count = 0;
-            while (c < _connect4Board.Columns && r < _connect4Board.Rows)
+            col = lastPlacedStone.Column + 1;
+            row = lastPlacedStone.Row + 1;
+            while (col < _connect4Board.Columns && row < _connect4Board.Rows && count < 4)
             {
-                if (_connect4Board[c][r] == player)
-                {
-                    connect4Line[count].Column = c;
-                    connect4Line[count].Row = r;
-                    count++;
-                }
-                else
-                    count = 0;
+                if (_connect4Board[col][row] != player)
+                    break;
+               
+                line[count++] = new Field(col, row);
+                col++;
+                row++;
+            }
 
-                if (count == 4)
-                {
-                    OnConnect4(connect4Line, player);
-                    return true;
-                }
-
-                c++;
-                r++;
+            if (count >= 4)
+            {
+                OnConnect4(line, player);
+                return true;
             }
 
             return false;
         }
         private bool CheckForWinDiagonallyDown(Field lastPlacedStone, IPlayer player)
         {
-            Connect4Line connect4Line = new Connect4Line();
-            int c = lastPlacedStone.Column;
-            int r = lastPlacedStone.Row;
+            Field[] line = new Field[4];
+            int count = 0;
 
-            while (true)
+            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
+
+            int col = lastPlacedStone.Column - 1;
+            int row = lastPlacedStone.Row + 1;
+            while (col >= 0 && row < _connect4Board.Rows && count < 4)
             {
-                if (c <= 0 || r >= _connect4Board.Rows - 1)
+                if (_connect4Board[col][row] != player)
                     break;
-
-                c--;
-                r++;
+                
+                line[count++] = new Field(col, row);
+                col--;
+                row++;
             }
 
-            int count = 0;
-            while (c < _connect4Board.Columns && r >= 0)
+            col = lastPlacedStone.Column + 1;
+            row = lastPlacedStone.Row - 1;
+            while (col < _connect4Board.Columns && row >= 0 && count < 4)
             {
-                if (_connect4Board[c][r] == player)
-                {
-                    connect4Line[count].Column = c;
-                    connect4Line[count].Row = r;
-                    count++;
-                }
-                else
-                    count = 0;
+                if (_connect4Board[col][row] != player)
+                    break;
 
-                if (count == 4)
-                {
-                    OnConnect4(connect4Line, player);
-                    return true;
-                }
+                line[count++] = new Field(col, row);
+                col++;
+                row--;
+            }
 
-                c++;
-                r--;
+            if (count >= 4)
+            {
+                OnConnect4(line, player);
+                return true;
             }
 
             return false;
@@ -251,7 +255,7 @@ namespace backend.game
             OnNoMoveLeft();
             return true;
         }
-        private void OnConnect4(Connect4Line connect4Line, IPlayer player)
+        private void OnConnect4(ICollection<Field> connect4Line, IPlayer player)
         {
             GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             GameEndet(gameResult);
@@ -267,7 +271,7 @@ namespace backend.game
             _match.Player2.GameEnded(gameResult);
             _match.Player1.HasConfirmedGameStart = false;
             _match.Player2.HasConfirmedGameStart = false;
-            OnGameEnded?.Invoke();
+            OnGameEnded?.Invoke(gameResult);
         }
 
         public int GetBestMove(IPlayer player)

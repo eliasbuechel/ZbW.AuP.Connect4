@@ -2,7 +2,7 @@
 
 namespace backend.communication.DOTs
 {
-    internal class InGamePlayerDTO : PlayerIdentityDTO
+    internal class InGamePlayerDTO : PlayerInfoDTO
     {
         public InGamePlayerDTO(IPlayer player) : base(player)
         {

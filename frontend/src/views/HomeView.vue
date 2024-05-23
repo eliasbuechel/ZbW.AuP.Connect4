@@ -1,19 +1,26 @@
 <template>
   <MainBoard
-    v-if="!isInGame && identity != null"
+    v-if="!isInGame && identity != null && bestlist != null"
     :identity="identity"
+    :bestlist="bestlist"
     :onlinePlayers="onlinePlayers"
     :gamePlan="gamePlan"
+    @show-replay="showReplay"
   />
   <Connect4Game
-    v-else-if="isInGame && identity != null && (game != null || gameResult != null)"
+    v-else-if="isInGame && identity != null && game != null"
     :game="game"
-    :gameResult="gameResult"
     :identity="identity"
     @place-stone="placeStone"
     @quit-game="quitGame"
-    @leave-game-result-view="leaveGameResultView"
     @confirm-game-start="confirmGameStart"
+  />
+  <GameResultView
+    v-if="identity != null && gameResult != null"
+    :gameResult="gameResult"
+    :identity="identity"
+    @leave-game-result-view="leaveGameResultView"
+    class="grid-item-game-result"
   />
 </template>
 
@@ -29,10 +36,12 @@ import { Match } from "@/types/Match";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { GameResult } from "@/types/GameResult";
 import { Field } from "@/types/Field";
+import GameResultView from "@/components/GameResultView.vue";
 
 interface HomeState {
   identity?: PlayerIdentity;
   onlinePlayers: OnlinePlayer[];
+  bestlist?: GameResult[];
   gamePlan: Match[];
   game?: Game;
   gameResult?: GameResult;
@@ -45,6 +54,7 @@ export default defineComponent({
     return {
       identity: undefined,
       onlinePlayers: new Array<OnlinePlayer>(),
+      bestlist: new Array<GameResult>(),
       gamePlan: new Array<Match>(),
       game: undefined,
       gameResult: undefined,
@@ -54,6 +64,7 @@ export default defineComponent({
   components: {
     MainBoard,
     Connect4Game,
+    GameResultView,
   },
   mounted(): void {
     if (signalRHub.isConnected()) {
@@ -94,6 +105,7 @@ export default defineComponent({
       signalRHub.on("GameStartConfirmed", this.onGameStartConfirmed);
       signalRHub.on("YouConfirmedGameStart", this.onYouConfirmedGameStart);
       signalRHub.on("SendHint", this.onSendHint);
+      signalRHub.on("SendBestlist", this.onSendBestlist);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -116,6 +128,7 @@ export default defineComponent({
       signalRHub.off("GameStartConfirmed", this.onGameStartConfirmed);
       signalRHub.off("YouConfirmedGameStart", this.onYouConfirmedGameStart);
       signalRHub.off("SendHint", this.onSendHint);
+      signalRHub.off("SendBestlist", this.onSendBestlist);
     },
     leaveGameResultView(): void {
       this.gameResult = undefined;
@@ -160,6 +173,9 @@ export default defineComponent({
       this.gamePlan = gamePlan;
       if (this.gamePlan.length > 0) signalRHub.invoke("GetCurrentGame");
     },
+    showReplay(gameResult: GameResult): void {
+      this.gameResult = gameResult;
+    },
     onMatched(match: Match): void {
       this.gamePlan = new Array<Match>(...this.gamePlan, match);
 
@@ -192,6 +208,9 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
+      this.addToBestlist(gameResult);
+      signalRHub.invoke("GetBestlist");
+
       if (this.isInGame != null) {
         this.gameResult = gameResult;
         this.game = undefined;
@@ -284,12 +303,22 @@ export default defineComponent({
         this.game.match.player2.hintsLeft--;
       }
     },
+    onSendBestlist(bestlist: GameResult[]): void {
+      console.log(bestlist);
+      this.bestlist = bestlist;
+    },
+    addToBestlist(gameResult: GameResult): void {
+      if (this.bestlist == null) return;
+
+      this.bestlist = new Array<GameResult>(gameResult, ...this.bestlist);
+    },
     onSignalRConnected(): void {
       this.subscribe();
       signalRHub.invoke("GetUserData");
       signalRHub.invoke("GetOnlinePlayers");
       signalRHub.invoke("GetGamePlan");
       signalRHub.invoke("GetGame");
+      signalRHub.invoke("GetBestlist");
     },
     onSignalRDisconnected(): void {
       this.unsubscribe();
@@ -309,3 +338,4 @@ export default defineComponent({
 </script>
 
 <style scoped></style>
+@/types/GameResultMatch

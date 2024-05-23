@@ -1,5 +1,6 @@
 ﻿using backend.communication.DOTs;
 using backend.Data;
+using backend.game.entities;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
@@ -106,7 +107,7 @@ namespace backend.game
         }
         public async Task GetUserDataAsync(string connection)
         {
-            PlayerIdentityDTO userData = new PlayerIdentityDTO(this);
+            PlayerInfoDTO userData = new PlayerInfoDTO(this);
             await SendUserData(connection, userData);
         }
 
@@ -125,6 +126,12 @@ namespace backend.game
             Connect4GameDTO game = new Connect4GameDTO(GetCurrentGameState());
             await SendGame(connection, game);
         }
+        public async Task GetBestlist(string connection)
+        {
+            IEnumerable<GameResult> bestlist = _gameManager.GetBestlist();
+            await SendBestList(connection, bestlist);
+        }
+
 
         public async void PlayerConnected(IPlayer player)
         {
@@ -213,6 +220,11 @@ namespace backend.game
             foreach (var connection in Connections)
                 await SendHint(connection, hint);
         }
+        public async void SendBestList(IEnumerable<GameResult> bestlist)
+        {
+            foreach (var connection in Connections)
+                await SendBestList(connection, bestlist);
+        }
 
         protected virtual Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer)
         {
@@ -250,7 +262,7 @@ namespace backend.game
         {
             return Task.CompletedTask;
         }
-        protected virtual Task SendUserData(string connection, PlayerIdentityDTO userData)
+        protected virtual Task SendUserData(string connection, PlayerInfoDTO userData)
         {
             return Task.CompletedTask;
         }
@@ -263,6 +275,10 @@ namespace backend.game
             return Task.CompletedTask;
         }
         protected virtual Task SendGame(string connection, Connect4GameDTO game)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task SendBestList(string connection, IEnumerable<GameResult> bestlist)
         {
             return Task.CompletedTask;
         }
@@ -290,7 +306,6 @@ namespace backend.game
         {
             return Task.CompletedTask;
         }
-
 
         protected readonly GameManager _gameManager;
         private readonly ICollection<string> _connections = new List<string>();

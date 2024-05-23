@@ -1,7 +1,7 @@
-import { PlayerIdentity } from "./PlayerIdentity";
+import { Entity } from "./Entity";
+import { InGamePlayer } from "./InGamePlayer";
 
-export interface Match {
-  id: string;
-  player1: PlayerIdentity;
-  player2: PlayerIdentity;
+export interface Match extends Entity {
+  player1: InGamePlayer;
+  player2: InGamePlayer;
 }

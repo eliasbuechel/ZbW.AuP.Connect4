@@ -1,4 +1,5 @@
-export interface PlayerIdentity {
-  id: string;
+import { Entity } from "./Entity";
+
+export interface PlayerIdentity extends Entity {
   username: string;
 }
