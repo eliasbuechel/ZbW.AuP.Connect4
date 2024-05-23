@@ -1,9 +1,9 @@
 <template>
   <div class="user-data">
     <div class="username" @click="toggleDropdown">{{ identity.username }}</div>
-    <div v-if="dropdownVisible" class="dropdown-menu" @click.stop>
+    <div v-if="dropdownVisible" class="dropdown-menau" @click.stop>
       <ul>
-        <li @click="changePassword">Change password</li>
+        <li @click="openPasswordPopup">Change password</li>
         <li @click="logout">Logout</li>
       </ul>
     </div>
@@ -13,6 +13,8 @@
 <script lang="ts">
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { PropType, defineComponent } from "vue";
+import eventBus from "@/services/eventBus";
+
 
 export default defineComponent({
   props: {
@@ -24,19 +26,19 @@ export default defineComponent({
   data() {
     return {
       dropdownVisible: false,
+      password: {
+        old: "",
+        new: ""
+      },
     };
   },
   methods: {
     toggleDropdown() {
       this.dropdownVisible = !this.dropdownVisible;
     },
-    changePassword() {
-      try {
-        // Implement change password logic here
-        this.dropdownVisible = false;
-      } catch (error) {
-        console.log("Change Password error:", error);
-      }
+    openPasswordPopup() {
+      eventBus.emit("open-password-popup");
+      this.dropdownVisible = false;
     },
     async logout() {
       try {

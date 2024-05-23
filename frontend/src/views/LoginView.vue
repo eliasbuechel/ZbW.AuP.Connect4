@@ -41,7 +41,7 @@ export default defineComponent({
   methods: {
     async login() {
       try {
-        await this.$axios.post("http://localhost:5000/account/login?useCookies=true", this.credentials,
+        await this.$axios.post("/account/login?useCookies=true", this.credentials,
           {
             withCredentials: true,
           });

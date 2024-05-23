@@ -55,6 +55,8 @@ export default defineComponent({
         this.errors.email = emailInput.validationMessage;
         return;
       }
+
+      this.errors.email = "";
     },
     validatePassword(): void {
       const passwordInput: HTMLInputElement = document.getElementById("password") as HTMLInputElement;
