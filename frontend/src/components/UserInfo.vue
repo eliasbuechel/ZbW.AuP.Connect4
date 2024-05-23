@@ -1,7 +1,7 @@
 <template>
-  <div class="user-data">
+  <div class="user-data" @click.self="closeDropdown">
     <div class="username" @click="toggleDropdown">{{ identity.username }}</div>
-    <div v-if="dropdownVisible" class="dropdown-menau" @click.stop>
+    <div v-if="dropdownVisible" class="dropdown-menu" @click.stop>
       <ul>
         <li @click="openPasswordPopup">Change password</li>
         <li @click="logout">Logout</li>
@@ -35,6 +35,20 @@ export default defineComponent({
   methods: {
     toggleDropdown() {
       this.dropdownVisible = !this.dropdownVisible;
+      if (this.dropdownVisible) {
+        document.addEventListener("click", this.handleClickOutside);
+      } else {
+        document.removeEventListener("click", this.handleClickOutside);
+      }
+    },
+    closeDropdown() {
+      this.dropdownVisible = false;
+      document.removeEventListener("click", this.handleClickOutside);
+    },
+    handleClickOutside(event: Event) {
+      if (this.$el && !this.$el.contains(event.target as Node)) {
+        this.closeDropdown();
+      }
     },
     openPasswordPopup() {
       eventBus.emit("open-password-popup");
@@ -59,31 +73,34 @@ export default defineComponent({
 }
 
 .username:hover {
-  color: #df9500aa;
+  color: #b27c0c;
   transition: 0.25s ease;
 }
 
 .dropdown-menu {
-  display: flex;
-  justify-content: left;
+  color: #01172c;
+  grid-row: 2;
+  align-self: flex-start;
+  width: fit-content;
 }
 
 .dropdown-menu ul {
   list-style: none;
   list-style-position: outside;
-  text-align: left;
   padding: 0;
   margin: 0;
-  background-color: #df95003c;
+  background-color: #b27c0c;
+  border-radius: 1em;
+  margin-top: 0.5rem;
 }
 
 .dropdown-menu li {
-  padding: 0.3em;
+  padding: 0.5em 1em;
   cursor: pointer;
 }
 
 .dropdown-menu li:hover {
-  color: #df9500aa;
+  color: whitesmoke;
   transition: 0.25s ease;
 }
 </style>
