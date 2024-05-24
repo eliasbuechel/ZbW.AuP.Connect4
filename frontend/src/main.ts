@@ -1,7 +1,7 @@
 // extern libraris/frameworks
 import { Router, createRouter, createWebHistory } from "vue-router";
 import axios, { AxiosStatic } from "axios";
-import VueCookies from 'vue-cookies';
+import VueCookies from "vue-cookies";
 
 // Intern modules
 import { App, createApp } from "vue";
@@ -15,14 +15,13 @@ const router = createRouter({
 });
 export default router;
 
-
 router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
-    await store.dispatch('checkAuth');
+    await store.dispatch("checkAuth");
     if (store.state.isAuthenticated) {
       next();
     } else {
-      next('/login');
+      next("/login");
     }
   } else {
     next();
@@ -38,7 +37,7 @@ declare module "@vue/runtime-core" {
   }
 }
 app.config.globalProperties.$axios = axios;
-axios.defaults.baseURL = "http://localhost:5000"; // https://api.r4d4.work
+axios.defaults.baseURL = "https://api.r4d4.work";
 
 app.use(router);
 app.use(VueCookies);
