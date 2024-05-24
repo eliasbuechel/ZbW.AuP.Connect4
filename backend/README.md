@@ -8,5 +8,14 @@ Super wäre noch eine kleine Beschreibung der Gliederungsstrukutr (learning)
 
 ## Setup
 
+### AzureAD
+
+Über Powershell
+
+
+Connect-AzAccount
+
+Get-AzADApplication
+
 ### Local
 ### Docker
