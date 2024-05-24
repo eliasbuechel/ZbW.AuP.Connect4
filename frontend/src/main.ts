@@ -1,12 +1,13 @@
 // extern libraris/frameworks
 import { Router, createRouter, createWebHistory } from "vue-router";
 import axios, { AxiosStatic } from "axios";
+import VueCookies from "vue-cookies";
 
 // Intern modules
 import { App, createApp } from "vue";
 import AppVue from "./App.vue";
 import routes from "@/routes";
-import authService from "@/services/authService";
+import store from "@/services/store";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,11 +15,14 @@ const router = createRouter({
 });
 export default router;
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !authService.isAuthenticated()) {
-    next("/login");
-  } else if (to.name === "Login" && authService.isAuthenticated()) {
-    next("/home");
+router.beforeEach(async (to, from, next) => {
+  if (to.meta.requiresAuth) {
+    await store.dispatch("checkAuth");
+    if (store.state.isAuthenticated) {
+      next();
+    } else {
+      next("/login");
+    }
   } else {
     next();
   }
@@ -36,4 +40,5 @@ app.config.globalProperties.$axios = axios;
 axios.defaults.baseURL = "https://api.r4d4.work";
 
 app.use(router);
+app.use(VueCookies);
 app.mount("#app");

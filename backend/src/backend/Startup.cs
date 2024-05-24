@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.Options;
 using backend.game.entities;
 
 
@@ -161,6 +160,7 @@ namespace backend
         {
             services.AddAuthorization();
             services.AddAuthentication();
+                
 
             services.AddIdentityCore<PlayerIdentity>(options =>
             {
