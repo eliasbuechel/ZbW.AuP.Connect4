@@ -117,6 +117,8 @@ namespace backend
             {
                 return new Connect4Game(m, s.GetRequiredService<Connect4Board>());
             });
+
+            services.AddSingleton<PlayerRequestHandlerManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

@@ -78,7 +78,7 @@ namespace backend.services
             });
         }
 
-        public IPlayer GetOnlinePlayer(string playerId)
+        public IPlayer GetOnlinePlayerAsync(string playerId)
         {
             lock(_onlinePlayersLock)
             {

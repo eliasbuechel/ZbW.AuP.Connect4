@@ -4,7 +4,7 @@ namespace backend.services
 {
     internal interface IOnlinePlayerProvider
     {
-        IPlayer GetOnlinePlayer(string playerId);
+        IPlayer GetOnlinePlayerAsync(string playerId);
         IPlayer? GetOnlinePlayerOrDefault(string playerId);
     }
 }

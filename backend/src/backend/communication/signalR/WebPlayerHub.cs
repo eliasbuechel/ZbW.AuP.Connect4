@@ -11,7 +11,7 @@ namespace backend.communication.signalR
     [Authorize]
     internal class WebPlayerHub : PlayerHub
     {
-        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer, PlayerRequestLock playerRequestLock) : base(onlinePlayerProvider)
+        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, PlayerRequestHandlerManager playerRequestHandlerManager, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer, PlayerRequestLock playerRequestLock) : base(onlinePlayerProvider, playerRequestHandlerManager)
         {
             _userManager = userManager;
             _createPlayer = createPlayer;
@@ -22,19 +22,41 @@ namespace backend.communication.signalR
         {
             lock (RequestLock)
             {
-                IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer();
-                ThisPlayer.RequestMatch(algorythmPlayer);
+                IPlayer player;
+                try
+                {
+                    player = ThisPlayer;
+                    IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer();
+                    RequestHandler.Enqueue(() => player.RequestMatch(algorythmPlayer));
+                }
+                catch
+                {
+                    Debug.Assert(false);
+                }
             }
         }
         public void GetHint()
         {
             lock (RequestLock)
             {
-                ThisPlayer.GetHint();
+                IPlayer player;
+                try
+                {
+                    player = ThisPlayer;
+                    RequestHandler.Enqueue(() =>
+                    {
+                        player.GetHint();
+                        return Task.CompletedTask;
+                    });
+                }
+                catch
+                {
+                    Debug.Assert(false);
+                }
             }
         }
 
-        protected override IPlayer ThisPlayer => _onlinePlayerProvider.GetOnlinePlayer(Identity.Id);
+        protected override IPlayer ThisPlayer => _onlinePlayerProvider.GetOnlinePlayerAsync(Identity.Id);
         protected override object RequestLock => _playerRequestLock[Identity];
         protected override IPlayer GetOrCreatePlayer()
         {

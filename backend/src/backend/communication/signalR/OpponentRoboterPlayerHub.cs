@@ -5,7 +5,7 @@ namespace backend.communication.signalR
 {
     internal class OpponentRoboterPlayerHub : PlayerHub
     {
-        public OpponentRoboterPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, ToPlayerHub<OpponentRoboterPlayerHub> opponentRoboterPlayer) : base(onlinePlayerProvider)
+        public OpponentRoboterPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, PlayerRequestHandlerManager playerRequestHandlerManager, ToPlayerHub<OpponentRoboterPlayerHub> opponentRoboterPlayer) : base(onlinePlayerProvider, playerRequestHandlerManager)
         {
             _opponentRoboterPlayer = opponentRoboterPlayer;
         }
