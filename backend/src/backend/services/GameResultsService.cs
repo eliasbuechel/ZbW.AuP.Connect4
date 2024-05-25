@@ -12,7 +12,7 @@ namespace backend.services
             _dbContextFactory = dbContextFactory;
         }
 
-        public IEnumerable<GameResult> GameResults
+        public IEnumerable<GameResult> Bestlist
         {
             get
             {
@@ -23,6 +23,21 @@ namespace backend.services
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Take(3)
+                    .Select(x => new GameResult(x))
+                    .ToArray();
+                return gameResults;
+            }
+        }
+        public IEnumerable<GameResult> GameResults
+        {
+            get
+            {
+                using BackendDbContext context = _dbContextFactory.GetDbContext();
+                IEnumerable<GameResult> gameResults = context.GameResults
+                    .Include(x => x.Line)
+                    .Include(x => x.Match)
+                    .Include(x => x.Match.Player1)
+                    .Include(x => x.Match.Player2)
                     .Select(x => new GameResult(x))
                     .ToArray();
                 return gameResults;

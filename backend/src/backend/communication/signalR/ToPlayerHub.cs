@@ -1,10 +1,8 @@
 ﻿using backend.communication.DOTs;
-using backend.Data;
 using backend.game;
 using backend.game.entities;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
-using MySqlX.XDevAPI;
 
 namespace backend.communication.signalR
 {

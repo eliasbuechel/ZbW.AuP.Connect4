@@ -12,14 +12,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using backend.game.entities;
 
-
 namespace backend
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup()
         {
-            _configuration = configuration;
             DotNetEnv.Env.Load();
         }
 
@@ -83,7 +81,6 @@ namespace backend
             });
 
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton<PlayerRequestLock>();
             services.AddScoped<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
@@ -207,7 +204,5 @@ namespace backend
 
             services.AddScoped<Func<UserManager<PlayerIdentity>>>(s => () => s.GetRequiredService<UserManager<PlayerIdentity>>());
         }
-
-        private readonly IConfiguration _configuration;
     }
 }

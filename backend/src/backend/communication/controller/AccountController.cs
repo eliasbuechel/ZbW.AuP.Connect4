@@ -17,7 +17,8 @@ namespace backend.communication.controller
         [HttpGet("checkAuthentication")]
         public IActionResult CheckAuthentication2()
         {
-            if(User.Identity.IsAuthenticated)
+            var identity = User.Identity;
+            if (identity != null && identity.IsAuthenticated)
             {
                 return Ok(new { isAuthenticated = true });
             }

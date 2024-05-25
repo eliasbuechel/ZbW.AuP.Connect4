@@ -11,53 +11,50 @@ namespace backend.communication.signalR
     [Authorize]
     internal class WebPlayerHub : PlayerHub
     {
-        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, PlayerRequestHandlerManager playerRequestHandlerManager, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer, PlayerRequestLock playerRequestLock) : base(onlinePlayerProvider, playerRequestHandlerManager)
+        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, PlayerRequestHandlerManager playerRequestHandlerManager, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer) : base(onlinePlayerProvider, playerRequestHandlerManager)
         {
             _userManager = userManager;
             _createPlayer = createPlayer;
-            _playerRequestLock = playerRequestLock;
             _algorythmPlayerProvider = algorythmPlayerProvider;
         }
         public void RequestSinglePlayerMatch()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                IPlayer player;
-                try
-                {
-                    player = ThisPlayer;
-                    IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer();
-                    RequestHandler.Enqueue(() => player.RequestMatch(algorythmPlayer));
-                }
-                catch
-                {
-                    Debug.Assert(false);
-                }
+                player = ThisPlayer;
+                IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer();
+                RequestHandler.Enqueue(() => player.RequestMatch(algorythmPlayer));
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void GetHint()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                IPlayer player;
-                try
+                player = ThisPlayer;
+                RequestHandler.Enqueue(() =>
                 {
-                    player = ThisPlayer;
-                    RequestHandler.Enqueue(() =>
-                    {
-                        player.GetHint();
-                        return Task.CompletedTask;
-                    });
-                }
-                catch
-                {
-                    Debug.Assert(false);
-                }
+                    player.GetHint();
+                    return Task.CompletedTask;
+                });
             }
+            catch
+            {
+                Debug.Assert(false);
+            }
+        }
+        public void GetBestlist()
+        {
+            ThisPlayer.GetBestlist(Connection);
         }
 
         protected override IPlayer ThisPlayer => _onlinePlayerProvider.GetOnlinePlayerAsync(Identity.Id);
-        protected override object RequestLock => _playerRequestLock[Identity];
+
         protected override IPlayer GetOrCreatePlayer()
         {
             IPlayer? player = _onlinePlayerProvider.GetOnlinePlayerOrDefault(Identity.Id);
@@ -69,13 +66,6 @@ namespace backend.communication.signalR
         protected override IPlayer? GetPlayerOrDefault()
         {
             return _onlinePlayerProvider.GetOnlinePlayerOrDefault(Identity.Id);
-        }
-        public void GetBestlist()
-        {
-            lock (RequestLock)
-            {
-                ThisPlayer.GetBestlist(Connection);
-            }
         }
 
         private PlayerIdentity Identity
@@ -95,7 +85,6 @@ namespace backend.communication.signalR
             }
         }
 
-        private readonly PlayerRequestLock _playerRequestLock;
         private readonly AlgorythmPlayerProvider _algorythmPlayerProvider;
         private readonly UserManager<PlayerIdentity> _userManager;
         private readonly Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> _createPlayer;
