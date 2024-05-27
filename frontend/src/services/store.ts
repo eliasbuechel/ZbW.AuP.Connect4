@@ -13,7 +13,7 @@ export default createStore({
   actions: {
     async checkAuth({ commit }) {
       try {
-        const response = await axios.get('http://localhost:5000/account/checkAuthentication', {
+        const response = await axios.get('http://localhost:8082/account/checkAuthentication', {
           withCredentials: true,
         });
         commit('setAuthenticated', response.data.isAuthenticated);
