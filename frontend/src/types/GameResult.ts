@@ -8,4 +8,5 @@ export interface GameResult extends Entity {
   playedMoves: number[];
   startingPlayerId: string;
   match: GameResultMatch;
+  // gameTimeInSeconds: number;
 }

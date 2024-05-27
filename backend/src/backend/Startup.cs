@@ -1,8 +1,9 @@
 using backend.communication.mqtt;
 using backend.communication.signalR;
 using backend.Data;
-using backend.Infrastructure;
 using backend.game;
+using backend.game.entities;
+using backend.Infrastructure;
 using backend.services;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +11,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using backend.game.entities;
 
 
 namespace backend
@@ -111,11 +111,12 @@ namespace backend
             services.AddSingleton<PlayerConnectionManager>();
             services.AddSingleton<GameManager>();
             services.AddSingleton<Connect4Board>();
+            services.AddSingleton<GameTimeService>();
 
 
-            services.AddSingleton<Func<Match, Connect4Game>>(s => m =>
+            services.AddSingleton<Func<Match, Connect4Game >> (s => match =>
             {
-                return new Connect4Game(m, s.GetRequiredService<Connect4Board>());
+                return new Connect4Game(match, s.GetRequiredService<Connect4Board>());
             });
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)

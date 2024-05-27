@@ -4,13 +4,14 @@ namespace backend.game.entities
 {
     internal class GameResult : Entity
     {
-        public GameResult(IPlayer? winner, ICollection<Field>? line, ICollection<int> playedMoves, IPlayer startingPlayer, Match match)
+        public GameResult(IPlayer? winner, ICollection<Field>? line, ICollection<int> playedMoves, IPlayer startingPlayer, Match match, double totalGameTime)
         {
             WinnerId = winner == null ? null : winner.Id;
             Line = line;
             PlayedMoves = playedMoves;
             StartingPlayerId = startingPlayer.Id;
             Match = new GameResultMatch(match);
+            TotalGameTime = totalGameTime;
         }
         public GameResult(DbGameResult gameResult) : base(gameResult)
         {
@@ -19,6 +20,7 @@ namespace backend.game.entities
             PlayedMoves = gameResult.PlayedMoves;
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatch(gameResult.Match);
+            TotalGameTime = gameResult.TotalGameTime;
         }
 
         public string? WinnerId { get; }
@@ -26,5 +28,6 @@ namespace backend.game.entities
         public ICollection<int> PlayedMoves { get; }
         public string StartingPlayerId { get; }
         public GameResultMatch Match { get; }
+        public double TotalGameTime { get; }
     }
 }

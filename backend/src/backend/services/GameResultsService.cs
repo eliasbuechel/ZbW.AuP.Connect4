@@ -39,6 +39,7 @@ namespace backend.services
             dbGameResult.Line = gameResult.Line == null ? new List<DbField>() : gameResult.Line.Select(x => new DbField(x)).ToList();
             dbGameResult.PlayedMoves = gameResult.PlayedMoves.ToList();
             dbGameResult.StartingPlayerId = gameResult.StartingPlayerId;
+            dbGameResult.TotalGameTime = gameResult.TotalGameTime;
 
             DbGameResultMatch dbMatch = new DbGameResultMatch();
             DbPlayerInfo player1 = context.Players.FirstOrDefault(x => x.Id == gameResult.Match.Player1.Id) ?? new DbPlayerInfo(gameResult.Match.Player1);

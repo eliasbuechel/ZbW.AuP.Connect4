@@ -14,6 +14,7 @@ namespace backend.Data
         public DbSet<DbGameResultMatch> Matches { get; set; }
         public DbSet<DbPlayerInfo> Players { get; set; }
         public DbSet<DbField> Fields { get; set; }
+        public DbSet<DbPlayerTime> PlayerMoveTimes { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

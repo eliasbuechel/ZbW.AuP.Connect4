@@ -255,7 +255,6 @@ namespace backend.services
             return _activeGame.GetBestMove(player);
         }
 
-
         private object _gamePlanLock = new object();
         private object _matchRequestsLock = new object();
         private Connect4Game? _activeGame = null;
