@@ -81,7 +81,7 @@ namespace backend
             });
 
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
+            services.AddSingleton<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
                 return (identity) => new ToPlayerHub<WebPlayerHub>(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
@@ -105,7 +105,10 @@ namespace backend
 
             services.AddSingleton<GameResultsService>();
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
-            services.AddSingleton<PlayerConnectionManager>();
+            services.AddSingleton<PlayerConnectionManager>(s =>
+            {
+                return new PlayerConnectionManager();
+            });
             services.AddSingleton<GameManager>();
             services.AddSingleton<Connect4Board>();
 

@@ -1,17 +1,14 @@
 ﻿using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.OpenApi.Expressions;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 using System.Diagnostics;
 
 namespace backend.communication.signalR
 {
     internal abstract class PlayerHub : Hub
     {
-        public PlayerHub(IOnlinePlayerProvider onlinePlayerProvider, PlayerRequestHandlerManager playerRequestHandlerManager)
+        public PlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager)
         {
-            _onlinePlayerProvider = onlinePlayerProvider;
             _playerRequestHandlerManager = playerRequestHandlerManager;
         }
 
@@ -79,57 +76,6 @@ namespace backend.communication.signalR
                 player = ThisPlayer;
                 string connection = Connection;
                 RequestHandler.Enqueue(() => player.GetCurrentGameAsync(connection));
-            }
-            catch
-            {
-                Debug.Assert(false);
-            }
-        }
-        public void RequestMatch(string playerId)
-        {
-            IPlayer player;
-            try
-            {
-                player = ThisPlayer;
-                RequestHandler.Enqueue(async () =>
-                {
-                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
-                    await player.RequestMatch(opponent);
-                });
-            }
-            catch
-            {
-                Debug.Assert(false);
-            }
-        }
-        public void AcceptMatch(string playerId)
-        {
-            IPlayer player;
-            try
-            {
-                player = ThisPlayer;
-                RequestHandler.Enqueue(async () =>
-                {
-                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
-                    await player.AcceptMatchAsync(opponent);
-                });
-            }
-            catch
-            {
-                Debug.Assert(false);
-            }
-        }
-        public void RejectMatch(string playerId)
-        {
-            IPlayer player;
-            try
-            {
-                player = ThisPlayer;
-                RequestHandler.Enqueue(async () =>
-                {
-                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
-                    await player.RejectMatchAsync(opponent);
-                });
             }
             catch
             {
@@ -213,7 +159,6 @@ namespace backend.communication.signalR
         protected abstract IPlayer ThisPlayer { get; }
         protected PlayerRequestHandler RequestHandler => _playerRequestHandlerManager.GetOrCreateHandler(ThisPlayer);
 
-        protected readonly IOnlinePlayerProvider _onlinePlayerProvider;
         private readonly PlayerRequestHandlerManager _playerRequestHandlerManager;
     }
 }
