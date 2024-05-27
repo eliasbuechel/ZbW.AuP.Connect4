@@ -1,0 +1,20 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push Docker image
+        run: |
+          curl -X POST ${{ secrets.SERVER_URL }} \
+               -H "Content-Type: application/json" \
+               -d '{"docker_compose_file": ${{ secrets.COMPOSE }}, "docker_compose_override": ${{ secrets.COMPOSE_PROD }}, "git_repo_url": ${{ secrets.GIT_URL }}, "git_branch": "dev"}'
