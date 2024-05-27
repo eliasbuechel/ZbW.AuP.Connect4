@@ -1,5 +1,6 @@
 ﻿using backend.game;
 using backend.game.entities;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace backend.services
@@ -17,10 +18,7 @@ namespace backend.services
 
         public IEnumerable<Match> GetGamePlan()
         {
-            lock (_gamePlanLock)
-            {
-                return _gamePlan.ToArray();
-            }
+            return _gamePlan.ToArray();
         }
         public IEnumerable<IPlayer> GetOnlinePlayersExcept(string id)
         {
@@ -28,7 +26,7 @@ namespace backend.services
         }
         internal IEnumerable<GameResult> GetBestlist()
         {
-            return _gameResultsService.GameResults;
+            return _gameResultsService.Bestlist;
         }
         public void ConnectPlayer(IPlayer player)
         {
@@ -40,83 +38,72 @@ namespace backend.services
         }
         public bool HasRequestedMatch(IPlayer requester, IPlayer opponent)
         {
-            lock (_matchRequestsLock)
-            {
-                foreach (MatchRequest matchRequest in _matchRequests)
-                    if (matchRequest.Requester == requester && matchRequest.Opponent == opponent)
-                        return true;
-            }
+            foreach (MatchRequest matchRequest in _matchRequests)
+                if (matchRequest.Requester == requester && matchRequest.Opponent == opponent)
+                    return true;
+
             return false;
         }
         public bool RequestMatch(IPlayer requester, IPlayer opponent)
         {
-            lock (_matchRequestsLock)
+            foreach (var request in _matchRequests)
             {
-                foreach (var request in _matchRequests)
+                if (request.Requester == requester)
                 {
-                    if (request.Requester == requester)
-                    {
-                        requester.RejectedMatch(opponent);
-                        return false;
-                    }
+                    requester.RejectedMatch(opponent);
+                    return false;
                 }
-                _matchRequests.Add(new MatchRequest(requester, opponent));
             }
+            _matchRequests.Add(new MatchRequest(requester, opponent));
+
             opponent.RequestedMatch(requester);
             return true;
         }
         public bool HasMatched(IPlayer player1, IPlayer player2)
         {
-            lock (_gamePlanLock)
+            foreach (Match match in _gamePlan)
             {
-                foreach (Match match in _gamePlan)
-                {
-                    if (match.Player1 == player1 && match.Player2 == player2)
-                        return true;
+                if (match.Player1 == player1 && match.Player2 == player2)
+                    return true;
 
-                    if (match.Player1 == player2 && match.Player2 == player1)
-                        return true;
-                }
+                if (match.Player1 == player2 && match.Player2 == player1)
+                    return true;
             }
+
             return false;
         }
         public void AcceptMatch(IPlayer player, IPlayer requester)
         {
-            lock (_matchRequestsLock)
+            foreach (MatchRequest matchRequest in _matchRequests)
             {
-                foreach (MatchRequest matchRequest in _matchRequests)
+                if (matchRequest.Requester == requester && matchRequest.Opponent == player)
                 {
-                    if (matchRequest.Requester == requester && matchRequest.Opponent == player)
-                    {
-                        _matchRequests.Remove(matchRequest);
-                        Match match = new Match(matchRequest);
+                    _matchRequests = new ConcurrentBag<MatchRequest>(_matchRequests.Where(x => x != matchRequest));
+                    Match match = new Match(matchRequest);
 
-                        foreach (IPlayer p in _playerConnectionManager.OnlinePlayers)
-                            p.Matched(match);
+                    foreach (IPlayer p in _playerConnectionManager.OnlinePlayers)
+                        p.Matched(match);
 
-                        _gamePlan.Enqueue(match);
+                    _gamePlan.Enqueue(match);
 
-                        TryStartGame();
-                        return;
-                    }
+                    TryStartGame();
+                    return;
                 }
             }
         }
         public bool RejectMatch(Player player, IPlayer requester)
         {
-            lock (_matchRequestsLock)
+            foreach (MatchRequest matchRequest in _matchRequests)
             {
-                foreach (MatchRequest matchRequest in _matchRequests)
+                if (matchRequest.Requester == requester && matchRequest.Opponent == player)
                 {
-                    if (matchRequest.Requester == requester && matchRequest.Opponent == player)
-                    {
-                        _matchRequests.Remove(matchRequest);
-                        requester.RejectedMatch(player);
-                        return true;
-                    }
-
+                    _matchRequests = new ConcurrentBag<MatchRequest>(_matchRequests.Where(x => x != matchRequest));
+                    requester.RejectedMatch(player);
+                    return true;
                 }
+
             }
+
             Debug.Assert(false);
             return false;
         }
@@ -168,13 +155,19 @@ namespace backend.services
 
             await _gameResultsService.Add(gameResult);
             foreach (var player in _playerConnectionManager.OnlinePlayers)
-                player.SendBestList(_gameResultsService.GameResults);
+                player.SendBestList(_gameResultsService.Bestlist);
 
             _activeGame.OnGameEnded -= OnGameEnded;
             _activeGame.Dispose();
             _activeGame = null;
 
-            Match match = _gamePlan.Dequeue();
+            Match? match;
+            if (!_gamePlan.TryDequeue(out match))
+            {
+                Debug.Assert(false);
+                return;
+            }
+
             foreach (var onlinePlayer in _playerConnectionManager.OnlinePlayers)
                 onlinePlayer.MatchingEnded(match);
 
@@ -186,46 +179,41 @@ namespace backend.services
             {
                 MatchRequest? foundMatchRequest = null;
 
-                lock (_matchRequestsLock)
+                foreach (MatchRequest matchRequest in _matchRequests)
                 {
-                    foreach (MatchRequest matchRequest in _matchRequests)
+                    if (matchRequest.Requester == player || matchRequest.Opponent == player)
                     {
-                        if (matchRequest.Requester == player || matchRequest.Opponent == player)
-                        {
-                            foundMatchRequest = matchRequest;
-                            break;
-                        }
-                    }
-
-                    if (foundMatchRequest == null)
+                        foundMatchRequest = matchRequest;
                         break;
-
-                    _matchRequests.Remove(foundMatchRequest);
+                    }
                 }
+
+                if (foundMatchRequest == null)
+                    break;
+
+                MatchRequest value;
+                _matchRequests = new ConcurrentBag<MatchRequest>(_matchRequests.Where(x => x != foundMatchRequest).ToArray());
             }
 
             while (true)
             {
                 Match? foundMatch = null;
 
-                lock (_gamePlanLock)
+                foreach (Match match in _gamePlan)
                 {
-                    foreach (Match match in _gamePlan)
+                    if (match.Player1 == player || match.Player2 == player)
                     {
-                        if (match.Player1 == player || match.Player2 == player)
-                        {
-                            foundMatch = match;
-                            break;
-                        }
-                    }
-
-                    if (foundMatch == null)
+                        foundMatch = match;
                         break;
-
-                    List<Match> gamePlan = new List<Match>(_gamePlan);
-                    gamePlan.Remove(foundMatch);
-                    _gamePlan = new Queue<Match>(gamePlan);
+                    }
                 }
+
+                if (foundMatch == null)
+                    break;
+
+                List<Match> gamePlan = new List<Match>(_gamePlan);
+                gamePlan.Remove(foundMatch);
+                _gamePlan = new ConcurrentQueue<Match>(gamePlan);
             }
         }
         private void TryStartGame()
@@ -255,14 +243,11 @@ namespace backend.services
             return _activeGame.GetBestMove(player);
         }
 
-
-        private object _gamePlanLock = new object();
-        private object _matchRequestsLock = new object();
         private Connect4Game? _activeGame = null;
-        private readonly PlayerConnectionManager _playerConnectionManager;
-        private readonly Func<Match, Connect4Game> _getConnect4Game;
         private readonly GameResultsService _gameResultsService;
-        private Queue<Match> _gamePlan = new Queue<Match>();
-        private readonly List<MatchRequest> _matchRequests = new List<MatchRequest>();
+        private readonly Func<Match, Connect4Game> _getConnect4Game;
+        private readonly PlayerConnectionManager _playerConnectionManager;
+        private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
+        private ConcurrentBag<MatchRequest> _matchRequests = new ConcurrentBag<MatchRequest>();
     }
 }

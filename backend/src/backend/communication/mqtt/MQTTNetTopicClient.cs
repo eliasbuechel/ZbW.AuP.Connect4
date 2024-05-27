@@ -10,9 +10,6 @@ namespace backend.communication.mqtt
 {
     internal class MQTTNetTopicClient : IDisposable
     {
-        public event Action? OnConnected;
-        public event Action? OnDisconnected;
-
         public MQTTNetTopicClient(string brokerUri, string username, string password)
         {
             _brokerUri = brokerUri;
@@ -58,6 +55,9 @@ namespace backend.communication.mqtt
             _managedClient.UseApplicationMessageReceivedHandler(OnMessageRecivedFromBroker);
         }
 
+        public event Action? OnConnected;
+        public event Action? OnDisconnected;
+
         public bool IsConnected => _connected;
 
         public async Task ConnectAsync()
@@ -77,21 +77,6 @@ namespace backend.communication.mqtt
             }
 
             _managedClient.Dispose();
-        }
-
-        private async Task OnConnectedToBorker(MqttClientConnectedEventArgs e)
-        {
-            Console.WriteLine("Connected to broker!");
-            _connected = true;
-            OnConnected?.Invoke();
-            await Task.CompletedTask;
-        }
-        private async Task OnDisonnectedFromBroker(MqttClientDisconnectedEventArgs e)
-        {
-            Console.WriteLine("Disconnected from broker!");
-            _connected = false;
-            OnDisconnected?.Invoke();
-            await Task.CompletedTask;
         }
 
         public async Task PublishAsync(string topic, string message)
@@ -148,6 +133,20 @@ namespace backend.communication.mqtt
             }
         }
 
+        private async Task OnConnectedToBorker(MqttClientConnectedEventArgs e)
+        {
+            Console.WriteLine("Connected to broker!");
+            _connected = true;
+            OnConnected?.Invoke();
+            await Task.CompletedTask;
+        }
+        private async Task OnDisonnectedFromBroker(MqttClientDisconnectedEventArgs e)
+        {
+            Console.WriteLine("Disconnected from broker!");
+            _connected = false;
+            OnDisconnected?.Invoke();
+            await Task.CompletedTask;
+        }
         private async Task OnMessageRecivedFromBroker(MqttApplicationMessageReceivedEventArgs e)
         {
             string topic = e.ApplicationMessage.Topic;

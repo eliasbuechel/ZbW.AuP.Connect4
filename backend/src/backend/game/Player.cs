@@ -30,7 +30,7 @@ namespace backend.game
         {
             return _gameManager.GetOnlinePlayersExcept(Id);
         }
-        public void Connect(string connection)
+        public void ConnectAsync(string connection)
         {
             _connections.Add(connection);
             _gameManager.ConnectPlayer(this);
@@ -40,25 +40,26 @@ namespace backend.game
             _connections.Remove(onnection);
             _gameManager.DisconnectPlayer(this);
         }
-        public void RequestMatch(IPlayer player)
+        public async Task RequestMatch(IPlayer player)
         {
             if (!_gameManager.RequestMatch(this, player))
                 return;
 
             string playerId = player.Id;
             foreach (var connection in _connections)
-                YouRequestedMatch(connection, playerId);
+                await YouRequestedMatch(connection, playerId);
         }
-        public void ConfirmGameStart()
+        public Task ConfirmGameStartAsync()
         {
             if (HasConfirmedGameStart)
             {
                 Debug.Assert(false);
-                return;
+                return Task.CompletedTask;
             }
 
             HasConfirmedGameStart = true;
             _gameManager.ConfirmedGameStart(this);
+            return Task.CompletedTask;
         }
         public bool HasRequestedMatch(IPlayer you)
         {
@@ -68,11 +69,12 @@ namespace backend.game
         {
             return _gameManager.HasMatched(this, player);
         }
-        public void AcceptMatch(IPlayer player)
+        public async Task AcceptMatchAsync(IPlayer player)
         {
             _gameManager.AcceptMatch(this, player);
+            await Task.CompletedTask;
         }
-        public async Task RejectMatch(IPlayer player)
+        public async Task RejectMatchAsync(IPlayer player)
         {
             if (!_gameManager.RejectMatch(this, player))
                 return;
@@ -81,23 +83,21 @@ namespace backend.game
             foreach (var connection in _connections)
                 await YouRejectedMatch(connection, playerId);
         }
-        public IEnumerable<Match> GetGamePlan()
-        {
-            return _gameManager.GetGamePlan();
-        }
-        public void PlayMove(int column)
+        public Task PlayMoveAsync(int column)
         {
             _gameManager.PlayMove(this, column);
+            return Task.CompletedTask;
         }
         public Connect4Game GetCurrentGameState()
         {
             return _gameManager.GetCurrentGameState();
         }
-        public void QuitGame()
+        public Task QuitGameAsync()
         {
             _gameManager.QuitGame(this);
+            return Task.CompletedTask;
         }
-        public async Task GetGame(string connection)
+        public async Task GetGameAsync(string connection)
         {
             if (!_gameManager.IsInGame(this))
                 return;
@@ -111,17 +111,17 @@ namespace backend.game
             await SendUserData(connection, userData);
         }
 
-        public async Task GetOnlinePlayers(string connection)
+        public async Task GetOnlinePlayersAsync(string connection)
         {
             IEnumerable<OnlinePlayerDTO> onlinePlayers = _gameManager.GetOnlinePlayersExcept(Id).Select(p => new OnlinePlayerDTO(p, this)).ToArray();
             await SendOnlinePlayers(connection, onlinePlayers);
         }
-        public async Task GetGamePlan(string connection)
+        public async Task GetGamePlanAsync(string connection)
         {
             IEnumerable<MatchDTO> gamePlan = _gameManager.GetGamePlan().Select(m => new MatchDTO(m)).ToArray();
             await SendGamePlan(connection, gamePlan);
         }
-        public async Task GetCurrentGame(string connection)
+        public async Task GetCurrentGameAsync(string connection)
         {
             Connect4GameDTO game = new Connect4GameDTO(GetCurrentGameState());
             await SendGame(connection, game);

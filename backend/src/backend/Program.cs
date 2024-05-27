@@ -20,7 +20,7 @@ namespace backend
               {
                   DotNetEnv.Env.Load();
 
-                  webBuilder.UseStartup(builder => new Startup(builder.Configuration));
+                  webBuilder.UseStartup(builder => new Startup());
                   string url = DotNetEnv.Env.GetString("URL");
                   webBuilder.UseUrls(url);
               });

@@ -11,6 +11,7 @@ namespace backend.communication.DOTs
             Connect4Board = connect4Game.FieldAsIds;
             StartConfirmed = connect4Game.StartConfirmed;
         }
+
         public MatchDTO Match { get; }
         public string ActivePlayerId { get; }
         public string[][] Connect4Board { get; }

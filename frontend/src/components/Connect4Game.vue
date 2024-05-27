@@ -177,7 +177,7 @@ export default defineComponent({
   grid-row: 1 / span 4;
 }
 .grid-item-connect4-board {
-  grid-column: 4 / span 6;
+  grid-column: 1 / span 12;
   grid-row: 3 / span 10;
 }
 .grid-item-game-result {

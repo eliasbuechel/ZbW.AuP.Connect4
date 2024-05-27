@@ -18,7 +18,12 @@
         <div
           v-for="(cell, rowIdx) in column"
           :key="rowIdx"
-          :class="{ cell: true, colorPlayerLeft: cell === playerLeft.id, colorPlayerRight: cell === playerRight.id }"
+          :class="{
+            cell: true,
+            colorPlayerLeft: cell === playerLeft.id,
+            colorPlayerRight: cell === playerRight.id,
+            nextPlacingCell: isNextPlacableCell(colIdx, rowIdx),
+          }"
         ></div>
       </div>
     </div>
@@ -71,6 +76,11 @@ export default defineComponent({
     isHint(colIdx: number): boolean {
       if (this.activePlayer.currentHint == null) return false;
       return this.activePlayer.currentHint == colIdx;
+    },
+    isNextPlacableCell(colIdx: number, rowIdx: number): boolean {
+      if (this.connect4Board[colIdx][rowIdx] != "") return false;
+      if (rowIdx <= 0) return true;
+      return this.connect4Board[colIdx][rowIdx - 1] != "";
     },
   },
   computed: {

@@ -1,6 +1,4 @@
-﻿using backend.game;
-
-namespace backend.communication.mqtt
+﻿namespace backend.communication.mqtt
 {
     internal class RoboterMQTTMock : IDisposable
     {
@@ -35,7 +33,6 @@ namespace backend.communication.mqtt
                 Console.WriteLine("ROBOTER: Board reset!");
                 await _topicClient.PublishAsync("reset", false.ToString());
             }).Wait();
-
         }
 
         public void Dispose()
