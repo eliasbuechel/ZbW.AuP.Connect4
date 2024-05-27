@@ -1,4 +1,4 @@
-﻿backend/src/backend/services/GameManager.csusing backend.game;
+﻿using backend.game;
 using backend.game.entities;
 using System.Collections.Concurrent;
 using System.Diagnostics;

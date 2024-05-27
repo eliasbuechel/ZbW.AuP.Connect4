@@ -10,16 +10,12 @@
       </div>
       <div class="board">
         <div v-for="(column, colIdx) in connect4Board" :key="colIdx" class="column">
-          <div
-            v-for="(cell, rowIdx) in column"
-            :key="rowIdx"
-            :class="{
-              cell: true,
-              colorPlayerLeft: cell === playerLeftId,
-              colorPlayerRight: cell === playerRightId,
-              gameResultCell: true,
-            }"
-          >
+          <div v-for="(cell, rowIdx) in column" :key="rowIdx" :class="{
+          cell: true,
+          colorPlayerLeft: cell === playerLeftId,
+          colorPlayerRight: cell === playerRightId,
+          gameResultCell: true,
+        }">
             <div v-if="lastMoveWidthLine && isInLine(colIdx, rowIdx)" class="inLine"></div>
           </div>
         </div>
@@ -70,7 +66,7 @@ export default defineComponent({
   methods: {
     showNextMove(): void {
       if (this.moveIndex >= this.gameResult.playedMoves.length) return;
-      const column = this.connect4Board[this.gameResult.playedMoves[this.moveIndex]];
+      const column = this.connect4Board[this.gameResult.playedMoves[this.moveIndex].column];
       this.moveIndex++;
       for (let i = 0; i < column.length; i++) {
         if (column[i] == "") {
@@ -80,15 +76,15 @@ export default defineComponent({
                 ? this.playerLeftId
                 : this.playerRightId
               : this.gameResult.startingPlayerId === this.playerLeftId
-              ? this.playerRightId
-              : this.playerLeftId;
+                ? this.playerRightId
+                : this.playerLeftId;
           break;
         }
       }
     },
     showPreviousMove(): void {
       if (this.moveIndex <= 0) return;
-      const column = this.connect4Board[this.gameResult.playedMoves[this.moveIndex - 1]];
+      const column = this.connect4Board[this.gameResult.playedMoves[this.moveIndex - 1].column];
       this.moveIndex--;
       for (let i = column.length - 1; i >= 0; i--) {
         if (column[i] !== "") {
@@ -144,6 +140,7 @@ export default defineComponent({
   display: flex;
   flex-direction: row;
 }
+
 .game-result-message {
   display: flex;
   flex-direction: column;
@@ -151,11 +148,12 @@ export default defineComponent({
   align-items: center;
   width: 30%;
 }
+
 .game-result-move-navigation {
   margin-bottom: 2vh;
 }
 
-.game-result-move-navigation > span {
+.game-result-move-navigation>span {
   margin: 2vw;
 }
 

@@ -8,7 +8,7 @@ namespace backend.communication.DOTs
         {
             WinnerId = gameResult.WinnerId;
             Line = gameResult.Line == null ? null : gameResult.Line.Select(x => new FieldDTO(x)).ToArray();
-            PlayedMoves = gameResult.PlayedMoves.ToArray();
+            PlayedMoves = gameResult.PlayedMoves.Select(x => new PlayedMoveDTO(x)).ToArray();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatchDTO(gameResult.Match);
             TotalGameTime = gameResult.TotalGameTime;
@@ -16,7 +16,7 @@ namespace backend.communication.DOTs
 
         public string? WinnerId { get; }
         public FieldDTO[]? Line { get; }
-        public int[] PlayedMoves { get; }
+        public PlayedMoveDTO[] PlayedMoves { get; }
         public string StartingPlayerId { get; }
         public GameResultMatchDTO Match { get; }
         public double TotalGameTime { get;}

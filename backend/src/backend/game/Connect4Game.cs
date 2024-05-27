@@ -33,17 +33,16 @@ namespace backend.game
             {
                 return;
             }
-
-            _gameTimeService.StartMoveTimer(player.Id);
             
             if (!_connect4Board.PlaceStone(player, column))
             {
                 Debug.Assert(false);
                 return;
             }
-            _playedMoves.Add(column);
-
-            _gameTimeService.StopMoveTimer(player.Id);
+            TimeSpan duration = DateTime.Now - _moveStartingTime;
+            PlayedMove playedMove = new PlayedMove(column, duration);
+            _playedMoves.Add(playedMove);
+            _moveStartingTime = DateTime.Now;
         }
         public void PlayerQuit(IPlayer player)
         {
@@ -64,6 +63,7 @@ namespace backend.game
             {
                 _match.Player1.GameStartConfirmed();
                 _match.Player2.GameStartConfirmed();
+                _moveStartingTime = DateTime.Now;
             }
         }
         public void Dispose()
@@ -549,13 +549,14 @@ namespace backend.game
             return false;
         }
 
+        private DateTime _moveStartingTime = DateTime.Now;
         private readonly GameTimeService _gameTimeService;
         private bool _disposed = false;
         private IPlayer _activePlayer;
         private readonly IPlayer _startingPlayer;
         private readonly Match _match;
         private readonly Connect4Board _connect4Board;
-        private readonly ICollection<int> _playedMoves = new List<int>();
+        private readonly ICollection<PlayedMove> _playedMoves = new List<PlayedMove>();
         private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],
                                                        [4, 6, 8, 8, 6, 4],
