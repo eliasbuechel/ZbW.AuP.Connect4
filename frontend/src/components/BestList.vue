@@ -60,11 +60,11 @@ export default defineComponent({
   flex-direction: row;
 }
 
-.game-result-entrie > button {
+.game-result-entrie>button {
   margin-left: auto;
 }
 
-.game-result-entrie > span {
+.game-result-entrie>span {
   margin-right: 0.5rem;
 }
 </style>
