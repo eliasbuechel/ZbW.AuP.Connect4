@@ -2,6 +2,7 @@
   --color-light: white;
   --color-yellow: #d7cc00;
   --color-orange: #c58300;
+  --color-orange-transparent: #c5830088;
   --color-green: #61c200;
   --color-player-2: #0117ccdd;
   --color-red: #d13f00;
@@ -38,6 +39,7 @@ body {
   align-items: center;
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
 }
 
 .login-container {
@@ -99,7 +101,41 @@ li {
 
 .container {
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
+}
+
+.main-board-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 5vw;
+  row-gap: 5vh;
+  padding: 2rem;
+  height: min(100%, 1080px);
+  width: min(100%, 1920px);
+  overflow-y: scroll;
+}
+
+.main-board-container::-webkit-scrollbar {
+  display: none;
+}
+
+.content-card {
+  max-width: min(90vw, 650px);
+  min-width: 400px;
+  width: 100%;
+}
+
+.header-container {
+  width: 100%;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
 }
 
 .grid-container {
@@ -140,9 +176,6 @@ li {
   margin: 0;
 }
 
-/* .listing-container > ul > li {
-} */
-
 button {
   padding: 0.4rem 0.8rem;
   color: var(--color-dark);
@@ -152,6 +185,7 @@ button {
   border-radius: 1.2rem;
   background-color: transparent;
   margin: 0;
+  transition: 0.2s ease-in-out;
 }
 
 button:hover:enabled,
@@ -159,6 +193,7 @@ button:focus:enabled {
   background-color: var(--color-dark);
   color: var(--color-orange);
   cursor: grab;
+  transition: 0.2s ease-in-out;
 }
 
 button:disabled {
@@ -312,28 +347,34 @@ button:active:enabled {
   display: flex;
   flex-direction: column-reverse;
   padding: 0 0.3rem;
-  border: 0.2rem solid transparent;
-  border-radius: 0.5rem;
+  border: 0.3rem solid transparent;
+  border-radius: 2rem;
 }
 
 .hint {
-  background-color: var(--color-yellow);
-  border: 2px solid var(--color-yellow);
-}
-
-.playableColumn:hover {
-  /* background-color: var(--color-orange); */
-  border-color: var(--color-orange);
+  border-color: var(--color-yellow);
 }
 
 .cell {
-  background-color: transparent;
+  background-color: var(--color-dark);
   width: min(8vw, 10vh);
   height: min(8vw, 10vh);
   border-radius: 25%;
   margin: 0.3rem 0;
   border: 2px solid var(--color-light);
 }
+
+.playableColumn:hover > .nextPlacingCell {
+  background-color: var(--color-orange-transparent);
+}
+
+.playableColumn:hover:enabled {
+  cursor: grab;
+}
+/* 
+.playableColumn:hover {
+  background-color: var(--color-orange);
+} */
 
 .colorPlayerLeft {
   background-color: var(--color-orange);
