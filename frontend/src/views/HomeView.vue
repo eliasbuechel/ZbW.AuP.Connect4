@@ -319,6 +319,7 @@ export default defineComponent({
       signalRHub.invoke("GetGamePlan");
       signalRHub.invoke("GetGame");
       signalRHub.invoke("GetBestlist");
+      console.log("Loading data ...");
     },
     onSignalRDisconnected(): void {
       this.unsubscribe();

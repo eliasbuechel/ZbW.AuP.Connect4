@@ -14,33 +14,32 @@ namespace backend.game
         public int? CurrentHint { get; }
         public IEnumerable<string> Connections { get; }
 
-        void ConfirmGameStart();
-        void RequestMatch(IPlayer player);
+        Task ConfirmGameStartAsync();
+        Task RequestMatch(IPlayer player);
         void RequestedMatch(IPlayer player);
         void RejectedMatch(IPlayer opponent);
         void PlayerConnected(IPlayer player);
         void PlayerDisconnected(IPlayer player);
         IEnumerable<IPlayer> GetOnlinePlayers();
-        void Connect(string connection);
+        void ConnectAsync(string connection);
         void Disconnected(string connection);
         bool HasRequestedMatch(IPlayer you);
         bool HasMatched(IPlayer player);
-        void AcceptMatch(IPlayer player);
+        Task AcceptMatchAsync(IPlayer player);
         void Matched(Match match);
         void MatchingEnded(Match match);
-        Task RejectMatch(IPlayer player);
-        IEnumerable<Match> GetGamePlan();
+        Task RejectMatchAsync(IPlayer player);
         void MovePlayed(IPlayer player, Field field);
-        void PlayMove(int column);
+        Task PlayMoveAsync(int column);
         void GameStarted(Connect4Game connect4Game);
         Connect4Game GetCurrentGameState();
-        void QuitGame();
+        Task QuitGameAsync();
         void GameEnded(GameResult gameResult);
-        Task GetGame(string connection);
+        Task GetGameAsync(string connection);
         Task GetUserDataAsync(string connection);
-        Task GetOnlinePlayers(string connection);
-        Task GetGamePlan(string connection);
-        Task GetCurrentGame(string connection);
+        Task GetOnlinePlayersAsync(string connection);
+        Task GetGamePlanAsync(string connection);
+        Task GetCurrentGameAsync(string connection);
         void OpponentConfirmedGameStart();
         void GameStartConfirmed();
         void YouConfirmedGameStart();

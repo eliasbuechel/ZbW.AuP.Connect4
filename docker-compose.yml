@@ -4,14 +4,13 @@ services:
     build: 
       context: ./backend/src/backend
       dockerfile: Dockerfile
-    container_name: backend
+    container_name: r4d4-backend
     networks:
-      - r4d4-network
+      - mydockernet
     ports:
-      - "5000:5000"
-    env_file: ./backend/src/backend/.env
+      - "8082:8082"
     restart: always
-    command: ["dotnet", "backend.dll", "--urls", "http://0.0.0.0:5000"]
+    command: ["dotnet", "backend.dll", "--urls", "http://0.0.0.0:8082"]
     environment:
       ASPNETCORE_ENVIRONMENT: Development
 
@@ -19,14 +18,14 @@ services:
     build: 
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: frontend
+    container_name: r4d4-frontend
     networks:
-      - r4d4-network
+      - mydockernet
     ports:
       - "8080:8080"
     restart: always
     command: ["nginx", "-g", "daemon off;"]
 
 networks:
-  r4d4-network:
+  mydockernet:
     driver: bridge

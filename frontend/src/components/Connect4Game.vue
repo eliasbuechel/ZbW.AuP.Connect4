@@ -171,7 +171,7 @@ export default defineComponent({
 }
 
 .grid-item-connect4-board {
-  grid-column: 4 / span 6;
+  grid-column: 1 / span 12;
   grid-row: 3 / span 10;
 }
 

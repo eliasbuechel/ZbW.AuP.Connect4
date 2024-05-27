@@ -53,4 +53,18 @@ export default defineComponent({
 .winner {
   font-weight: bolder;
 }
+
+.game-result-entrie {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.game-result-entrie > button {
+  margin-left: auto;
+}
+
+.game-result-entrie > span {
+  margin-right: 0.5rem;
+}
 </style>

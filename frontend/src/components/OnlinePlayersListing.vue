@@ -5,21 +5,64 @@
       <ul>
         <li v-for="player in onlinePlayers" :key="player.id" class="matchable-player">
           <span class="matchable-player-username">{{ player.username }}</span>
-          <span v-if="player.matched">Matched</span>
-          <span v-if="player.youRequestedMatch">Matching pending...</span>
+          <svg
+            v-if="player.matched"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="checkmark"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <div v-if="player.youRequestedMatch" class="loading-state">
+            <div class="loading"></div>
+          </div>
           <button
             v-if="player.requestedMatch && !player.youRequestedMatch"
             class="button-accept"
             @click="acceptMatch(player)"
           >
-            &check;
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="checkmark"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
           </button>
           <button
             v-if="player.requestedMatch && !player.youRequestedMatch"
-            class="button-danger"
+            class="button-danger reject-match-button"
             @click="rejectMatch(player)"
           >
-            &cross;
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="cross"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
           <button
             v-if="!player.matched && !player.youRequestedMatch && !player.requestedMatch"
@@ -86,6 +129,10 @@ export default defineComponent({
 
 .matchable-player > .matchable-player-username {
   flex-grow: 1;
+}
+
+.reject-match-button {
+  margin-left: 0.5rem;
 }
 </style>
 @/types/DataTransferObjects

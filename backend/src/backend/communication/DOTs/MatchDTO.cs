@@ -14,5 +14,3 @@ namespace backend.communication.DOTs
         public InGamePlayerDTO Player2 { get; }
     }
 }
-
-
