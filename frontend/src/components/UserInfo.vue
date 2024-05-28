@@ -11,7 +11,7 @@
             type="password"
             id="oldPassword"
             v-model="credentials.oldPassword"
-            @focusout="validatePassword('oldPassword')"
+            @focusout="validateOldPassword()"
             required
           />
           <span v-if="errors.oldPassword" class="error">{{ errors.oldPassword }}</span>
@@ -22,7 +22,7 @@
             type="password"
             id="newPassword"
             v-model="credentials.newPassword"
-            @focusout="validatePassword('newPassword')"
+            @focusout="validateNewPassword()"
             required
           />
           <span v-if="errors.newPassword" class="error">{{ errors.newPassword }}</span>
@@ -100,13 +100,22 @@ export default defineComponent({
       this.credentials.oldPassword = "";
       this.credentials.newPassword = "";
     },
-    async validatePassword(passwordField: String) {
-      const passwordInput: HTMLInputElement = document.getElementById(passwordField.toString()) as HTMLInputElement;
+    async validateOldPassword() {
+      const passwordInput: HTMLInputElement = document.getElementById("oldPassword") as HTMLInputElement;
       if (!passwordInput.checkValidity()) {
-        this.errors.resetPassword = passwordInput.validationMessage;
+        this.errors.oldPassword = passwordInput.validationMessage;
         return;
       }
-      this.errors.resetPassword = "";
+      this.errors.oldPassword = "";
+      // missing validation logic for password
+    },
+    async validateNewPassword() {
+      const passwordInput: HTMLInputElement = document.getElementById("newPassword") as HTMLInputElement;
+      if (!passwordInput.checkValidity()) {
+        this.errors.newPassword = passwordInput.validationMessage;
+        return;
+      }
+      this.errors.newPassword = "";
       // missing validation logic for password
     },
     async logout() {
