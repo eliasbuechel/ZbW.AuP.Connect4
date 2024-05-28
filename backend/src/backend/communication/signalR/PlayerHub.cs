@@ -1,117 +1,155 @@
 ﻿using backend.game;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
 
 namespace backend.communication.signalR
 {
     internal abstract class PlayerHub : Hub
     {
-        public PlayerHub(IOnlinePlayerProvider onlinePlayerProvider)
+        public PlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager)
         {
-            _onlinePlayerProvider = onlinePlayerProvider;
+            _playerRequestHandlerManager = playerRequestHandlerManager;
         }
 
         public void GetGamePlan()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.GetGamePlan(Connection).Wait();
+                player = ThisPlayer;
+                string connection = Connection;
+                RequestHandler.Enqueue(() => player.GetGamePlanAsync(connection));
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void GetGame()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.GetGame(Connection).Wait();
+                player = ThisPlayer;
+                string connection = Connection;
+                RequestHandler.Enqueue(() => player.GetGameAsync(connection));
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void GetUserData()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.GetUserDataAsync(Connection).Wait();
+                player = ThisPlayer;
+                string connection = Connection;
+                RequestHandler.Enqueue(() => player.GetUserDataAsync(connection));
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void GetOnlinePlayers()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.GetOnlinePlayers(Connection).Wait();
+                player = ThisPlayer;
+                string connection = Connection;
+                RequestHandler.Enqueue(() => player.GetOnlinePlayersAsync(connection));
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void GetCurrentGame()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.GetCurrentGame(Connection).Wait();
+                player = ThisPlayer;
+                string connection = Connection;
+                RequestHandler.Enqueue(() => player.GetCurrentGameAsync(connection));
             }
-        }
-        public void RequestMatch(string playerId)
-        {
-            lock (RequestLock)
+            catch
             {
-                IPlayer player = _onlinePlayerProvider.GetOnlinePlayer(playerId);
-                ThisPlayer.RequestMatch(player);
-            }
-        }
-        public void AcceptMatch(string playerId)
-        {
-            lock (RequestLock)
-            {
-                IPlayer player = _onlinePlayerProvider.GetOnlinePlayer(playerId);
-                ThisPlayer.AcceptMatch(player);
-            }
-        }
-        public void RejectMatch(string playerId)
-        {
-            lock (RequestLock)
-            {
-                IPlayer player = _onlinePlayerProvider.GetOnlinePlayer(playerId);
-                ThisPlayer.RejectMatch(player).Wait();
+                Debug.Assert(false);
             }
         }
         public void ConfirmGameStart()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.ConfirmGameStart();
+                player = ThisPlayer;
+                RequestHandler.Enqueue(player.ConfirmGameStartAsync);
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void PlayMove(int column)
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.PlayMove(column);
+                player = ThisPlayer;
+                RequestHandler.Enqueue(() => player.PlayMoveAsync(column));
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
         public void QuitGame()
         {
-            lock (RequestLock)
+            IPlayer player;
+            try
             {
-                ThisPlayer.QuitGame();
+                player = ThisPlayer;
+                RequestHandler.Enqueue(player.QuitGameAsync);
+            }
+            catch
+            {
+                Debug.Assert(false);
             }
         }
 
         public override Task OnConnectedAsync()
         {
-            lock (RequestLock)
+            IPlayer player = GetOrCreatePlayer();
+            string connection = Connection;
+            PlayerRequestHandler requestHandler = _playerRequestHandlerManager.GetOrCreateHandler(player);
+
+            requestHandler.Enqueue(() =>
             {
-                IPlayer player = GetOrCreatePlayer();
-                player.Connect(Connection);
+                player.ConnectAsync(connection);
                 return Task.CompletedTask;
-            }
+            });
+
+            return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            lock (RequestLock)
-            {
-                IPlayer? player = GetPlayerOrDefault();
+            string connection = Connection;
+            IPlayer? player = GetPlayerOrDefault();
 
+            RequestHandler.Enqueue(() =>
+            {
                 if (player != null)
-                    ThisPlayer.Disconnected(Connection);
+                    player.Disconnected(connection);
 
                 return Task.CompletedTask;
-            }
+            });
+
+            return Task.CompletedTask;
         }
 
         protected abstract IPlayer GetOrCreatePlayer();
@@ -119,8 +157,8 @@ namespace backend.communication.signalR
 
         protected string Connection => Context.ConnectionId;
         protected abstract IPlayer ThisPlayer { get; }
-        protected abstract object RequestLock { get; }
+        protected PlayerRequestHandler RequestHandler => _playerRequestHandlerManager.GetOrCreateHandler(ThisPlayer);
 
-        protected readonly IOnlinePlayerProvider _onlinePlayerProvider;
+        private readonly PlayerRequestHandlerManager _playerRequestHandlerManager;
     }
 }

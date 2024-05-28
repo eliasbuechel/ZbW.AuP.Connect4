@@ -208,9 +208,6 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
-      this.addToBestlist(gameResult);
-      signalRHub.invoke("GetBestlist");
-
       if (this.isInGame != null) {
         this.gameResult = gameResult;
         this.game = undefined;
@@ -304,7 +301,6 @@ export default defineComponent({
       }
     },
     onSendBestlist(bestlist: GameResult[]): void {
-      console.log(bestlist);
       this.bestlist = bestlist;
     },
     addToBestlist(gameResult: GameResult): void {

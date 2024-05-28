@@ -1,11 +1,36 @@
 <template>
-  <div class="user-data" @click.self="closeDropdown">
-    <div class="username" @click="toggleDropdown">{{ identity.username }}</div>
-    <div v-if="dropdownVisible" class="dropdown-menu" @click.stop>
-      <ul>
-        <li @click="openPasswordPopup">Change password</li>
-        <li @click="logout">Logout</li>
-      </ul>
+  <div class="user-data">
+    <div :class="{ username: true, usernameExpanded: dropdownVisible }" @click="toggleDropdown">
+      {{ identity.username }}
+    </div>
+    <div v-if="dropdownVisible" class="user-actions-container">
+      <form @submit.prevent="changePassword">
+        <div class="input-field input-field-light">
+          <label for="oldPassword">Old password</label>
+          <input
+            type="password"
+            id="oldPassword"
+            v-model="credentials.oldPassword"
+            @focusout="validateOldPassword()"
+            required
+          />
+          <span v-if="errors.oldPassword" class="error">{{ errors.oldPassword }}</span>
+        </div>
+        <div class="input-field input-field-light">
+          <label for="newPassword">New password</label>
+          <input
+            type="password"
+            id="newPassword"
+            v-model="credentials.newPassword"
+            @focusout="validateNewPassword()"
+            required
+          />
+          <span v-if="errors.newPassword" class="error">{{ errors.newPassword }}</span>
+        </div>
+        <button type="submit" class="button-white password-button">Change password</button>
+        <span v-if="errors.resetPassword" class="error align-right">{{ errors.resetPassword }}</span>
+      </form>
+      <button @click="logout" class="button-white">Logout</button>
     </div>
   </div>
 </template>
@@ -13,8 +38,6 @@
 <script lang="ts">
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { PropType, defineComponent } from "vue";
-import eventBus from "@/services/eventBus";
-
 
 export default defineComponent({
   props: {
@@ -26,14 +49,27 @@ export default defineComponent({
   data() {
     return {
       dropdownVisible: false,
-      password: {
-        old: "",
-        new: ""
+      credentials: {
+        oldPassword: "",
+        newPassword: "",
+      },
+      errors: {
+        oldPassword: "",
+        newPassword: "",
+        resetPassword: "",
       },
     };
   },
   methods: {
     toggleDropdown() {
+      if (!this.dropdownVisible) {
+        this.errors.oldPassword = "";
+        this.errors.newPassword = "";
+        this.errors.resetPassword = "";
+        this.credentials.oldPassword = "";
+        this.credentials.newPassword = "";
+      }
+
       this.dropdownVisible = !this.dropdownVisible;
       if (this.dropdownVisible) {
         document.addEventListener("click", this.handleClickOutside);
@@ -50,9 +86,36 @@ export default defineComponent({
         this.closeDropdown();
       }
     },
-    openPasswordPopup() {
-      eventBus.emit("open-password-popup");
-      this.dropdownVisible = false;
+    async changePassword() {
+      try {
+        const response = await this.$axios.post("/account/manage/info", this.credentials, { withCredentials: true });
+        if (response.status === 200) {
+          this.errors.resetPassword = "";
+        }
+      } catch (error) {
+        this.errors.resetPassword = "Invalid password!";
+      }
+
+      this.credentials.oldPassword = "";
+      this.credentials.newPassword = "";
+    },
+    async validateOldPassword() {
+      const passwordInput: HTMLInputElement = document.getElementById("oldPassword") as HTMLInputElement;
+      if (!passwordInput.checkValidity()) {
+        this.errors.oldPassword = passwordInput.validationMessage;
+        return;
+      }
+      this.errors.oldPassword = "";
+      // missing validation logic for password
+    },
+    async validateNewPassword() {
+      const passwordInput: HTMLInputElement = document.getElementById("newPassword") as HTMLInputElement;
+      if (!passwordInput.checkValidity()) {
+        this.errors.newPassword = passwordInput.validationMessage;
+        return;
+      }
+      this.errors.newPassword = "";
+      // missing validation logic for password
     },
     async logout() {
       try {
@@ -63,44 +126,64 @@ export default defineComponent({
         console.log("Logout failed:", error);
       }
     },
-  }
+  },
 });
 </script>
 
 <style scoped>
+.user-data {
+  color: var(--color-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 3px solid var(--color-orange);
+  border-radius: 1rem;
+  height: fit-content;
+  transition: 0.2s ease-in-out;
+  background-color: var(--color-dark);
+}
+
+.user-data:hover:enabled {
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
 .username {
   cursor: pointer;
+  transition: 0.2s ease-in-out;
+  padding: 1rem;
+  width: 100%;
+  text-align: center;
+}
+
+.usernameExpanded {
+  color: var(--color-orange);
+  transition: 0.2s ease-in-out;
 }
 
 .username:hover {
-  color: #b27c0c;
-  transition: 0.25s ease;
+  color: var(--color-orange);
+  transition: 0.2s ease-in-out;
 }
 
-.dropdown-menu {
-  color: #01172c;
-  grid-row: 2;
-  align-self: flex-start;
-  width: fit-content;
+form {
+  display: flex;
+  flex-direction: column;
 }
 
-.dropdown-menu ul {
-  list-style: none;
-  list-style-position: outside;
-  padding: 0;
-  margin: 0;
-  background-color: #b27c0c;
-  border-radius: 1em;
+form > button {
+  align-self: flex-end;
   margin-top: 0.5rem;
 }
 
-.dropdown-menu li {
-  padding: 0.5em 1em;
-  cursor: pointer;
+.user-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1rem 1rem 1rem;
 }
 
-.dropdown-menu li:hover {
-  color: whitesmoke;
-  transition: 0.25s ease;
+.align-right {
+  align-self: flex-end;
 }
 </style>

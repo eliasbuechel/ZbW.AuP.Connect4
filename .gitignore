@@ -4,7 +4,10 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 .DS_Store
-.env
+.env*
+
+# ignore batch
+*.bat
 
 # User-specific files
 *.rsuser

@@ -10,17 +10,17 @@ namespace backend.game
         {
         }
 
-        public override void RequestedMatch(IPlayer player)
+        public override async void RequestedMatch(IPlayer player)
         {
             base.RequestedMatch(player);
-            AcceptMatch(player);
+            await AcceptMatchAsync(player);
         }
 
         public override void GameStarted(Connect4Game connect4Game)
         {
             base.GameStarted(connect4Game);
             _startingPlayer = connect4Game.ActivePlayer;
-            ConfirmGameStart();
+            ConfirmGameStartAsync();
         }
         public override void GameStartConfirmed()
         {
@@ -43,7 +43,7 @@ namespace backend.game
             Thread thread = new Thread(() =>
             {
                 int bestMove = _gameManager.GetBestMove(this);
-                PlayMove(bestMove);
+                PlayMoveAsync(bestMove);
             });
             thread.Start();
         }

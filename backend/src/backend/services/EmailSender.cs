@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
-using SendGrid.Helpers.Mail;
+﻿using backend.services;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net;
 using System.Net.Mail;
 
 namespace backend.Services
 {
-    public class EmailSender : IEmailSender
+    internal class EmailSender : IEmailSender
     {
-        public EmailSender(IOptions<EmailSettings> emailSettings)
+        public EmailSender(EmailSettings emailSettings)
         {
-            _emailSettings = emailSettings.Value;
+            _emailSettings = emailSettings;
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
@@ -20,7 +19,7 @@ namespace backend.Services
                 From = new MailAddress(_emailSettings.FromAddress),
                 Subject = subject,
                 Body = message,
-                IsBodyHtml = true
+                IsBodyHtml = true,
             };
             mailMessage.To.Add(new MailAddress(email));
 
@@ -38,4 +37,3 @@ namespace backend.Services
         private readonly EmailSettings _emailSettings;
     }
 }
-

@@ -12,6 +12,22 @@ namespace backend.services
             _dbContextFactory = dbContextFactory;
         }
 
+        public IEnumerable<GameResult> Bestlist
+        {
+            get
+            {
+                using BackendDbContext context = _dbContextFactory.GetDbContext();
+                IEnumerable<GameResult> gameResults = context.GameResults
+                    .Include(x => x.Line)
+                    .Include(x => x.Match)
+                    .Include(x => x.Match.Player1)
+                    .Include(x => x.Match.Player2)
+                    .Include(x => x.PlayedMoves)
+                    .Select(x => new GameResult(x))
+                    .ToArray();
+                return gameResults;
+            }
+        }
         public IEnumerable<GameResult> GameResults
         {
             get
@@ -22,7 +38,7 @@ namespace backend.services
                     .Include(x => x.Match)
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
-                    .Take(3)
+                    .Include(x => x.PlayedMoves)
                     .Select(x => new GameResult(x))
                     .ToArray();
                 return gameResults;
@@ -37,7 +53,7 @@ namespace backend.services
             dbGameResult.Id = gameResult.Id;
             dbGameResult.WinnerId = gameResult.WinnerId;
             dbGameResult.Line = gameResult.Line == null ? new List<DbField>() : gameResult.Line.Select(x => new DbField(x)).ToList();
-            dbGameResult.PlayedMoves = gameResult.PlayedMoves.ToList();
+            dbGameResult.PlayedMoves = gameResult.PlayedMoves.Select(x => new DbPlayedMove(x)).ToList();
             dbGameResult.StartingPlayerId = gameResult.StartingPlayerId;
 
             DbGameResultMatch dbMatch = new DbGameResultMatch();

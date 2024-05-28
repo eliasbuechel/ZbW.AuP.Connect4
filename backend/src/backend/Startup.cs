@@ -1,8 +1,9 @@
 using backend.communication.mqtt;
 using backend.communication.signalR;
 using backend.Data;
-using backend.Infrastructure;
 using backend.game;
+using backend.game.entities;
+using backend.Infrastructure;
 using backend.services;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
@@ -10,16 +11,13 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using backend.game.entities;
-
 
 namespace backend
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup()
         {
-            _configuration = configuration;
             DotNetEnv.Env.Load();
         }
 
@@ -83,8 +81,7 @@ namespace backend
             });
 
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton<PlayerRequestLock>();
-            services.AddScoped<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
+            services.AddSingleton<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
                 return (identity) => new ToPlayerHub<WebPlayerHub>(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
@@ -108,15 +105,21 @@ namespace backend
 
             services.AddSingleton<GameResultsService>();
             services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
-            services.AddSingleton<PlayerConnectionManager>();
+            services.AddSingleton<PlayerConnectionManager>(s =>
+            {
+                return new PlayerConnectionManager();
+            });
             services.AddSingleton<GameManager>();
             services.AddSingleton<Connect4Board>();
+            services.AddSingleton<GameTimeService>();
 
 
-            services.AddSingleton<Func<Match, Connect4Game>>(s => m =>
+            services.AddSingleton<Func<Match, Connect4Game >> (s => match =>
             {
-                return new Connect4Game(m, s.GetRequiredService<Connect4Board>());
+                return new Connect4Game(match, s.GetRequiredService<Connect4Board>());
             });
+
+            services.AddSingleton<PlayerRequestHandlerManager>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -205,7 +208,5 @@ namespace backend
 
             services.AddScoped<Func<UserManager<PlayerIdentity>>>(s => () => s.GetRequiredService<UserManager<PlayerIdentity>>());
         }
-
-        private readonly IConfiguration _configuration;
     }
 }

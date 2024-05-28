@@ -26,14 +26,30 @@
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",
+      //"httpPort": 5000,
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "environmentVariables": {
-        "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        //"ASPNETCORE_HTTPS_PORTS": "5000",
+        //"ASPNETCORE_HTTP_PORTS": "5000",
+
+        //"URL": "http://localhost:5000",
+        //"CORS": "http://localhost:3000",
+
+        //"CONNECTIONSTRING": "Server=127.0.0.1;Port=3307;Database=R4D4_Dev;Uid=EntityFW;Pwd=PwEF54762-@R4D4lul;",
+
+        //"MQTT_CLIENT_BROKER_URI": "ws://mqtt.r4d4.work",
+        //"MQTT_CLIENT_USERNAME": "ardu",
+        //"MQTT_CLIENT_PASSWORD": "Pw12ArduR4D4!",
+
+        //"SMTP_HOST": "smtp.gmail.com",
+        //"SMTP_PORT": "587",
+        //"SMTP_USERNAME": "r4d4.dev@gmail.com",
+        //"SMTP_PASSWORD": "lkgw ihtj btjx bhcz",
+        //"SMTP_FROM_ADDRESS": "r4d4.dev@gmail.com"
       },
       "publishAllPorts": true,
-      "useSSL": true
+      "useSSL": false
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",

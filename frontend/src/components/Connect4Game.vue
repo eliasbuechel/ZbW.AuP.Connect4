@@ -5,6 +5,7 @@
     </div>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
+      <!-- <label>{{ moveTimePlayerLeft }}</label> -->
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
       <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
@@ -12,29 +13,19 @@
     </div>
     <div class="grid-item-player2 player-info player-info-right">
       <label> {{ namePlayerRight }}</label>
+      <!-- <label>{{ moveTimePlayerRight }}</label> -->
       <div class="playing-state">{{ gameStatePlayerRight }}</div>
       <button v-if="game != null && inGamePlayerRight!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
       </button>
     </div>
-    <button
-      v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
-      class="button-light grid-item-connect4-board confirm-game-start-button"
-      @click="confirmGameStart"
-    >
+    <button v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
+      class="button-light grid-item-connect4-board confirm-game-start-button" @click="confirmGameStart">
       Confirm game start
     </button>
-    <Connect4Board
-      v-if="game != null && game.startConfirmed"
-      :identity="identity"
-      :connect4Board="game.connect4Board"
-      :playerLeft="inGamePlayerLeft!"
-      :playerRight="inGamePlayerRight!"
-      :activePlayerId="game.activePlayerId"
-      @place-stone="reemitPlaceStone"
-      @quit-game="reemitQuitGame"
-      class="grid-item-connect4-board"
-    />
+    <Connect4Board v-if="game != null && game.startConfirmed" :identity="identity" :connect4Board="game.connect4Board"
+      :playerLeft="inGamePlayerLeft!" :playerRight="inGamePlayerRight!" :activePlayerId="game.activePlayerId"
+      @place-stone="reemitPlaceStone" @quit-game="reemitQuitGame" class="grid-item-connect4-board" />
   </div>
 </template>
 
@@ -168,18 +159,22 @@ export default defineComponent({
   grid-column: 4 / span 6;
   grid-row: 1 / span 2;
 }
+
 .grid-item-player1 {
   grid-column: 1 / span 3;
   grid-row: 1 / span 4;
 }
+
 .grid-item-player2 {
   grid-column: 10 / span 3;
   grid-row: 1 / span 4;
 }
+
 .grid-item-connect4-board {
-  grid-column: 4 / span 6;
+  grid-column: 1 / span 12;
   grid-row: 3 / span 10;
 }
+
 .grid-item-game-result {
   grid-column: 2 / span 10;
   grid-row: 3 / span 10;

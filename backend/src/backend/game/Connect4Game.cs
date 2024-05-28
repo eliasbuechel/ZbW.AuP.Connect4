@@ -1,4 +1,5 @@
 ﻿using backend.game.entities;
+using backend.services;
 using System.Diagnostics;
 
 namespace backend.game
@@ -15,6 +16,7 @@ namespace backend.game
 
             _startingPlayer = match.Player1;
             _activePlayer = _startingPlayer;
+            _gameTimeService = new GameTimeService();
         }
 
         public event Action<GameResult>? OnGameEnded;
@@ -28,21 +30,25 @@ namespace backend.game
         public void PlayMove(IPlayer player, int column)
         {
             if (_activePlayer != player)
-            {
                 return;
-            }
-            
+
+            if (_activePlayerPlacedStone)
+                return;
+
             if (!_connect4Board.PlaceStone(player, column))
             {
                 Debug.Assert(false);
                 return;
             }
-            _playedMoves.Add(column);
+            TimeSpan duration = DateTime.Now - _moveStartingTime;
+            PlayedMove playedMove = new PlayedMove(column, duration);
+            _playedMoves.Add(playedMove);
+            _moveStartingTime = DateTime.Now; _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(IPlayer player)
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, _gameTimeService.GetTotalGameTime());
             GameEndet(gameResult);
         }
         public void Initialize()
@@ -56,6 +62,7 @@ namespace backend.game
             opponent.OpponentConfirmedGameStart();
             if (opponent.HasConfirmedGameStart)
             {
+                _moveStartingTime = DateTime.Now;
                 _match.Player1.GameStartConfirmed();
                 _match.Player2.GameStartConfirmed();
             }
@@ -88,6 +95,7 @@ namespace backend.game
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
+            _activePlayerPlacedStone = false;
         }
         private void CheckForWin(Field field, IPlayer player)
         {
@@ -257,12 +265,12 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, IPlayer player)
         {
-            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match, _gameTimeService.GetTotalGameTime());
             GameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match, _gameTimeService.GetTotalGameTime());
             GameEndet(gameResult);
         }
         private void GameEndet(GameResult gameResult)
@@ -543,12 +551,15 @@ namespace backend.game
             return false;
         }
 
+        private DateTime _moveStartingTime = DateTime.Now;
+        private readonly GameTimeService _gameTimeService;
         private bool _disposed = false;
         private IPlayer _activePlayer;
+        private bool _activePlayerPlacedStone;
         private readonly IPlayer _startingPlayer;
         private readonly Match _match;
         private readonly Connect4Board _connect4Board;
-        private readonly ICollection<int> _playedMoves = new List<int>();
+        private readonly ICollection<PlayedMove> _playedMoves = new List<PlayedMove>();
         private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],
                                                        [4, 6, 8, 8, 6, 4],

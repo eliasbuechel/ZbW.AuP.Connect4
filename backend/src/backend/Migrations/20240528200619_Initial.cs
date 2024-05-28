@@ -209,9 +209,9 @@ namespace backend.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false),
                     WinnerId = table.Column<string>(type: "longtext", nullable: true),
-                    PlayedMoves = table.Column<string>(type: "longtext", nullable: false),
                     StartingPlayerId = table.Column<string>(type: "longtext", nullable: false),
-                    MatchId = table.Column<string>(type: "varchar(255)", nullable: true)
+                    MatchId = table.Column<string>(type: "varchar(255)", nullable: true),
+                    TotalGameTime = table.Column<double>(type: "double", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -238,6 +238,26 @@ namespace backend.Migrations
                     table.PrimaryKey("PK_Fields", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Fields_GameResults_DbGameResultId",
+                        column: x => x.DbGameResultId,
+                        principalTable: "GameResults",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "PlayerMoves",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
+                    Column = table.Column<int>(type: "int", nullable: false),
+                    Duration = table.Column<TimeSpan>(type: "time(6)", nullable: false),
+                    DbGameResultId = table.Column<string>(type: "varchar(255)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerMoves", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlayerMoves_GameResults_DbGameResultId",
                         column: x => x.DbGameResultId,
                         principalTable: "GameResults",
                         principalColumn: "Id");
@@ -300,6 +320,11 @@ namespace backend.Migrations
                 name: "IX_Matches_Player2Id",
                 table: "Matches",
                 column: "Player2Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlayerMoves_DbGameResultId",
+                table: "PlayerMoves",
+                column: "DbGameResultId");
         }
 
         /// <inheritdoc />
@@ -322,6 +347,9 @@ namespace backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Fields");
+
+            migrationBuilder.DropTable(
+                name: "PlayerMoves");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

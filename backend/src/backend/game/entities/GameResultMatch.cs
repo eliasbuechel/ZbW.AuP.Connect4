@@ -1,5 +1,4 @@
 ﻿using backend.Data.entities;
-using System.Text.RegularExpressions;
 
 namespace backend.game.entities
 {
@@ -30,5 +29,7 @@ namespace backend.game.entities
 
         public IPlayer Player1 { get; }
         public IPlayer Player2 { get; }
+
+        
     }
 }

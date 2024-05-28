@@ -1,6 +1,5 @@
 ﻿using backend.game;
 using backend.game.entities;
-using System.Diagnostics;
 
 namespace backend.Data.entities
 {

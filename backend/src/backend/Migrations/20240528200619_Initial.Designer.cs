@@ -11,7 +11,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240522230749_Initial")]
+    [Migration("20240528200619_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -243,13 +243,12 @@ namespace backend.Migrations
                     b.Property<string>("MatchId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("PlayedMoves")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("StartingPlayerId")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<double>("TotalGameTime")
+                        .HasColumnType("double");
 
                     b.Property<string>("WinnerId")
                         .HasColumnType("longtext");
@@ -279,6 +278,27 @@ namespace backend.Migrations
                     b.HasIndex("Player2Id");
 
                     b.ToTable("Matches");
+                });
+
+            modelBuilder.Entity("backend.Data.entities.DbPlayedMove", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("Column")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DbGameResultId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("time(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DbGameResultId");
+
+                    b.ToTable("PlayerMoves");
                 });
 
             modelBuilder.Entity("backend.Data.entities.DbPlayerInfo", b =>
@@ -377,9 +397,18 @@ namespace backend.Migrations
                     b.Navigation("Player2");
                 });
 
+            modelBuilder.Entity("backend.Data.entities.DbPlayedMove", b =>
+                {
+                    b.HasOne("backend.Data.entities.DbGameResult", null)
+                        .WithMany("PlayedMoves")
+                        .HasForeignKey("DbGameResultId");
+                });
+
             modelBuilder.Entity("backend.Data.entities.DbGameResult", b =>
                 {
                     b.Navigation("Line");
+
+                    b.Navigation("PlayedMoves");
                 });
 #pragma warning restore 612, 618
         }
