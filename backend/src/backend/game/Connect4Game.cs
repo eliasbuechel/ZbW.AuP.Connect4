@@ -40,8 +40,10 @@ namespace backend.game
                 Debug.Assert(false);
                 return;
             }
-            _playedMoves.Add(column);
-            _activePlayerPlacedStone = true;
+            TimeSpan duration = DateTime.Now - _moveStartingTime;
+            PlayedMove playedMove = new PlayedMove(column, duration);
+            _playedMoves.Add(playedMove);
+            _moveStartingTime = DateTime.Now; _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(IPlayer player)
         {
