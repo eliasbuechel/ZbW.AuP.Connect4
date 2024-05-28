@@ -154,8 +154,9 @@ namespace backend.services
             }
 
             await _gameResultsService.Add(gameResult);
+            IEnumerable<GameResult> bestlist = _gameResultsService.Bestlist;
             foreach (var player in _playerConnectionManager.OnlinePlayers)
-                player.SendBestList(_gameResultsService.Bestlist);
+                player.SendBestList(bestlist);
 
             _activeGame.OnGameEnded -= OnGameEnded;
             _activeGame.Dispose();

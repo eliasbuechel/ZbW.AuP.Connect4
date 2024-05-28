@@ -178,6 +178,7 @@ export default defineComponent({
     },
     onMatched(match: Match): void {
       this.gamePlan = new Array<Match>(...this.gamePlan, match);
+      console.log("adding math...");
 
       if (this.identity === undefined) return;
       this.onlinePlayers.forEach((p) => {
@@ -208,9 +209,6 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
-      this.addToBestlist(gameResult);
-      signalRHub.invoke("GetBestlist");
-
       if (this.isInGame != null) {
         this.gameResult = gameResult;
         this.game = undefined;

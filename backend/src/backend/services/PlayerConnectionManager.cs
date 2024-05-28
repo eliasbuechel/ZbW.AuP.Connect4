@@ -67,9 +67,11 @@ namespace backend.services
         {
             IPlayer? player = GetOnlinePlayerOrDefault(playerIdentity.Id);
             if (player == null)
+            {
                 player = createPlayer(playerIdentity);
+                _onlinePlayers.Add(player);
+            }
 
-            _onlinePlayers.Add(player);
             return player;
         }
 
