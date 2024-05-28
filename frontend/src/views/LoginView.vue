@@ -49,6 +49,7 @@ export default defineComponent({
         this.$router.push({ name: "Home" });
       } catch (error: any) {
         this.errors.login = error.message;
+        console.error("Error while login", error);
       }
     },
     async validateEmail() {

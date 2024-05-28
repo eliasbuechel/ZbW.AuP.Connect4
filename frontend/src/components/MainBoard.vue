@@ -47,6 +47,7 @@ export default defineComponent({
       type: Array as PropType<GameResult[]>,
     },
   },
+  emits: ["show-replay"],
   data(): MainBoardState {
     return {
       isSubscribed: false,

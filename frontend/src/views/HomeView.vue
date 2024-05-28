@@ -178,7 +178,6 @@ export default defineComponent({
     },
     onMatched(match: Match): void {
       this.gamePlan = new Array<Match>(...this.gamePlan, match);
-      console.log("adding math...");
 
       if (this.identity === undefined) return;
       this.onlinePlayers.forEach((p) => {
@@ -302,7 +301,6 @@ export default defineComponent({
       }
     },
     onSendBestlist(bestlist: GameResult[]): void {
-      console.log(bestlist);
       this.bestlist = bestlist;
     },
     addToBestlist(gameResult: GameResult): void {
@@ -317,7 +315,6 @@ export default defineComponent({
       signalRHub.invoke("GetGamePlan");
       signalRHub.invoke("GetGame");
       signalRHub.invoke("GetBestlist");
-      console.log("Loading data ...");
     },
     onSignalRDisconnected(): void {
       this.unsubscribe();

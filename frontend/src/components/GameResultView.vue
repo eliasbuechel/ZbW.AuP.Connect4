@@ -101,7 +101,6 @@ export default defineComponent({
       this.$emit("leave-game-result-view");
     },
     isInLine(col: number, row: number): boolean {
-      console.log("check is in line");
       if (this.gameResult.line == null) return false;
       for (let i = 0; i < this.gameResult.line.length; i++) {
         if (this.gameResult.line[i].column === col && this.gameResult.line[i].row === row) return true;

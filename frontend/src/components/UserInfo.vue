@@ -89,7 +89,6 @@ export default defineComponent({
     async changePassword() {
       try {
         const response = await this.$axios.post("/account/manage/info", this.credentials, { withCredentials: true });
-        console.log("status:", response.status);
         if (response.status === 200) {
           this.errors.resetPassword = "";
         }
