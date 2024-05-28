@@ -1,9 +1,9 @@
 <template>
+  <div class="header-container">
+    <img id="logo-home" src="@/assets/images/Logo.png" alt="r4d4-logo" class="r4d4-logo" />
+    <UserInfo :identity="identity" />
+  </div>
   <div class="main-board-container">
-    <div class="header-container">
-      <img id="logo-home" src="@/assets/images/Logo.png" alt="r4d4-logo" class="r4d4-logo" />
-      <UserInfo :identity="identity" />
-    </div>
     <SinglePlayerModeSelection class="content-card" />
     <OnlinePlayersListing :onlinePlayers="onlinePlayers" :identity="identity" class="content-card" />
     <GamePlan class="content-card" :gamePlan="gamePlan" />

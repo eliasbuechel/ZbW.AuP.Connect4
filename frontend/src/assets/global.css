@@ -36,6 +36,7 @@ body {
   padding: 0;
   background-color: var(--color-dark);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
@@ -127,6 +128,7 @@ li {
   height: min(100%, 1080px);
   width: min(100%, 1920px);
   overflow-y: scroll;
+  margin-top: 120px;
 }
 
 .main-board-container::-webkit-scrollbar {
@@ -141,6 +143,12 @@ li {
 
 .header-container {
   width: 100%;
+  height: 160px;
+  padding: 2rem;
+  z-index: 100;
+  background: linear-gradient(to bottom, var(--color-dark) 85%, transparent 100%);
+  position: absolute;
+  top: 0;
 }
 
 .header-container {
