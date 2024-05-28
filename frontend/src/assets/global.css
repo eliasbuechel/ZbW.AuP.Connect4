@@ -1,5 +1,6 @@
 :root {
-  --color-light: white;
+  --color-light: #cfcfcf;
+  --color-light-gray: #727e88;
   --color-yellow: #d7cc00;
   --color-orange: #c58300;
   --color-orange-transparent: #c5830088;
@@ -61,19 +62,23 @@ body {
   border-radius: 1em;
 }
 
-.login-container > form > .input-field {
+form > .input-field {
   display: flex;
   flex-direction: column;
   align-items: start;
   margin: 0.5rem;
 }
 
-.login-container > form > .input-field > label {
+form > .input-field > label {
   color: var(--color-dark);
   font-size: 0.8rem;
 }
 
-.login-container > form > .input-field > input {
+form > .input-field-light > label {
+  color: var(--color-light);
+}
+
+form > .input-field > input {
   border: none;
   background: none;
   border-bottom: 1px solid var(--color-dark);
@@ -81,7 +86,12 @@ body {
   width: 13rem;
 }
 
-.login-container > form > .input-field > span {
+form > .input-field-light > input {
+  border-bottom-color: var(--color-light);
+  color: var(--color-light);
+}
+
+form > .input-field > span {
   max-width: 13rem;
   margin-top: 0.2rem;
 }
@@ -181,8 +191,8 @@ button {
   color: var(--color-dark);
   font-size: 1rem;
   font-weight: bolder;
-  border: 3.5px solid var(--color-dark);
-  border-radius: 1.2rem;
+  border: 2.5px solid var(--color-dark);
+  border-radius: 50vmin;
   background-color: transparent;
   margin: 0;
   transition: 0.2s ease-in-out;
@@ -191,8 +201,8 @@ button {
 button:hover:enabled,
 button:focus:enabled {
   background-color: var(--color-dark);
-  color: var(--color-orange);
-  cursor: grab;
+  color: var(--color-light);
+  cursor: pointer;
   transition: 0.2s ease-in-out;
 }
 
@@ -202,6 +212,22 @@ button:disabled {
 
 button:active:enabled {
   transform: translateY(2px);
+}
+
+.button-white {
+  color: var(--color-light-gray);
+  border-color: var(--color-light-gray);
+}
+
+.button-white:hover:enabled,
+.button-white:focus:enabled {
+  background-color: var(--color-light-gray);
+  color: var(--color-dark);
+}
+
+.button-white:disabled {
+  color: var(--color-light-gray);
+  border-color: var(--color-light-gray);
 }
 
 .button-light {
@@ -382,14 +408,6 @@ button:active:enabled {
 
 .colorPlayerRight {
   background-color: var(--color-player-2);
-}
-
-.user-data {
-  color: var(--color-light);
-  display: grid;
-  grid-template-rows: min-content auto;
-  align-items: flex-start;
-  padding: 1rem;
 }
 
 .loading-state {

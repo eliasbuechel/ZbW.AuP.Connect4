@@ -41,10 +41,9 @@ export default defineComponent({
   methods: {
     async login() {
       try {
-        await this.$axios.post("/account/login?useCookies=true", this.credentials,
-          {
-            withCredentials: true,
-          });
+        await this.$axios.post("/account/login?useCookies=true", this.credentials, {
+          withCredentials: true,
+        });
 
         this.errors.login = "";
         this.$router.push({ name: "Home" });
