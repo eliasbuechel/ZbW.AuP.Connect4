@@ -1,19 +1,21 @@
 ﻿using backend.game;
+using System.Collections.Concurrent;
 
 namespace backend.services
 {
     internal class AlgorythmPlayerProvider
     {
-        public AlgorythmPlayerProvider(Func<AlgorythmPlayer> createAlgorythmPlayer)
+        public IPlayer CreateAlgorythmPlayer(IPlayer requester, Func<AlgorythmPlayer> createAlgorythmPlayer)
         {
-            _createAlgorythmPlayer = createAlgorythmPlayer;
+            AlgorythmPlayer algorythmPlayer = createAlgorythmPlayer();
+            _requestPlayerToAlgorythmPlayerMapping.AddOrUpdate(requester, algorythmPlayer, (p, ap) => ap);
+            return algorythmPlayer;
+        }
+        internal IPlayer GetAlgorythmPlayer(IPlayer requester)
+        {
+            return _requestPlayerToAlgorythmPlayerMapping[requester];
         }
 
-        public IPlayer CreateAlgorythmPlayer()
-        {
-            return _createAlgorythmPlayer();
-        }
-
-        private readonly Func<AlgorythmPlayer> _createAlgorythmPlayer;
+        private readonly ConcurrentDictionary<IPlayer, AlgorythmPlayer> _requestPlayerToAlgorythmPlayerMapping = new ConcurrentDictionary<IPlayer, AlgorythmPlayer>();
     }
 }

@@ -22,7 +22,6 @@ namespace backend.services
                     .Include(x => x.Match)
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
-                    .Include(x => x.PlayedMoves)
                     .Select(x => new GameResult(x))
                     .ToArray();
                 return gameResults;

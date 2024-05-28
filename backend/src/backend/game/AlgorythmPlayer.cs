@@ -10,10 +10,10 @@ namespace backend.game
         {
         }
 
-        public override void RequestedMatch(IPlayer player)
+        public override async void RequestedMatch(IPlayer player)
         {
             base.RequestedMatch(player);
-            AcceptMatchAsync(player);
+            await AcceptMatchAsync(player);
         }
 
         public override void GameStarted(Connect4Game connect4Game)

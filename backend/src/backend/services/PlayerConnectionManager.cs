@@ -1,6 +1,9 @@
-﻿using backend.game;
+﻿using backend.communication.signalR;
+using backend.Data;
+using backend.game;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace backend.services
 {
@@ -19,9 +22,8 @@ namespace backend.services
             _playerConnectionCounterMap.TryAdd(player.Id, 1);
 
             foreach (var onlinePlayer in _onlinePlayers)
-                onlinePlayer.PlayerConnected(player);
-
-            _onlinePlayers.Add(player);
+                if (onlinePlayer != player)
+                    onlinePlayer.PlayerConnected(player);
         }
         public async void DisconnectPlayer(IPlayer player, Action<IPlayer>? playerQuitCallback)
         {
@@ -60,6 +62,17 @@ namespace backend.services
         public IPlayer? GetOnlinePlayerOrDefault(string playerId)
         {
             return _onlinePlayers.FirstOrDefault(p => p.Id == playerId);
+        }
+        public IPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer)
+        {
+            IPlayer? player = GetOnlinePlayerOrDefault(playerIdentity.Id);
+            if (player == null)
+            {
+                player = createPlayer(playerIdentity);
+                _onlinePlayers.Add(player);
+            }
+
+            return player;
         }
 
         private readonly ConcurrentBag<IPlayer> _onlinePlayers = new ConcurrentBag<IPlayer>();

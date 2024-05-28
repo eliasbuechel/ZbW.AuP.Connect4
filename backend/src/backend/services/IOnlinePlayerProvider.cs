@@ -1,4 +1,6 @@
-﻿using backend.game;
+﻿using backend.communication.signalR;
+using backend.Data;
+using backend.game;
 
 namespace backend.services
 {
@@ -6,5 +8,6 @@ namespace backend.services
     {
         IPlayer GetOnlinePlayerAsync(string playerId);
         IPlayer? GetOnlinePlayerOrDefault(string playerId);
+        IPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer);
     }
 }

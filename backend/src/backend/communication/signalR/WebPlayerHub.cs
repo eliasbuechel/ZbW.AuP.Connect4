@@ -11,11 +11,65 @@ namespace backend.communication.signalR
     [Authorize]
     internal class WebPlayerHub : PlayerHub
     {
-        public WebPlayerHub(IOnlinePlayerProvider onlinePlayerProvider, PlayerRequestHandlerManager playerRequestHandlerManager, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createPlayer) : base(onlinePlayerProvider, playerRequestHandlerManager)
+        public WebPlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager, IOnlinePlayerProvider onlinePlayerProvider, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<AlgorythmPlayer> createAlgorythmPlayer, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createWebPlayer) : base(playerRequestHandlerManager)
         {
             _userManager = userManager;
-            _createPlayer = createPlayer;
+            _createAlgorythmPlayer = createAlgorythmPlayer;
+            _createWebPlayer = createWebPlayer;
             _algorythmPlayerProvider = algorythmPlayerProvider;
+            _onlinePlayerProvider = onlinePlayerProvider;
+        }
+
+        public void RequestMatch(string playerId)
+        {
+            IPlayer player;
+            try
+            {
+                player = ThisPlayer;
+                RequestHandler.Enqueue(async () =>
+                {
+                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
+                    await player.RequestMatch(opponent);
+                });
+            }
+            catch
+            {
+                Debug.Assert(false);
+            }
+        }
+        public void AcceptMatch(string playerId)
+        {
+            IPlayer player;
+            try
+            {
+                player = ThisPlayer;
+                RequestHandler.Enqueue(async () =>
+                {
+                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
+                    await player.AcceptMatchAsync(opponent);
+                });
+            }
+            catch
+            {
+                Debug.Assert(false);
+            }
+        }
+        public void RejectMatch(string playerId)
+        {
+            IPlayer player;
+            try
+            {
+                player = ThisPlayer;
+                RequestHandler.Enqueue(async () =>
+                {
+                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
+                    await player.RejectMatchAsync(opponent);
+                });
+            }
+            catch
+            {
+                Debug.Assert(false);
+            }
         }
         public void RequestSinglePlayerMatch()
         {
@@ -23,7 +77,7 @@ namespace backend.communication.signalR
             try
             {
                 player = ThisPlayer;
-                IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer();
+                IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer(player, _createAlgorythmPlayer);
                 RequestHandler.Enqueue(() => player.RequestMatch(algorythmPlayer));
             }
             catch
@@ -57,11 +111,7 @@ namespace backend.communication.signalR
 
         protected override IPlayer GetOrCreatePlayer()
         {
-            IPlayer? player = _onlinePlayerProvider.GetOnlinePlayerOrDefault(Identity.Id);
-            if (player != null)
-                return player;
-
-            return _createPlayer(Identity);
+            return _onlinePlayerProvider.GetOrCreatePlayer(Identity, _createWebPlayer);
         }
         protected override IPlayer? GetPlayerOrDefault()
         {
@@ -85,8 +135,10 @@ namespace backend.communication.signalR
             }
         }
 
-        private readonly AlgorythmPlayerProvider _algorythmPlayerProvider;
         private readonly UserManager<PlayerIdentity> _userManager;
-        private readonly Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> _createPlayer;
+        private readonly Func<AlgorythmPlayer> _createAlgorythmPlayer;
+        private readonly IOnlinePlayerProvider _onlinePlayerProvider;
+        private readonly AlgorythmPlayerProvider _algorythmPlayerProvider;
+        private readonly Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> _createWebPlayer;
     }
 }
