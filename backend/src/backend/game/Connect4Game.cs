@@ -61,9 +61,9 @@ namespace backend.game
             opponent.OpponentConfirmedGameStart();
             if (opponent.HasConfirmedGameStart)
             {
+                _moveStartingTime = DateTime.Now;
                 _match.Player1.GameStartConfirmed();
                 _match.Player2.GameStartConfirmed();
-                _moveStartingTime = DateTime.Now;
             }
         }
         public void Dispose()
