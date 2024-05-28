@@ -7,7 +7,7 @@
           <span :class="{ winner: !isDraw(idx), draw: isDraw(idx) }">{{ winner(idx).username }}</span>
           <span> vs. </span>
           <span :class="{ loser: !isDraw(idx), draw: isDraw(idx) }">{{ loser(idx).username }}</span>
-          <button class="button-light" @click="showReplay(gameResult)">Replay</button>
+          <button class="button-light" @click="showReplay(idx)">Replay</button>
         </li>
       </ul>
     </div>
@@ -27,9 +27,10 @@ export default defineComponent({
       type: Array as PropType<GameResult[]>,
     },
   },
+  emits: ["show-replay"],
   methods: {
-    showReplay(gameResult: GameResult): void {
-      this.$emit("show-replay", gameResult);
+    showReplay(idx: number): void {
+      this.$emit("show-replay", this.bestlist[idx]);
     },
     winner(idx: number): PlayerIdentity {
       let gameResult: GameResult = this.bestlist[idx];

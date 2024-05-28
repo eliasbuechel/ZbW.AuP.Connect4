@@ -46,7 +46,7 @@ export default defineComponent({
         this.redirectToLogin();
       } catch (error: any) {
         this.errors.registration = error.message;
-        console.log(error);
+        console.error("Error while registering", error);
       }
     },
     async validateEmail(): Promise<void> {

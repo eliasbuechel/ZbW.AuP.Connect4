@@ -110,9 +110,7 @@ namespace backend.services
         public void PlayMove(Player player, int column)
         {
             if (_activeGame == null)
-            {
                 return;
-            }
 
             _activeGame.PlayMove(player, column);
         }

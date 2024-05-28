@@ -30,19 +30,18 @@ namespace backend.game
         public void PlayMove(IPlayer player, int column)
         {
             if (_activePlayer != player)
-            {
                 return;
-            }
-            
+
+            if (_activePlayerPlacedStone)
+                return;
+
             if (!_connect4Board.PlaceStone(player, column))
             {
                 Debug.Assert(false);
                 return;
             }
-            TimeSpan duration = DateTime.Now - _moveStartingTime;
-            PlayedMove playedMove = new PlayedMove(column, duration);
-            _playedMoves.Add(playedMove);
-            _moveStartingTime = DateTime.Now;
+            _playedMoves.Add(column);
+            _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(IPlayer player)
         {
@@ -94,6 +93,7 @@ namespace backend.game
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
+            _activePlayerPlacedStone = false;
         }
         private void CheckForWin(Field field, IPlayer player)
         {
@@ -553,6 +553,7 @@ namespace backend.game
         private readonly GameTimeService _gameTimeService;
         private bool _disposed = false;
         private IPlayer _activePlayer;
+        private bool _activePlayerPlacedStone;
         private readonly IPlayer _startingPlayer;
         private readonly Match _match;
         private readonly Connect4Board _connect4Board;
