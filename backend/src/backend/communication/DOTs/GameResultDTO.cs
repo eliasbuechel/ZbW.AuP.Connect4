@@ -18,6 +18,5 @@ namespace backend.communication.DOTs
         public PlayedMoveDTO[] PlayedMoves { get; }
         public string StartingPlayerId { get; }
         public GameResultMatchDTO Match { get; }
-        public double TotalGameTime { get;}
     }
 }
