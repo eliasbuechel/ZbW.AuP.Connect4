@@ -11,7 +11,6 @@ namespace backend.communication.DOTs
             PlayedMoves = gameResult.PlayedMoves.Select(x => new PlayedMoveDTO(x)).ToArray();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatchDTO(gameResult.Match);
-            TotalGameTime = gameResult.TotalGameTime;
         }
 
         public string? WinnerId { get; }

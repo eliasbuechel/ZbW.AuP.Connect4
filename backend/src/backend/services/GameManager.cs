@@ -190,7 +190,6 @@ namespace backend.services
                 if (foundMatchRequest == null)
                     break;
 
-                MatchRequest value;
                 _matchRequests = new ConcurrentBag<MatchRequest>(_matchRequests.Where(x => x != foundMatchRequest).ToArray());
             }
 

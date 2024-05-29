@@ -111,7 +111,6 @@ namespace backend
             });
             services.AddSingleton<GameManager>();
             services.AddSingleton<Connect4Board>();
-            services.AddSingleton<GameTimeService>();
 
 
             services.AddSingleton<Func<Match, Connect4Game >> (s => match =>

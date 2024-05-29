@@ -16,7 +16,6 @@ namespace backend.game
 
             _startingPlayer = match.Player1;
             _activePlayer = _startingPlayer;
-            _gameTimeService = new GameTimeService();
         }
 
         public event Action<GameResult>? OnGameEnded;
@@ -48,7 +47,7 @@ namespace backend.game
         public void PlayerQuit(IPlayer player)
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, _gameTimeService.GetTotalGameTime());
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
             GameEndet(gameResult);
         }
         public void Initialize()
@@ -265,12 +264,12 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, IPlayer player)
         {
-            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match, _gameTimeService.GetTotalGameTime());
+            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             GameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match, _gameTimeService.GetTotalGameTime());
+            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
             GameEndet(gameResult);
         }
         private void GameEndet(GameResult gameResult)
@@ -552,7 +551,6 @@ namespace backend.game
         }
 
         private DateTime _moveStartingTime = DateTime.Now;
-        private readonly GameTimeService _gameTimeService;
         private bool _disposed = false;
         private IPlayer _activePlayer;
         private bool _activePlayerPlacedStone;
