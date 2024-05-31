@@ -1,4 +1,6 @@
-﻿using backend.game;
+﻿using backend.communication.DOTs;
+using backend.communication.signalR;
+using backend.game;
 using backend.game.entities;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -7,9 +9,9 @@ namespace backend.services
 {
     internal class GameManager
     {
-        public GameManager(PlayerConnectionManager playerConnectionManager, Func<Match, Connect4Game> getConnect4Game, GameResultsService gameResultsService)
+        public GameManager(ConnectedPlayerProvider connectedPlayerProvider, Func<Match, Connect4Game> getConnect4Game, GameResultsService gameResultsService)
         {
-            _playerConnectionManager = playerConnectionManager;
+            _connectedPlayerProvider = connectedPlayerProvider;
             _getConnect4Game = getConnect4Game;
             _gameResultsService = gameResultsService;
         }
@@ -20,21 +22,14 @@ namespace backend.services
         {
             return _gamePlan.ToArray();
         }
-        public IEnumerable<IPlayer> GetOnlinePlayersExcept(string id)
+        public ConnectedPlayersDTO GetOnlinePlayersExcept(IPlayer player)
         {
-            return _playerConnectionManager.OnlinePlayers.Where(p => p.Id != id);
+            ConnectedPlayersDTO connectedPlayersDTO = new ConnectedPlayersDTO(_connectedPlayerProvider, player);
+            return connectedPlayersDTO;
         }
         internal IEnumerable<GameResult> GetBestlist()
         {
             return _gameResultsService.Bestlist;
-        }
-        public void ConnectPlayer(IPlayer player)
-        {
-            _playerConnectionManager.ConnectPlayer(player);
-        }
-        public void DisconnectPlayer(IPlayer player)
-        {
-            _playerConnectionManager.DisconnectPlayer(player, PlayerQuit);
         }
         public bool HasRequestedMatch(IPlayer requester, IPlayer opponent)
         {
@@ -81,7 +76,7 @@ namespace backend.services
                     _matchRequests = new ConcurrentBag<MatchRequest>(_matchRequests.Where(x => x != matchRequest));
                     Match match = new Match(matchRequest);
 
-                    foreach (IPlayer p in _playerConnectionManager.OnlinePlayers)
+                    foreach (ToPlayerHub<WebPlayerHub> p in _connectedPlayerProvider.WebPlayers)
                         p.Matched(match);
 
                     _gamePlan.Enqueue(match);
@@ -153,7 +148,7 @@ namespace backend.services
 
             await _gameResultsService.Add(gameResult);
             IEnumerable<GameResult> bestlist = _gameResultsService.Bestlist;
-            foreach (var player in _playerConnectionManager.OnlinePlayers)
+            foreach (var player in _connectedPlayerProvider.WebPlayers)
                 player.SendBestList(bestlist);
 
             _activeGame.OnGameEnded -= OnGameEnded;
@@ -167,7 +162,7 @@ namespace backend.services
                 return;
             }
 
-            foreach (var onlinePlayer in _playerConnectionManager.OnlinePlayers)
+            foreach (var onlinePlayer in _connectedPlayerProvider.WebPlayers)
                 onlinePlayer.MatchingEnded(match);
 
             TryStartGame();
@@ -245,7 +240,7 @@ namespace backend.services
         private Connect4Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
         private readonly Func<Match, Connect4Game> _getConnect4Game;
-        private readonly PlayerConnectionManager _playerConnectionManager;
+        private readonly ConnectedPlayerProvider _connectedPlayerProvider;
         private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
         private ConcurrentBag<MatchRequest> _matchRequests = new ConcurrentBag<MatchRequest>();
     }

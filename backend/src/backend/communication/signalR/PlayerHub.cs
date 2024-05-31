@@ -5,11 +5,14 @@ using System.Diagnostics;
 
 namespace backend.communication.signalR
 {
-    internal abstract class PlayerHub : Hub
+    internal abstract class PlayerHub<TPlayer, TIdentification> : Hub where TPlayer : IPlayer
     {
-        public PlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager)
+        public PlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager, PlayerManager<TPlayer, TIdentification> playerManager, Func<TIdentification, TPlayer> createPlayer, ConnectedPlayerProvider connectedPlayerProvider)
         {
             _playerRequestHandlerManager = playerRequestHandlerManager;
+            _playerManager = playerManager;
+            _createPlayer = createPlayer;
+            _connectedPlayerProvider = connectedPlayerProvider;
         }
 
         public void GetGamePlan()
@@ -124,41 +127,25 @@ namespace backend.communication.signalR
 
         public override Task OnConnectedAsync()
         {
-            IPlayer player = GetOrCreatePlayer();
-            string connection = Connection;
-            PlayerRequestHandler requestHandler = _playerRequestHandlerManager.GetOrCreateHandler(player);
-
-            requestHandler.Enqueue(() =>
-            {
-                player.ConnectAsync(connection);
-                return Task.CompletedTask;
-            });
-
+            TPlayer player = _playerManager.ConnectPlayer(Identification, _createPlayer);
+            player.Connections.Add(Connection);
             return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            string connection = Connection;
-            IPlayer? player = GetPlayerOrDefault();
-
-            RequestHandler.Enqueue(() =>
-            {
-                if (player != null)
-                    player.Disconnected(connection);
-
-                return Task.CompletedTask;
-            });
-
+            TPlayer player = _playerManager.DisconnectPlayer(Identification);
+            player.Connections.Remove(Connection);
             return Task.CompletedTask;
         }
 
-        protected abstract IPlayer GetOrCreatePlayer();
-        protected abstract IPlayer? GetPlayerOrDefault();
-
         protected string Connection => Context.ConnectionId;
-        protected abstract IPlayer ThisPlayer { get; }
+        protected TPlayer ThisPlayer => _playerManager.GetConnectedPlayerByIdentification(Identification);
+        protected abstract TIdentification Identification { get; }
         protected PlayerRequestHandler RequestHandler => _playerRequestHandlerManager.GetOrCreateHandler(ThisPlayer);
 
-        private readonly PlayerRequestHandlerManager _playerRequestHandlerManager;
+        protected readonly PlayerRequestHandlerManager _playerRequestHandlerManager;
+        protected readonly PlayerManager<TPlayer, TIdentification> _playerManager;
+        private readonly Func<TIdentification, TPlayer> _createPlayer;
+        protected readonly ConnectedPlayerProvider _connectedPlayerProvider;
     }
 }

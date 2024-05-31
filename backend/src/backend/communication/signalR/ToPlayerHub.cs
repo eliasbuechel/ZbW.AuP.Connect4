@@ -6,20 +6,28 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace backend.communication.signalR
 {
-    internal class ToPlayerHub<THub> : Player where THub : Hub
+    internal abstract class ToPlayerHub<THub> : Player where THub : Hub
     {
         public ToPlayerHub(string playerId, string username, GameManager gameManager, IHubContext<THub> hubContext) : base(playerId, username, gameManager)
         {
             _hubContext = hubContext;
         }
 
-        protected override async Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer)
+        protected override async Task PlayerConnected(string connection, ConnectedPlayerDTO onlinePlayer)
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(PlayerConnected), onlinePlayer);
         }
         protected override async Task PlayerDisconnected(string connection, string playerId)
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(PlayerDisconnected), playerId);
+        }
+        protected override async Task OpponentRoboterPlayerConnected(string connection, ConnectedPlayerDTO opponentRoboterPlayer)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync(nameof(OpponentRoboterPlayerConnected), opponentRoboterPlayer);
+        }
+        protected override async Task OpponentRoboterPlayerDisconnected(string connection, ConnectedPlayerDTO opponentRoboterPlayer)
+        {
+            await _hubContext.Clients.Client(connection).SendAsync(nameof(OpponentRoboterPlayerDisconnected), opponentRoboterPlayer);
         }
         protected override async Task PlayerRequestedMatch(string connection, string playerId)
         {
@@ -53,9 +61,9 @@ namespace backend.communication.signalR
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(SendUserData), userData);
         }
-        protected override async Task SendOnlinePlayers(string connection, IEnumerable<OnlinePlayerDTO> onlinePlayers)
+        protected override async Task SendOnlinePlayers(string connection, ConnectedPlayersDTO connectedPlayers)
         {
-            await _hubContext.Clients.Client(connection).SendAsync(nameof(SendOnlinePlayers), onlinePlayers);
+            await _hubContext.Clients.Client(connection).SendAsync(nameof(SendOnlinePlayers), connectedPlayers);
         }
         protected override async Task SendGamePlan(string connection, IEnumerable<MatchDTO> gamePlan)
         {

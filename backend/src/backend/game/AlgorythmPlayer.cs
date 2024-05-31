@@ -1,4 +1,5 @@
 ﻿using backend.communication.DOTs;
+using backend.communication.signalR;
 using backend.game.entities;
 using backend.services;
 
@@ -6,9 +7,12 @@ namespace backend.game
 {
     internal class AlgorythmPlayer : Player
     {
-        public AlgorythmPlayer(GameManager gameManager) : base(Guid.NewGuid().ToString(), "Algorythm", gameManager)
+        public AlgorythmPlayer(IPlayer opponentPlayer, GameManager gameManager) : base(Guid.NewGuid().ToString(), "Algorythm", gameManager)
         {
+            _opponentPlayer = opponentPlayer;
         }
+
+        public IPlayer OpponentPlayer => _opponentPlayer;
 
         public override async void RequestedMatch(IPlayer player)
         {
@@ -48,6 +52,7 @@ namespace backend.game
             thread.Start();
         }
 
-        private IPlayer? _startingPlayer; 
+        private IPlayer? _startingPlayer;
+        private readonly IPlayer _opponentPlayer;
     }
 }

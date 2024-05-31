@@ -1,28 +1,34 @@
-﻿using backend.Data;
-using backend.game;
+﻿using backend.game;
 using backend.services;
 using System.Diagnostics;
 
 namespace backend.communication.signalR
 {
-    internal class OpponentRoboterPlayerHub : PlayerHub
+    internal class OpponentRoboterPlayerHub : PlayerHub<OpponentRoboterPlayer, string>
     {
-        public OpponentRoboterPlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager, ToPlayerHub<OpponentRoboterPlayerHub> opponentRoboterPlayer, AlgorythmPlayerProvider algorythmPlayerProvider, Func<AlgorythmPlayer> createAlgorythmPlayer) : base(playerRequestHandlerManager)
+        public OpponentRoboterPlayerHub(
+            PlayerRequestHandlerManager playerRequestHandlerManager,
+            OpponentRoboterPlayerHubManager opponentRoboterPlayerManager,
+            Func<string, OpponentRoboterPlayer> createOpponentRoboterPlayer,
+            AlgorythmPlayerManager algorythmPlayerManager,
+            Func<IPlayer, AlgorythmPlayer> createAlgorythmPlayer,
+            ConnectedPlayerProvider connectedPlayerProvider
+            ) : base(playerRequestHandlerManager, opponentRoboterPlayerManager, createOpponentRoboterPlayer, connectedPlayerProvider)
         {
-            _opponentRoboterPlayer = opponentRoboterPlayer;
-            _algorythmPlayerProvider = algorythmPlayerProvider;
+            _algorythmPlayerManager = algorythmPlayerManager;
             _createAlgorythmPlayer = createAlgorythmPlayer;
         }
 
         public void RequestMatch()
         {
-            IPlayer player;
+            OpponentRoboterPlayer player;
             try
             {
                 player = ThisPlayer;
                 RequestHandler.Enqueue(async () =>
                 {
-                    IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer(player, _createAlgorythmPlayer);
+                    _algorythmPlayerManager.ConnectPlayer(player, _createAlgorythmPlayer);
+                    AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(player);
                     await player.RequestMatch(algorythmPlayer);
                 });
             }
@@ -39,7 +45,7 @@ namespace backend.communication.signalR
                 player = ThisPlayer;
                 RequestHandler.Enqueue(async () =>
                 {
-                    IPlayer algorythmPlayer = _algorythmPlayerProvider.GetAlgorythmPlayer(player);
+                    IPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(player);
                     await player.AcceptMatchAsync(algorythmPlayer);
                 });
             }
@@ -56,7 +62,7 @@ namespace backend.communication.signalR
                 player = ThisPlayer;
                 RequestHandler.Enqueue(async () =>
                 {
-                    IPlayer algorythmPlayer = _algorythmPlayerProvider.GetAlgorythmPlayer(player);
+                    IPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(player);
                     await player.RejectMatchAsync(algorythmPlayer);
                 });
             }
@@ -66,18 +72,9 @@ namespace backend.communication.signalR
             }
         }
 
-        protected override IPlayer ThisPlayer => _opponentRoboterPlayer;
-        protected override IPlayer GetOrCreatePlayer()
-        {
-            return _opponentRoboterPlayer;
-        }
-        protected override IPlayer? GetPlayerOrDefault()
-        {
-            return _opponentRoboterPlayer;
-        }
+        protected override string Identification => Context.ConnectionId;
 
-        private readonly ToPlayerHub<OpponentRoboterPlayerHub> _opponentRoboterPlayer;
-        private readonly AlgorythmPlayerProvider _algorythmPlayerProvider;
-        private readonly Func<AlgorythmPlayer> _createAlgorythmPlayer;
+        private readonly AlgorythmPlayerManager _algorythmPlayerManager;
+        private readonly Func<IPlayer, AlgorythmPlayer> _createAlgorythmPlayer;
     }
 }

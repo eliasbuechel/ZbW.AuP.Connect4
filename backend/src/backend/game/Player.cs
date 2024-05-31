@@ -4,6 +4,7 @@ using backend.game.entities;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.game
 {
@@ -21,25 +22,13 @@ namespace backend.game
         public bool HasConfirmedGameStart { get; set; }
         public int HintsLeft => _hintsLeft;
         public int? CurrentHint => _currentHint;
-        public IEnumerable<string> Connections => _connections;
+        public ICollection<string> Connections => _connections;
 
         public event Action<IPlayer, int>? OnMovePlayed;
         public event Action<IPlayer, IPlayer>? OnMatch;
 
-        public IEnumerable<IPlayer> GetOnlinePlayers()
-        {
-            return _gameManager.GetOnlinePlayersExcept(Id);
-        }
-        public void ConnectAsync(string connection)
-        {
-            _connections.Add(connection);
-            _gameManager.ConnectPlayer(this);
-        }
-        public void Disconnected(string onnection)
-        {
-            _connections.Remove(onnection);
-            _gameManager.DisconnectPlayer(this);
-        }
+
+        // REQUESTS
         public async Task RequestMatch(IPlayer player)
         {
             if (!_gameManager.RequestMatch(this, player))
@@ -113,8 +102,8 @@ namespace backend.game
 
         public async Task GetOnlinePlayersAsync(string connection)
         {
-            IEnumerable<OnlinePlayerDTO> onlinePlayers = _gameManager.GetOnlinePlayersExcept(Id).Select(p => new OnlinePlayerDTO(p, this)).ToArray();
-            await SendOnlinePlayers(connection, onlinePlayers);
+            ConnectedPlayersDTO connectedPlayers = _gameManager.GetOnlinePlayersExcept(this);
+            await SendOnlinePlayers(connection, connectedPlayers);
         }
         public async Task GetGamePlanAsync(string connection)
         {
@@ -133,9 +122,10 @@ namespace backend.game
         }
 
 
+        // RESPONSES
         public async void PlayerConnected(IPlayer player)
         {
-            OnlinePlayerDTO onlinePlayer = new OnlinePlayerDTO(player, this);
+            ConnectedPlayerDTO onlinePlayer = new ConnectedPlayerDTO(player, this);
             foreach (string connection in Connections)
                 await PlayerConnected(connection, onlinePlayer);
         }
@@ -144,6 +134,18 @@ namespace backend.game
             string playerId = player.Id;
             foreach (string connection in Connections)
                 await PlayerDisconnected(connection, playerId);
+        }
+        internal async void OpponentRoboterPlayerConnected(IPlayer opponentRoboterPlayer)
+        {
+            ConnectedPlayerDTO opponentRoboterPlayerDTO = new ConnectedPlayerDTO(opponentRoboterPlayer, this);
+            foreach (string connection in Connections)
+                await OpponentRoboterPlayerConnected(connection, opponentRoboterPlayerDTO);
+        }
+        internal async void OpponentRoboterPlayerDisconnected(IPlayer opponentRoboterPlayer)
+        {
+            ConnectedPlayerDTO opponentRoboterPlayerDTO = new ConnectedPlayerDTO(opponentRoboterPlayer, this);
+            foreach (string connection in Connections)
+                await OpponentRoboterPlayerDisconnected(connection, opponentRoboterPlayerDTO);
         }
         public virtual async void RequestedMatch(IPlayer player)
         {
@@ -226,11 +228,19 @@ namespace backend.game
                 await SendBestList(connection, bestlist);
         }
 
-        protected virtual Task PlayerConnected(string connection, OnlinePlayerDTO onlinePlayer)
+        protected virtual Task PlayerConnected(string connection, ConnectedPlayerDTO onlinePlayer)
         {
             return Task.CompletedTask;
         }
         protected virtual Task PlayerDisconnected(string connection, string playerId)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task OpponentRoboterPlayerConnected(string connection, ConnectedPlayerDTO opponentRoboterPlayer)
+        {
+            return Task.CompletedTask;
+        }
+        protected virtual Task OpponentRoboterPlayerDisconnected(string connection, ConnectedPlayerDTO opponentRoboterPlayer)
         {
             return Task.CompletedTask;
         }
@@ -266,7 +276,7 @@ namespace backend.game
         {
             return Task.CompletedTask;
         }
-        protected virtual Task SendOnlinePlayers(string connection, IEnumerable<OnlinePlayerDTO> onlinePlayers)
+        protected virtual Task SendOnlinePlayers(string connection, ConnectedPlayersDTO connectedPlayers)
         {
             return Task.CompletedTask;
         }

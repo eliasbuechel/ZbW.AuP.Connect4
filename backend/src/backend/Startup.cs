@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using backend.game.entities;
+using System.Reflection.Metadata.Ecma335;
 
 namespace backend
 {
@@ -81,34 +82,40 @@ namespace backend
             });
 
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
+
+            services.AddSingleton<GameResultsService>();
+
+            // player managers
+            services.AddSingleton<WebPlayerManager>();
+            services.AddSingleton<AlgorythmPlayerManager>();
+            services.AddSingleton<OpponentRoboterPlayerHubManager>();
+            services.AddSingleton<OpponentRoboterPlayerHubClientManager>();
+            services.AddTransient<ConnectedPlayerProvider>();
+
+            // player creation functions
+            services.AddSingleton<Func<PlayerIdentity, WebPlayer>>(s => {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
-                return (identity) => new ToPlayerHub<WebPlayerHub>(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
+                return (identity) => new WebPlayer(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
             });
-
-            services.AddSingleton<ToPlayerHub<OpponentRoboterPlayerHub>>(s =>
+            services.AddSingleton<Func<IPlayer, AlgorythmPlayer>>(s => (opponent) =>
+            {
+                GameManager gameManager = s.GetRequiredService<GameManager>();
+                return new AlgorythmPlayer(opponent, gameManager);
+            });
+            services.AddSingleton<Func<string, OpponentRoboterPlayer>>(s => connectionId =>
             {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
                 IHubContext<OpponentRoboterPlayerHub> hubContext = s.GetRequiredService<IHubContext<OpponentRoboterPlayerHub>>();
-                string roboterName = "Opponent roboter";
-                string roboterId = Guid.NewGuid().ToString();
-                return new ToPlayerHub<OpponentRoboterPlayerHub>(roboterId, roboterName, gameManager, hubContext);
+                string roboterName = "Opponent roboter hub api";
+                return new OpponentRoboterPlayer(connectionId, roboterName, gameManager, hubContext);
             });
-
-            services.AddSingleton<Func<AlgorythmPlayer>>(s => () =>
+            services.AddSingleton<Func<string, OpponentRoboterPlayerHubClient>>(s => hubUrl =>
             {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
-                return new AlgorythmPlayer(gameManager);
+                return new OpponentRoboterPlayerHubClient(hubUrl, gameManager);
             });
-            services.AddSingleton<AlgorythmPlayerProvider>();
 
-            services.AddSingleton<GameResultsService>();
-            services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
-            services.AddSingleton<PlayerConnectionManager>(s =>
-            {
-                return new PlayerConnectionManager();
-            });
             services.AddSingleton<GameManager>();
             services.AddSingleton<Connect4Board>();
 
@@ -155,6 +162,7 @@ namespace backend
 
                 endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
                 endpoints.MapHub<WebPlayerHub>("/playerHub");
+                endpoints.MapHub<OpponentRoboterPlayerHub>("/opponentRoboterApi");
             });
         }
 

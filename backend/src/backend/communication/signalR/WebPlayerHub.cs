@@ -5,19 +5,30 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.communication.signalR
 {
     [Authorize]
-    internal class WebPlayerHub : PlayerHub
+    internal class WebPlayerHub : PlayerHub<WebPlayer, PlayerIdentity>
     {
-        public WebPlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager, IOnlinePlayerProvider onlinePlayerProvider, AlgorythmPlayerProvider algorythmPlayerProvider, UserManager<PlayerIdentity> userManager, Func<AlgorythmPlayer> createAlgorythmPlayer, Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> createWebPlayer) : base(playerRequestHandlerManager)
+        public WebPlayerHub(
+            PlayerRequestHandlerManager playerRequestHandlerManager,
+            WebPlayerManager webPlayerManager,
+            Func<PlayerIdentity, WebPlayer> createWebPlayer,
+            UserManager<PlayerIdentity> userManager,
+            OpponentRoboterPlayerHubClientManager opponentRoboterPlayerHubClientManager,
+            AlgorythmPlayerManager algorythmPlayerManager,
+            Func<IPlayer, AlgorythmPlayer> createAlgorythmPlayer,
+            Func<string, OpponentRoboterPlayerHubClient> createOpponentRoboterPlayer,
+            ConnectedPlayerProvider connectedPlayerProvider
+            ) : base(playerRequestHandlerManager, webPlayerManager, createWebPlayer, connectedPlayerProvider)
         {
             _userManager = userManager;
+            _algorythmPlayerManager = algorythmPlayerManager;
+            _opponentRoboterPlayerHubClientManager = opponentRoboterPlayerHubClientManager;
             _createAlgorythmPlayer = createAlgorythmPlayer;
-            _createWebPlayer = createWebPlayer;
-            _algorythmPlayerProvider = algorythmPlayerProvider;
-            _onlinePlayerProvider = onlinePlayerProvider;
+            _createOpponentRoboterPlayer = createOpponentRoboterPlayer;
         }
 
         public void RequestMatch(string playerId)
@@ -26,10 +37,37 @@ namespace backend.communication.signalR
             try
             {
                 player = ThisPlayer;
+
                 RequestHandler.Enqueue(async () =>
                 {
-                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
-                    await player.RequestMatch(opponent);
+                    IPlayer? opponent = _connectedPlayerProvider.GetPlayer(playerId);
+
+                    if (opponent is WebPlayer)
+                    {
+                        if (opponent == null)
+                        {
+                            Debug.Assert(false);
+                            return;
+                        }
+
+                        await player.RequestMatch(opponent);
+                    }
+                    else if (opponent is OpponentRoboterPlayer opponentRoboterPlayer)
+                    {
+                        _algorythmPlayerManager.ConnectPlayer(opponentRoboterPlayer, _createAlgorythmPlayer);
+                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
+                        await opponentRoboterPlayer.RequestMatch(algorythmPlayer);
+                    }
+                    else if (opponent is OpponentRoboterPlayerHubClient opponentRoboterPlayerHubClient)
+                    {
+                        _algorythmPlayerManager.ConnectPlayer(opponentRoboterPlayerHubClient, _createAlgorythmPlayer);
+                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(opponentRoboterPlayerHubClient);
+                        await opponentRoboterPlayerHubClient.RequestMatch(algorythmPlayer);
+                    }
+                    else
+                    {
+                        Debug.Assert(false);
+                    }
                 });
             }
             catch
@@ -45,7 +83,13 @@ namespace backend.communication.signalR
                 player = ThisPlayer;
                 RequestHandler.Enqueue(async () =>
                 {
-                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
+                    IPlayer? opponent = _connectedPlayerProvider.GetPlayer(playerId);
+                    if (opponent == null)
+                    {
+                        Debug.Assert(false);
+                        return;
+                    }
+
                     await player.AcceptMatchAsync(opponent);
                 });
             }
@@ -62,7 +106,13 @@ namespace backend.communication.signalR
                 player = ThisPlayer;
                 RequestHandler.Enqueue(async () =>
                 {
-                    IPlayer opponent = _onlinePlayerProvider.GetOnlinePlayerAsync(playerId);
+                    IPlayer? opponent = _connectedPlayerProvider.GetPlayer(playerId);
+                    if (opponent == null)
+                    {
+                        Debug.Assert(false);
+                        return;
+                    }
+
                     await player.RejectMatchAsync(opponent);
                 });
             }
@@ -73,12 +123,17 @@ namespace backend.communication.signalR
         }
         public void RequestSinglePlayerMatch()
         {
-            IPlayer player;
+            ToPlayerHub<WebPlayerHub> player;
             try
             {
                 player = ThisPlayer;
-                IPlayer algorythmPlayer = _algorythmPlayerProvider.CreateAlgorythmPlayer(player, _createAlgorythmPlayer);
-                RequestHandler.Enqueue(() => player.RequestMatch(algorythmPlayer));
+                _algorythmPlayerManager.ConnectPlayer(player, _createAlgorythmPlayer);
+                RequestHandler.Enqueue(async () =>
+                {
+                    _algorythmPlayerManager.ConnectPlayer(player, _createAlgorythmPlayer);
+                    AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(player);
+                    await player.RequestMatch(algorythmPlayer);
+                });
             }
             catch
             {
@@ -102,23 +157,28 @@ namespace backend.communication.signalR
                 Debug.Assert(false);
             }
         }
-        public void GetBestlist()
+        public async void GetBestlist()
         {
-            ThisPlayer.GetBestlist(Connection);
+            await ThisPlayer.GetBestlist(Connection);
+        }
+        public void ConnectToOpponentRoboterPlayer(string hubUrl)
+        {
+            try
+            {
+                RequestHandler.Enqueue(() =>
+                {
+                    _opponentRoboterPlayerHubClientManager.ConnectPlayer(hubUrl, _createOpponentRoboterPlayer);
+                    OpponentRoboterPlayerHubClient opponentRoboterPlayer = _opponentRoboterPlayerHubClientManager.GetConnectedPlayerByIdentification(hubUrl);
+                    return Task.CompletedTask;
+                });
+            }
+            catch
+            {
+                Debug.Assert(false);
+            }
         }
 
-        protected override IPlayer ThisPlayer => _onlinePlayerProvider.GetOnlinePlayerAsync(Identity.Id);
-
-        protected override IPlayer GetOrCreatePlayer()
-        {
-            return _onlinePlayerProvider.GetOrCreatePlayer(Identity, _createWebPlayer);
-        }
-        protected override IPlayer? GetPlayerOrDefault()
-        {
-            return _onlinePlayerProvider.GetOnlinePlayerOrDefault(Identity.Id);
-        }
-
-        private PlayerIdentity Identity
+        protected override PlayerIdentity Identification
         {
             get
             {
@@ -136,9 +196,9 @@ namespace backend.communication.signalR
         }
 
         private readonly UserManager<PlayerIdentity> _userManager;
-        private readonly Func<AlgorythmPlayer> _createAlgorythmPlayer;
-        private readonly IOnlinePlayerProvider _onlinePlayerProvider;
-        private readonly AlgorythmPlayerProvider _algorythmPlayerProvider;
-        private readonly Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>> _createWebPlayer;
+        private readonly AlgorythmPlayerManager _algorythmPlayerManager;
+        private readonly OpponentRoboterPlayerHubClientManager _opponentRoboterPlayerHubClientManager;
+        private readonly Func<IPlayer, AlgorythmPlayer> _createAlgorythmPlayer;
+        private readonly Func<string, OpponentRoboterPlayerHubClient> _createOpponentRoboterPlayer;
     }
 }

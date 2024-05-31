@@ -12,7 +12,7 @@ namespace backend.game
         bool HasConfirmedGameStart { get; set; }
         public int HintsLeft { get; }
         public int? CurrentHint { get; }
-        public IEnumerable<string> Connections { get; }
+        public ICollection<string> Connections { get; }
 
         Task ConfirmGameStartAsync();
         Task RequestMatch(IPlayer player);
@@ -20,9 +20,6 @@ namespace backend.game
         void RejectedMatch(IPlayer opponent);
         void PlayerConnected(IPlayer player);
         void PlayerDisconnected(IPlayer player);
-        IEnumerable<IPlayer> GetOnlinePlayers();
-        void ConnectAsync(string connection);
-        void Disconnected(string connection);
         bool HasRequestedMatch(IPlayer you);
         bool HasMatched(IPlayer player);
         Task AcceptMatchAsync(IPlayer player);

@@ -3,7 +3,7 @@
     v-if="!isInGame && identity != null && bestlist != null"
     :identity="identity"
     :bestlist="bestlist"
-    :onlinePlayers="onlinePlayers"
+    :connectedPlayers="connectedPlayers"
     :gamePlan="gamePlan"
     @show-replay="showReplay"
   />
@@ -37,10 +37,11 @@ import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { GameResult } from "@/types/GameResult";
 import { Field } from "@/types/Field";
 import GameResultView from "@/components/GameResultView.vue";
+import { ConnectedPlayers } from "@/types/ConnectedPlayers";
 
 interface HomeState {
   identity?: PlayerIdentity;
-  onlinePlayers: OnlinePlayer[];
+  connectedPlayers: ConnectedPlayers;
   bestlist?: GameResult[];
   gamePlan: Match[];
   game?: Game;
@@ -53,7 +54,7 @@ export default defineComponent({
   data(): HomeState {
     return {
       identity: undefined,
-      onlinePlayers: new Array<OnlinePlayer>(),
+      connectedPlayers: { webPlayers: new Array<OnlinePlayer>(), opponentRoboterPlayers: new Array<OnlinePlayer>() },
       bestlist: new Array<GameResult>(),
       gamePlan: new Array<Match>(),
       game: undefined,
@@ -180,7 +181,7 @@ export default defineComponent({
       this.gamePlan = new Array<Match>(...this.gamePlan, match);
 
       if (this.identity === undefined) return;
-      this.onlinePlayers.forEach((p) => {
+      this.connectedPlayers.webPlayers.forEach((p) => {
         if (
           (p.id === match.player1.id && this.identity?.id === match.player2.id) ||
           (p.id === match.player2.id && this.identity?.id === match.player1.id)
@@ -201,7 +202,7 @@ export default defineComponent({
         if (!(match.player1.id !== this.identity.id && match.player2.id !== this.identity.id)) {
           const opponent: PlayerIdentity = match.player1.id === this.identity.id ? match.player2 : match.player1;
 
-          this.onlinePlayers.filter((p) => p.id === opponent.id).forEach((p) => (p.matched = false));
+          this.connectedPlayers.webPlayers.filter((p) => p.id === opponent.id).forEach((p) => (p.matched = false));
         }
       }
 
@@ -214,7 +215,7 @@ export default defineComponent({
       }
     },
     onPlayerDisconnected(playerId: string): void {
-      this.onlinePlayers = this.onlinePlayers.filter((o) => o.id !== playerId);
+      this.connectedPlayers.webPlayers = this.connectedPlayers.webPlayers.filter((o) => o.id !== playerId);
       this.gamePlan = this.gamePlan.filter((m) => m.player1.id !== playerId && m.player2.id !== playerId);
     },
     onMovePlayed(playerId: string, field: Field): void {
@@ -233,14 +234,15 @@ export default defineComponent({
           ? this.game!.match.player2.id
           : this.game!.match.player1.id;
     },
-    onUdateOnlinePlayers(onlinePlayers: OnlinePlayer[]): void {
-      this.onlinePlayers = onlinePlayers;
+    onUdateOnlinePlayers(connectedPlayers: ConnectedPlayers): void {
+      this.connectedPlayers = connectedPlayers;
     },
     onPlayerConnected(onlinePlayer: OnlinePlayer): void {
-      this.onlinePlayers = new Array<OnlinePlayer>(...this.onlinePlayers, onlinePlayer);
+      console.log("Player connected: ", onlinePlayer);
+      this.connectedPlayers.webPlayers = new Array<OnlinePlayer>(...this.connectedPlayers.webPlayers, onlinePlayer);
     },
     onPlayerRequestedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
+      this.connectedPlayers.webPlayers.forEach((p) => {
         if (p.id === playerId) {
           p.requestedMatch = true;
           return;
@@ -248,7 +250,7 @@ export default defineComponent({
       });
     },
     onYouRequestedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
+      this.connectedPlayers.webPlayers.forEach((p) => {
         if (p.id === playerId) {
           p.youRequestedMatch = true;
           return;
@@ -256,7 +258,7 @@ export default defineComponent({
       });
     },
     onPlayerRejectedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
+      this.connectedPlayers.webPlayers.forEach((p) => {
         if (p.id === playerId) {
           p.youRequestedMatch = false;
           return;
@@ -264,7 +266,7 @@ export default defineComponent({
       });
     },
     onYouRejectedMatch(playerId: string): void {
-      this.onlinePlayers.forEach((p) => {
+      this.connectedPlayers.webPlayers.forEach((p) => {
         if (p.id === playerId) {
           p.requestedMatch = false;
           return;
