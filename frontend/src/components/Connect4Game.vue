@@ -3,6 +3,9 @@
     <div class="grid-item-page-info container">
       <h2>Connect Four</h2>
     </div>
+    <button v-if="!isGameParticipant" class="button-light grid-item-leave-game-view-button" @click="stopWatchingGame">
+      Back home
+    </button>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
@@ -44,6 +47,7 @@ import { Game } from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import Connect4Board from "./Connect4Board.vue";
 import { InGamePlayer } from "@/types/InGamePlayer";
+import signalRHub from "@/services/signalRHub";
 
 export default defineComponent({
   props: {
@@ -77,6 +81,10 @@ export default defineComponent({
     quitGame(): void {
       this.$emit("quit-game");
     },
+    stopWatchingGame(): void {
+      signalRHub.invoke("StopWatchingGame");
+      this.$emit("stop-watching-game");
+    },
   },
   computed: {
     inGamePlayerLeft(): InGamePlayer | undefined {
@@ -91,31 +99,11 @@ export default defineComponent({
 
       return undefined;
     },
-    // gameResultPlayerLeft(): PlayerIdentity | undefined {
-    //   if (this.gameResult != null)
-    //     return this.gameResult.match.player1.id == this.identity.id
-    //       ? this.gameResult.match.player1
-    //       : this.gameResult.match.player2;
-
-    //   return undefined;
-    // },
-    // gameResultPlayerRight(): PlayerIdentity | undefined {
-    //   if (this.gameResult != null)
-    //     return this.gameResult.match.player1.id == this.identity.id
-    //       ? this.gameResult.match.player2
-    //       : this.gameResult.match.player1;
-
-    //   return undefined;
-    // },
     namePlayerLeft(): string {
       if (this.inGamePlayerLeft != null) {
         if (this.inGamePlayerLeft.id == this.identity.id) return "you";
         return this.inGamePlayerLeft.username;
       }
-      // } else if (this.gameResultPlayerLeft != null) {
-      //   if (this.gameResultPlayerLeft.id == this.identity.id) return "you";
-      //   return this.gameResultPlayerLeft.username;
-      // }
 
       return "";
     },
@@ -124,10 +112,6 @@ export default defineComponent({
         if (this.inGamePlayerRight.id == this.identity.id) return "you";
         return this.inGamePlayerRight.username;
       }
-      // } else if (this.gameResultPlayerRight != null) {
-      //   if (this.gameResultPlayerRight.id == this.identity.id) return "you";
-      //   return this.gameResultPlayerRight.username;
-      // }
 
       return "";
     },
@@ -159,6 +143,10 @@ export default defineComponent({
       }
       return "";
     },
+    isGameParticipant(): boolean {
+      if (this.game == null) return false;
+      return this.identity.id === this.game.match.player1.id || this.identity.id === this.game.match.player2.id;
+    },
   },
 });
 </script>
@@ -166,8 +154,17 @@ export default defineComponent({
 <style scoped>
 .grid-item-page-info {
   grid-column: 4 / span 6;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 1;
 }
+.grid-item-leave-game-view-button {
+  grid-column: 4 / span 6;
+  grid-row: 2 / span 1;
+  width: fit-content;
+  height: fit-content;
+  align-self: center;
+  justify-self: center;
+}
+
 .grid-item-player1 {
   grid-column: 1 / span 3;
   grid-row: 1 / span 4;

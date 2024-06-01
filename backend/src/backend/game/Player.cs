@@ -77,7 +77,7 @@ namespace backend.game
             _gameManager.PlayMove(this, column);
             return Task.CompletedTask;
         }
-        public Connect4Game GetCurrentGameState()
+        public Game GetCurrentGameState()
         {
             return _gameManager.GetCurrentGameState();
         }
@@ -93,6 +93,12 @@ namespace backend.game
 
             Connect4GameDTO game = new Connect4GameDTO(_gameManager.GetCurrentGameState());
             await SendGame(connection, game);
+        }
+        public async Task SendGame(Game game)
+        {
+            Connect4GameDTO gameDTO = new Connect4GameDTO(game);
+            foreach (var connection in Connections)
+                await SendGame(connection, gameDTO);
         }
         public async Task GetUserDataAsync(string connection)
         {
@@ -120,6 +126,15 @@ namespace backend.game
             IEnumerable<GameResult> bestlist = _gameManager.GetBestlist();
             await SendBestList(connection, bestlist);
         }
+        internal void WatchGame()
+        {
+            _gameManager.WatchGame(this);
+        }
+        internal void StopWatchingGame()
+        {
+            _gameManager.StopWatchingGame(this);
+        }
+
 
 
         // RESPONSES
@@ -171,7 +186,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await MatchingEnded(connection, matchId);
         }
-        public virtual async void GameStarted(Connect4Game connect4Game)
+        public virtual async void GameStarted(Game connect4Game)
         {
             _hintsLeft = MAX_HINTS;
 
@@ -205,10 +220,10 @@ namespace backend.game
             foreach (string connection in Connections)
                 GameStartConfirmed(connection);
         }
-        public async void YouConfirmedGameStart()
+        public async void ConfirmedGameStart(IPlayer player)
         {
             foreach (var connection in Connections)
-                await YouConfirmedGameStart(connection);
+                await ConfirmedGameStart(connection, player.Id);
         }
         public async void GetHint()
         {
@@ -308,7 +323,7 @@ namespace backend.game
         {
             return Task.CompletedTask;
         }
-        protected virtual Task YouConfirmedGameStart(string connection)
+        protected virtual Task ConfirmedGameStart(string connection, string playerId)
         {
             return Task.CompletedTask;
         }

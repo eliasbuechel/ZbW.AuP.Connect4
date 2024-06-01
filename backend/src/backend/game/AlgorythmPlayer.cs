@@ -20,7 +20,7 @@ namespace backend.game
             await AcceptMatchAsync(player);
         }
 
-        public override void GameStarted(Connect4Game connect4Game)
+        public override void GameStarted(Game connect4Game)
         {
             base.GameStarted(connect4Game);
             _startingPlayer = connect4Game.ActivePlayer;

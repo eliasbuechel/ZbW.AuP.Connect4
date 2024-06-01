@@ -9,7 +9,7 @@ namespace backend.services
 {
     internal class GameManager
     {
-        public GameManager(ConnectedPlayerProvider connectedPlayerProvider, Func<Match, Connect4Game> getConnect4Game, GameResultsService gameResultsService)
+        public GameManager(ConnectedPlayerProvider connectedPlayerProvider, Func<Match, Game> getConnect4Game, GameResultsService gameResultsService)
         {
             _connectedPlayerProvider = connectedPlayerProvider;
             _getConnect4Game = getConnect4Game;
@@ -124,7 +124,7 @@ namespace backend.services
 
             return false;
         }
-        public Connect4Game GetCurrentGameState()
+        public Game GetCurrentGameState()
         {
             Debug.Assert(_activeGame != null);
             return _activeGame;
@@ -237,9 +237,31 @@ namespace backend.services
             return _activeGame.GetBestMove(player);
         }
 
-        private Connect4Game? _activeGame = null;
+        public void WatchGame(IPlayer player)
+        {
+            if (_activeGame == null)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _activeGame.AddWatcher(player);
+        }
+
+        public void StopWatchingGame(IPlayer player)
+        {
+            if (_activeGame == null)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _activeGame.RemoveWatcher(player);
+        }
+
+        private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
-        private readonly Func<Match, Connect4Game> _getConnect4Game;
+        private readonly Func<Match, Game> _getConnect4Game;
         private readonly ConnectedPlayerProvider _connectedPlayerProvider;
         private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
         private ConcurrentBag<MatchRequest> _matchRequests = new ConcurrentBag<MatchRequest>();

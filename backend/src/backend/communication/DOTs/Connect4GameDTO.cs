@@ -4,7 +4,7 @@ namespace backend.communication.DOTs
 {
     internal class Connect4GameDTO
     {
-        public Connect4GameDTO(Connect4Game connect4Game)
+        public Connect4GameDTO(Game connect4Game)
         {
             Match = new MatchDTO(connect4Game.Match);
             ActivePlayerId = connect4Game.ActivePlayer.Id;

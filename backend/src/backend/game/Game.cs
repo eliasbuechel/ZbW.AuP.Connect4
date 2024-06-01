@@ -1,11 +1,12 @@
 ﻿using backend.game.entities;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.game
 {
-    internal class Connect4Game : IDisposable
+    internal class Game : IDisposable
     {
-        public Connect4Game(Match match, Connect4Board connect4Board)
+        public Game(Match match, GameBoard connect4Board)
         {
             _match = match;
             _connect4Board = connect4Board;
@@ -45,7 +46,7 @@ namespace backend.game
         {
             IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
-            GameEndet(gameResult);
+            OnGameEndet(gameResult);
         }
         public void Initialize()
         {
@@ -54,13 +55,70 @@ namespace backend.game
         public void ConnfirmedGameStart(IPlayer player)
         {
             IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
-            player.YouConfirmedGameStart();
-            opponent.OpponentConfirmedGameStart();
+            player.ConfirmedGameStart(player);
+            opponent.ConfirmedGameStart(player);
+
+            foreach (var watcher in _watchlist)
+                watcher.ConfirmedGameStart(player);
+
             if (opponent.HasConfirmedGameStart)
             {
                 _match.Player1.GameStartConfirmed();
                 _match.Player2.GameStartConfirmed();
+
+                foreach (var watcher in _watchlist)
+                    watcher.GameStartConfirmed();
             }
+        }
+        public int GetBestMove(IPlayer player)
+        {
+            const int LOOK_AHEAD_MOVES = 8;
+            const int INVALID_BEST_MOVE = -1;
+
+            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
+
+            int value = int.MinValue;
+            int bestMove = INVALID_BEST_MOVE;
+            int alpha = int.MinValue;
+            int beta = int.MaxValue;
+
+            foreach (int col in _columnOrder)
+            {
+                int row;
+
+                if (!GetNextFreeRow(col, out row))
+                    continue;
+
+                Debug.Assert(row >= 0);
+
+                _connect4Board[col][row] = player;
+
+                int miniMaxValue;
+
+                if (NoMoveLeft())
+                    miniMaxValue = 0;
+                else if (HasWon(player, col, row))
+                    miniMaxValue = LOOK_AHEAD_MOVES * 1000;
+                else if (LOOK_AHEAD_MOVES <= 1)
+                    miniMaxValue = CalculateBoardValue(player);
+                else
+                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
+
+                _connect4Board[col][row] = null;
+
+                if (miniMaxValue > value)
+                {
+                    bestMove = col;
+                    value = miniMaxValue;
+                }
+
+                alpha = Math.Max(alpha, value);
+                if (alpha >= beta)
+                    break;
+            }
+
+            Debug.Assert(bestMove != INVALID_BEST_MOVE);
+            return bestMove;
         }
         public void Dispose()
         {
@@ -86,6 +144,9 @@ namespace backend.game
             CheckForWin(field, player);
             Match.Player1.MovePlayed(player, field);
             Match.Player2.MovePlayed(player, field);
+
+            foreach (var watcher in _watchlist)
+                watcher.MovePlayed(player, field);
         }
         private void SwapActivePlayer()
         {
@@ -261,71 +322,25 @@ namespace backend.game
         private void OnConnect4(ICollection<Field> connect4Line, IPlayer player)
         {
             GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
-            GameEndet(gameResult);
+            OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
             GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
-            GameEndet(gameResult);
+            OnGameEndet(gameResult);
         }
-        private void GameEndet(GameResult gameResult)
+        private void OnGameEndet(GameResult gameResult)
         {
             _match.Player1.GameEnded(gameResult);
             _match.Player2.GameEnded(gameResult);
+
             _match.Player1.HasConfirmedGameStart = false;
             _match.Player2.HasConfirmedGameStart = false;
+
+            foreach (var watcher in _watchlist)
+                watcher.GameEnded(gameResult);
+
             OnGameEnded?.Invoke(gameResult);
-        }
-
-        public int GetBestMove(IPlayer player)
-        {
-            const int LOOK_AHEAD_MOVES = 8;
-            const int INVALID_BEST_MOVE = -1;
-
-            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
-
-            int value = int.MinValue;
-            int bestMove = INVALID_BEST_MOVE;
-            int alpha = int.MinValue;
-            int beta = int.MaxValue;
-
-            foreach (int col in _columnOrder)
-            {
-                int row;
-
-                if (!GetNextFreeRow(col, out row))
-                    continue;
-
-                Debug.Assert(row >= 0);
-
-                _connect4Board[col][row] = player;
-
-                int miniMaxValue;
-
-                if (NoMoveLeft())
-                    miniMaxValue = 0;
-                else if (HasWon(player, col, row))
-                    miniMaxValue = LOOK_AHEAD_MOVES * 1000;
-                else if (LOOK_AHEAD_MOVES <= 1)
-                    miniMaxValue = CalculateBoardValue(player);
-                else
-                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
-
-                _connect4Board[col][row] = null;
-
-                if (miniMaxValue > value)
-                {
-                    bestMove = col;
-                    value = miniMaxValue;
-                }
-
-                alpha = Math.Max(alpha, value);
-                if (alpha >= beta)
-                    break;
-            }
-
-            Debug.Assert(bestMove != INVALID_BEST_MOVE);
-            return bestMove;
         }
 
         private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing, int alpha, int beta)
@@ -404,7 +419,6 @@ namespace backend.game
 
             return value;
         }
-
         private bool GetNextFreeRow(int col, out int row)
         {
             int j = 0;
@@ -546,12 +560,35 @@ namespace backend.game
             return false;
         }
 
+        public void AddWatcher(IPlayer player)
+        {
+            if (_watchlist.Contains(player))
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _watchlist.Add(player);
+            player.SendGame(this);
+        }
+        public void RemoveWatcher(IPlayer player)
+        {
+            if (!_watchlist.Contains(player))
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _watchlist.Remove(player);
+        }
+
         private bool _disposed = false;
         private IPlayer _activePlayer;
         private bool _activePlayerPlacedStone;
         private readonly IPlayer _startingPlayer;
         private readonly Match _match;
-        private readonly Connect4Board _connect4Board;
+        private readonly GameBoard _connect4Board;
+        private readonly ICollection<IPlayer> _watchlist = new List<IPlayer>();
         private readonly ICollection<int> _playedMoves = new List<int>();
         private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],

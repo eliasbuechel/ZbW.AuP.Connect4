@@ -117,12 +117,12 @@ namespace backend
             });
 
             services.AddSingleton<GameManager>();
-            services.AddSingleton<Connect4Board>();
+            services.AddSingleton<GameBoard>();
 
 
-            services.AddSingleton<Func<Match, Connect4Game>>(s => m =>
+            services.AddSingleton<Func<Match, Game>>(s => m =>
             {
-                return new Connect4Game(m, s.GetRequiredService<Connect4Board>());
+                return new Game(m, s.GetRequiredService<GameBoard>());
             });
 
             services.AddSingleton<PlayerRequestHandlerManager>();

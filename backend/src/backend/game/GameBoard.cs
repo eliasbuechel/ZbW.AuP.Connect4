@@ -3,9 +3,9 @@ using backend.game.entities;
 
 namespace backend.game
 {
-    internal class Connect4Board
+    internal class GameBoard
     {
-        public Connect4Board(IRoboterAPI roboterAPI)
+        public GameBoard(IRoboterAPI roboterAPI)
         {
             _field = new IPlayer?[COLUMNS][];
 
@@ -16,7 +16,7 @@ namespace backend.game
             _roboterAPI.OnStonePlaced += OnStonePlacedOnRoboter;
             _roboterAPI.OnBoardReset += OnRoboterBoardReset;
         }
-        ~Connect4Board()
+        ~GameBoard()
         {
             _roboterAPI.OnStonePlaced -= OnStonePlacedOnRoboter;
             _roboterAPI.OnBoardReset -= OnRoboterBoardReset;

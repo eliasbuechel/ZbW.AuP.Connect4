@@ -8,6 +8,7 @@
           <div v-if="idx == 0" class="battle-icon">&#9876;</div>
           <div v-else class="handshake-icon">&#129309;</div>
           <div class="player2">{{ player.player2.username }}</div>
+          <button v-if="idx == 0" class="button-light" @click="watchGame()">Watch</button>
         </li>
       </ul>
     </div>
@@ -15,6 +16,7 @@
 </template>
 
 <script lang="ts">
+import signalRHub from "@/services/signalRHub";
 import { Match } from "@/types/Match";
 import { defineComponent, PropType } from "vue";
 
@@ -35,7 +37,11 @@ export default defineComponent({
       isSubscribed: false,
     };
   },
-  methods: {},
+  methods: {
+    watchGame(): void {
+      signalRHub.invoke("WatchGame");
+    },
+  },
 });
 </script>
 

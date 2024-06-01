@@ -14,6 +14,7 @@
     @place-stone="placeStone"
     @quit-game="quitGame"
     @confirm-game-start="confirmGameStart"
+    @stop-watching-game="stopWatchingGame"
   />
   <GameResultView
     v-if="identity != null && gameResult != null"
@@ -102,9 +103,8 @@ export default defineComponent({
       signalRHub.on("SendGame", this.updateGame);
       signalRHub.on("YouRequestedMatch", this.onYouRequestedMatch);
       signalRHub.on("YouRejectedMatch", this.onYouRejectedMatch);
-      signalRHub.on("OpponentConfirmedGameStart", this.onOpponentConfirmedGameStart);
+      signalRHub.on("ConfirmedGameStart", this.onConfirmedGameStart);
       signalRHub.on("GameStartConfirmed", this.onGameStartConfirmed);
-      signalRHub.on("YouConfirmedGameStart", this.onYouConfirmedGameStart);
       signalRHub.on("SendHint", this.onSendHint);
       signalRHub.on("SendBestlist", this.onSendBestlist);
     },
@@ -125,9 +125,8 @@ export default defineComponent({
       signalRHub.off("SendGame", this.updateGame);
       signalRHub.off("YouRequestedMatch", this.onYouRequestedMatch);
       signalRHub.off("YouRejectedMatch", this.onYouRejectedMatch);
-      signalRHub.off("OpponentConfirmedGameStart", this.onOpponentConfirmedGameStart);
+      signalRHub.off("ConfirmedGameStart", this.onConfirmedGameStart);
       signalRHub.off("GameStartConfirmed", this.onGameStartConfirmed);
-      signalRHub.off("YouConfirmedGameStart", this.onYouConfirmedGameStart);
       signalRHub.off("SendHint", this.onSendHint);
       signalRHub.off("SendBestlist", this.onSendBestlist);
     },
@@ -136,6 +135,9 @@ export default defineComponent({
     },
     confirmGameStart(): void {
       signalRHub.invoke("ConfirmGameStart");
+    },
+    stopWatchingGame(): void {
+      this.game = undefined;
     },
     placeStone(column: number): void {
       signalRHub.invoke("PlayMove", column);
@@ -238,7 +240,6 @@ export default defineComponent({
       this.connectedPlayers = connectedPlayers;
     },
     onPlayerConnected(onlinePlayer: OnlinePlayer): void {
-      console.log("Player connected: ", onlinePlayer);
       this.connectedPlayers.webPlayers = new Array<OnlinePlayer>(...this.connectedPlayers.webPlayers, onlinePlayer);
     },
     onPlayerRequestedMatch(playerId: string): void {
@@ -273,21 +274,14 @@ export default defineComponent({
         }
       });
     },
-    onOpponentConfirmedGameStart(): void {
-      if (this.identity == null) return;
+    onConfirmedGameStart(playerId: string): void {
       if (this.game == null) return;
-      if (this.game.match.player1.id === this.identity.id) this.game.match.player2.hasConfirmedGameStart = true;
-      else if (this.game.match.player2.id === this.identity.id) this.game.match.player1.hasConfirmedGameStart = true;
+      if (this.game.match.player1.id === playerId) this.game.match.player1.hasConfirmedGameStart = true;
+      else this.game.match.player2.hasConfirmedGameStart = true;
     },
     onGameStartConfirmed(): void {
       if (this.game == null) return;
       this.game.startConfirmed = true;
-    },
-    onYouConfirmedGameStart(): void {
-      if (this.game == null) return;
-      if (this.identity == null) return;
-      if (this.game.match.player1.id === this.identity.id) this.game.match.player1.hasConfirmedGameStart = true;
-      else if (this.game.match.player2.id === this.identity.id) this.game.match.player2.hasConfirmedGameStart = true;
     },
     onSendHint(hint: number): void {
       if (this.identity == null) return;
@@ -325,9 +319,8 @@ export default defineComponent({
   computed: {
     isInGame(): boolean {
       return (
-        (this.game != null &&
-          this.identity != null &&
-          (this.game.match.player1.id === this.identity.id || this.game.match.player2.id === this.identity.id)) ||
+        (this.game != null && this.identity != null) || // &&
+        // (this.game.match.player1.id === this.identity.id || this.game.match.player2.id === this.identity.id)) ||
         this.gameResult != null
       );
     },

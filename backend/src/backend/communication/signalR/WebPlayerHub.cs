@@ -177,6 +177,28 @@ namespace backend.communication.signalR
                 Debug.Assert(false);
             }
         }
+        public void WatchGame()
+        {
+            var player = ThisPlayer;
+            Debug.Assert(player != null);
+
+            RequestHandler.Enqueue(() =>
+            {
+                player.WatchGame();
+                return Task.CompletedTask;
+            });
+        }
+        public void StopWatchingGame()
+        {
+            var player = ThisPlayer;
+            Debug.Assert(player != null);
+
+            RequestHandler.Enqueue(() =>
+            {
+                player.StopWatchingGame();
+                return Task.CompletedTask;
+            });
+        }
 
         protected override PlayerIdentity Identification
         {

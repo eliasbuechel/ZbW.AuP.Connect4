@@ -93,9 +93,9 @@ namespace backend.communication.signalR
         {
             await _hubContext.Clients.Client(connection).SendAsync(nameof(GameStartConfirmed));
         }
-        protected override async Task YouConfirmedGameStart(string connection)
+        protected override async Task ConfirmedGameStart(string connection, string playerId)
         {
-            await _hubContext.Clients.Client(connection).SendAsync(nameof(YouConfirmedGameStart));
+            await _hubContext.Clients.Client(connection).SendAsync(nameof(ConfirmedGameStart), playerId);
         }
         protected override async Task SendHint(string connection, int hint)
         {
