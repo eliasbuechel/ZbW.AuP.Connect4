@@ -1,9 +1,10 @@
 ﻿using backend.communication.signalR;
 using backend.Data;
+using backend.game;
 
 namespace backend.services
 {
-    internal class WebPlayerManager : PlayerManager<WebPlayer, PlayerIdentity>, IDisposable
+    internal class WebPlayerManager : PlayerManager<WebPlayer, PlayerIdentity, IPlayer>, IDisposable
     {
         public WebPlayerManager(OpponentRoboterPlayerHubManager opponentRoboterPlayerManager, OpponentRoboterPlayerHubClientManager opponentRoboterPlayerHubClientManager)
         {
@@ -20,12 +21,23 @@ namespace backend.services
         {
             return _connectedPlayers.First(x => x.Id == playerIdentity.Id);
         }
-        public override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, Func<PlayerIdentity, WebPlayer> createPlayer)
+        protected override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, Func<PlayerIdentity, WebPlayer> createPlayer)
         {
             WebPlayer? player = GetConnectedPlayerOrDefault(playerIdentity.Id);
             if (player == null)
             {
                 player = createPlayer(playerIdentity);
+                _connectedPlayers.Add(player);
+            }
+
+            return player;
+        }
+        protected override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, IPlayer opponentPlayer, Func<PlayerIdentity, IPlayer, WebPlayer> createPlayer)
+        {
+            WebPlayer? player = GetConnectedPlayerOrDefault(playerIdentity.Id);
+            if (player == null)
+            {
+                player = createPlayer(playerIdentity, opponentPlayer);
                 _connectedPlayers.Add(player);
             }
 
@@ -62,6 +74,7 @@ namespace backend.services
             foreach (var p in _connectedPlayers)
                 p.OpponentRoboterPlayerDisconnected(opponentRoboterPlayer);
         }
+
 
         private bool _disposed = false;
         private readonly OpponentRoboterPlayerHubManager _opponentRoboterPlayerManager;

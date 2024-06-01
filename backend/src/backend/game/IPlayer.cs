@@ -14,7 +14,7 @@ namespace backend.game
         public int? CurrentHint { get; }
         public ICollection<string> Connections { get; }
 
-        Task ConfirmGameStartAsync();
+        Task ConfirmGameStart();
         Task RequestMatch(IPlayer player);
         void RequestedMatch(IPlayer player);
         void RejectedMatch(IPlayer opponent);
@@ -22,15 +22,15 @@ namespace backend.game
         void PlayerDisconnected(IPlayer player);
         bool HasRequestedMatch(IPlayer you);
         bool HasMatched(IPlayer player);
-        Task AcceptMatchAsync(IPlayer player);
+        Task AcceptMatch(IPlayer player);
         void Matched(Match match);
         void MatchingEnded(Match match);
-        Task RejectMatchAsync(IPlayer player);
+        Task RejectMatch(IPlayer player);
         void MovePlayed(IPlayer player, Field field);
-        Task PlayMoveAsync(int column);
+        Task PlayMove(int column);
         void GameStarted(Game connect4Game);
         Game GetCurrentGameState();
-        Task QuitGameAsync();
+        Task QuitGame();
         void GameEnded(GameResult gameResult);
         Task GetGameAsync(string connection);
         Task SendGame(Game game);

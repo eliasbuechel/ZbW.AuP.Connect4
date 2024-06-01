@@ -5,9 +5,9 @@ using System.Diagnostics;
 
 namespace backend.communication.signalR
 {
-    internal abstract class PlayerHub<TPlayer, TIdentification> : Hub where TPlayer : IPlayer
+    internal abstract class PlayerHub<TPlayer, TIdentification, TOpponent> : Hub where TPlayer : IPlayer where TOpponent : IPlayer
     {
-        public PlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager, PlayerManager<TPlayer, TIdentification> playerManager, Func<TIdentification, TPlayer> createPlayer, ConnectedPlayerProvider connectedPlayerProvider)
+        public PlayerHub(PlayerRequestHandlerManager playerRequestHandlerManager, PlayerManager<TPlayer, TIdentification, TOpponent> playerManager, Func<TIdentification, TPlayer> createPlayer, ConnectedPlayerProvider connectedPlayerProvider)
         {
             _playerRequestHandlerManager = playerRequestHandlerManager;
             _playerManager = playerManager;
@@ -91,7 +91,7 @@ namespace backend.communication.signalR
             try
             {
                 player = ThisPlayer;
-                RequestHandler.Enqueue(player.ConfirmGameStartAsync);
+                RequestHandler.Enqueue(player.ConfirmGameStart);
             }
             catch
             {
@@ -104,7 +104,7 @@ namespace backend.communication.signalR
             try
             {
                 player = ThisPlayer;
-                RequestHandler.Enqueue(() => player.PlayMoveAsync(column));
+                RequestHandler.Enqueue(() => player.PlayMove(column));
             }
             catch
             {
@@ -117,7 +117,7 @@ namespace backend.communication.signalR
             try
             {
                 player = ThisPlayer;
-                RequestHandler.Enqueue(player.QuitGameAsync);
+                RequestHandler.Enqueue(player.QuitGame);
             }
             catch
             {
@@ -144,7 +144,7 @@ namespace backend.communication.signalR
         protected PlayerRequestHandler RequestHandler => _playerRequestHandlerManager.GetOrCreateHandler(ThisPlayer);
 
         protected readonly PlayerRequestHandlerManager _playerRequestHandlerManager;
-        protected readonly PlayerManager<TPlayer, TIdentification> _playerManager;
+        protected readonly PlayerManager<TPlayer, TIdentification, TOpponent> _playerManager;
         private readonly Func<TIdentification, TPlayer> _createPlayer;
         protected readonly ConnectedPlayerProvider _connectedPlayerProvider;
     }

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace backend.services
 {
-    internal abstract class PlayerManager<TPlayer, TIdentitfication> : IPlayerProvider<TPlayer, TIdentitfication> where TPlayer : IPlayer
+    internal abstract class PlayerManager<TPlayer, TIdentitfication, TOpponent> : IPlayerProvider<TPlayer, TIdentitfication> where TPlayer : IPlayer where TOpponent : IPlayer
     {
         public event Action<TPlayer>? OnPlayerConnected;
         public event Action<TPlayer>? OnPlayerDisconnected;
@@ -25,6 +25,12 @@ namespace backend.services
         public TPlayer ConnectPlayer(TIdentitfication identification, Func<TIdentitfication, TPlayer> createPlayer)
         {
             TPlayer player = GetOrCreatePlayer(identification, createPlayer);
+            ConnectPlayer(player);
+            return player;
+        }
+        public TPlayer ConnectPlayer(TIdentitfication identification, TOpponent opponentPlayer, Func<TIdentitfication, TOpponent, TPlayer> createPlayer)
+        {
+            TPlayer player = GetOrCreatePlayer(identification, opponentPlayer, createPlayer);
             ConnectPlayer(player);
             return player;
         }
@@ -58,9 +64,10 @@ namespace backend.services
 
             return player;
         }
-
         public abstract TPlayer GetConnectedPlayerByIdentification(TIdentitfication identitfication);
-        public abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, Func<TIdentitfication, TPlayer> createPlayer);
+
+        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, Func<TIdentitfication, TPlayer> createPlayer);
+        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, TOpponent opponentPlayer, Func<TIdentitfication, TOpponent, TPlayer> createPlayer);
 
         private void PlayerDisconnected(TPlayer player)
         {

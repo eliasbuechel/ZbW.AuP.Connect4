@@ -7,7 +7,7 @@ namespace backend.game
 {
     internal class AlgorythmPlayer : Player
     {
-        public AlgorythmPlayer(IPlayer opponentPlayer, GameManager gameManager) : base(Guid.NewGuid().ToString(), "Algorythm", gameManager)
+        public AlgorythmPlayer(IPlayer opponentPlayer, GameManager gameManager) : base(Guid.NewGuid().ToString(), "Algorythm player", gameManager)
         {
             _opponentPlayer = opponentPlayer;
         }
@@ -17,14 +17,14 @@ namespace backend.game
         public override async void RequestedMatch(IPlayer player)
         {
             base.RequestedMatch(player);
-            await AcceptMatchAsync(player);
+            await AcceptMatch(player);
         }
 
         public override void GameStarted(Game connect4Game)
         {
             base.GameStarted(connect4Game);
             _startingPlayer = connect4Game.ActivePlayer;
-            ConfirmGameStartAsync();
+            ConfirmGameStart();
         }
         public override void GameStartConfirmed()
         {
@@ -47,7 +47,7 @@ namespace backend.game
             Thread thread = new Thread(() =>
             {
                 int bestMove = _gameManager.GetBestMove(this);
-                PlayMoveAsync(bestMove);
+                PlayMove(bestMove);
             });
             thread.Start();
         }

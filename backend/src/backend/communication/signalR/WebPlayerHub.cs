@@ -10,7 +10,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 namespace backend.communication.signalR
 {
     [Authorize]
-    internal class WebPlayerHub : PlayerHub<WebPlayer, PlayerIdentity>
+    internal class WebPlayerHub : PlayerHub<WebPlayer, PlayerIdentity, IPlayer>
     {
         public WebPlayerHub(
             PlayerRequestHandlerManager playerRequestHandlerManager,
@@ -90,7 +90,7 @@ namespace backend.communication.signalR
                         return;
                     }
 
-                    await player.AcceptMatchAsync(opponent);
+                    await player.AcceptMatch(opponent);
                 });
             }
             catch
@@ -113,7 +113,7 @@ namespace backend.communication.signalR
                         return;
                     }
 
-                    await player.RejectMatchAsync(opponent);
+                    await player.RejectMatch(opponent);
                 });
             }
             catch

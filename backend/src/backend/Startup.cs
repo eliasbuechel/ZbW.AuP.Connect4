@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using backend.game.entities;
-using System.Reflection.Metadata.Ecma335;
 
 namespace backend
 {
@@ -113,7 +112,10 @@ namespace backend
             services.AddSingleton<Func<string, OpponentRoboterPlayerHubClient>>(s => hubUrl =>
             {
                 GameManager gameManager = s.GetRequiredService<GameManager>();
-                return new OpponentRoboterPlayerHubClient(hubUrl, gameManager);
+                AlgorythmPlayerManager algorythmPlayerManager = s.GetRequiredService<AlgorythmPlayerManager>();
+                Func<IPlayer, AlgorythmPlayer> createAlgorythmPlayer = s.GetRequiredService<Func<IPlayer, AlgorythmPlayer>>();
+
+                return new OpponentRoboterPlayerHubClient(hubUrl, algorythmPlayerManager, createAlgorythmPlayer, gameManager);
             });
 
             services.AddSingleton<GameManager>();

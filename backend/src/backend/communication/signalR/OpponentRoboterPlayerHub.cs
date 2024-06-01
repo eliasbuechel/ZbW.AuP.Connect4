@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace backend.communication.signalR
 {
-    internal class OpponentRoboterPlayerHub : PlayerHub<OpponentRoboterPlayer, string>
+    internal class OpponentRoboterPlayerHub : PlayerHub<OpponentRoboterPlayer, string, AlgorythmPlayer>
     {
         public OpponentRoboterPlayerHub(
             PlayerRequestHandlerManager playerRequestHandlerManager,
@@ -46,7 +46,7 @@ namespace backend.communication.signalR
                 RequestHandler.Enqueue(async () =>
                 {
                     IPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(player);
-                    await player.AcceptMatchAsync(algorythmPlayer);
+                    await player.AcceptMatch(algorythmPlayer);
                 });
             }
             catch
@@ -63,7 +63,7 @@ namespace backend.communication.signalR
                 RequestHandler.Enqueue(async () =>
                 {
                     IPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(player);
-                    await player.RejectMatchAsync(algorythmPlayer);
+                    await player.RejectMatch(algorythmPlayer);
                 });
             }
             catch

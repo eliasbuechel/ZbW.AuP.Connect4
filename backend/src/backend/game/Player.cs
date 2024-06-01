@@ -38,7 +38,7 @@ namespace backend.game
             foreach (var connection in _connections)
                 await YouRequestedMatch(connection, playerId);
         }
-        public Task ConfirmGameStartAsync()
+        public Task ConfirmGameStart()
         {
             if (HasConfirmedGameStart)
             {
@@ -58,12 +58,12 @@ namespace backend.game
         {
             return _gameManager.HasMatched(this, player);
         }
-        public async Task AcceptMatchAsync(IPlayer player)
+        public async Task AcceptMatch(IPlayer player)
         {
             _gameManager.AcceptMatch(this, player);
             await Task.CompletedTask;
         }
-        public async Task RejectMatchAsync(IPlayer player)
+        public async Task RejectMatch(IPlayer player)
         {
             if (!_gameManager.RejectMatch(this, player))
                 return;
@@ -72,7 +72,7 @@ namespace backend.game
             foreach (var connection in _connections)
                 await YouRejectedMatch(connection, playerId);
         }
-        public Task PlayMoveAsync(int column)
+        public Task PlayMove(int column)
         {
             _gameManager.PlayMove(this, column);
             return Task.CompletedTask;
@@ -81,7 +81,7 @@ namespace backend.game
         {
             return _gameManager.GetCurrentGameState();
         }
-        public Task QuitGameAsync()
+        public Task QuitGame()
         {
             _gameManager.QuitGame(this);
             return Task.CompletedTask;
