@@ -1,0 +1,20 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push Docker image
+        run: |
+          curl -X POST https://build.r4d4.work/build \
+               -H "Content-Type: application/json" \
+               -d '{"docker_compose_file": "docker-compose.yml", "docker_compose_override": "docker-compose.production.yml", "git_repo_url": "https://github.com/eliasbuechel/ZbW.AuP.Connect4", "git_branch": "dev"}'
