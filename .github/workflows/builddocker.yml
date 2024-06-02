@@ -15,6 +15,6 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          curl -X POST https://build.r4d4.work \
+          curl -X POST https://build.r4d4.work/build \
                -H "Content-Type: application/json" \
                -d '{"docker_compose_file": "docker-compose.yml", "docker_compose_override": "docker-compose.production.yml", "git_repo_url": "https://github.com/eliasbuechel/ZbW.AuP.Connect4", "git_branch": "dev"}'
