@@ -1,27 +1,10 @@
 <template>
-  <MainBoard
-    v-if="!isInGame && identity != null && bestlist != null"
-    :identity="identity"
-    :bestlist="bestlist"
-    :onlinePlayers="onlinePlayers"
-    :gamePlan="gamePlan"
-    @show-replay="showReplay"
-  />
-  <Connect4Game
-    v-else-if="isInGame && identity != null && game != null"
-    :game="game"
-    :identity="identity"
-    @place-stone="placeStone"
-    @quit-game="quitGame"
-    @confirm-game-start="confirmGameStart"
-  />
-  <GameResultView
-    v-if="identity != null && gameResult != null"
-    :gameResult="gameResult"
-    :identity="identity"
-    @leave-game-result-view="leaveGameResultView"
-    class="grid-item-game-result"
-  />
+  <MainBoard v-if="!isInGame && identity != null && bestlist != null" :identity="identity" :bestlist="bestlist"
+    :onlinePlayers="onlinePlayers" :gamePlan="gamePlan" @show-replay="showReplay" />
+  <Connect4Game v-else-if="isInGame && identity != null && game != null" :game="game" :identity="identity"
+    @place-stone="placeStone" @quit-game="quitGame" @confirm-game-start="confirmGameStart" />
+  <GameResultView v-if="identity != null && gameResult != null" :gameResult="gameResult" :identity="identity"
+    @leave-game-result-view="leaveGameResultView" class="grid-item-game-result" />
 </template>
 
 <script lang="ts">
@@ -224,9 +207,11 @@ export default defineComponent({
       this.game.match.player1.currentHint = undefined;
       this.game.match.player2.currentHint = undefined;
 
-      this.game!.connect4Board[field.column][field.row] = playerId;
+      this.game.connect4Board[field.column][field.row] = playerId;
       this.switchActivePlayer();
+      this.game.moveStartTime = this.millisecondsToNow()
     },
+
     switchActivePlayer(): void {
       this.game!.activePlayerId =
         this.game!.activePlayerId === this.game!.match.player1.id
@@ -280,6 +265,7 @@ export default defineComponent({
     onGameStartConfirmed(): void {
       if (this.game == null) return;
       this.game.startConfirmed = true;
+      this.game.moveStartTime = this.millisecondsToNow()
     },
     onYouConfirmedGameStart(): void {
       if (this.game == null) return;
@@ -308,6 +294,9 @@ export default defineComponent({
 
       this.bestlist = new Array<GameResult>(gameResult, ...this.bestlist);
     },
+    millisecondsToNow(): number {
+      return Date.now() + 7200000
+    },
     onSignalRConnected(): void {
       this.subscribe();
       signalRHub.invoke("GetUserData");
@@ -319,6 +308,7 @@ export default defineComponent({
     onSignalRDisconnected(): void {
       this.unsubscribe();
     },
+
   },
   computed: {
     isInGame(): boolean {

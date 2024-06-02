@@ -1,8 +1,6 @@
 ﻿using backend.communication.DOTs;
-using backend.Data;
 using backend.game.entities;
 using backend.services;
-using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 
 namespace backend.game
@@ -22,6 +20,8 @@ namespace backend.game
         public int HintsLeft => _hintsLeft;
         public int? CurrentHint => _currentHint;
         public IEnumerable<string> Connections => _connections;
+
+        public TimeSpan TotalPlayTime => _gameManager.GetTotalPlayTime(this);
 
         public event Action<IPlayer, int>? OnMovePlayed;
         public event Action<IPlayer, IPlayer>? OnMatch;

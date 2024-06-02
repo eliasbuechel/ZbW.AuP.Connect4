@@ -13,6 +13,7 @@ namespace backend.game
         public int HintsLeft { get; }
         public int? CurrentHint { get; }
         public IEnumerable<string> Connections { get; }
+        TimeSpan TotalPlayTime { get; }
 
         Task ConfirmGameStartAsync();
         Task RequestMatch(IPlayer player);

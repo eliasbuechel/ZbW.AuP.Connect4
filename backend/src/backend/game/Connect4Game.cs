@@ -69,6 +69,71 @@ namespace backend.game
                 _match.Player2.GameStartConfirmed();
             }
         }
+        public TimeSpan GetTotalPlayTime(IPlayer player)
+        {
+            if(player != _match.Player1 && player != _match.Player2)
+            {
+                Debug.Assert(false);
+                return new TimeSpan(0);
+            }
+
+            TimeSpan duration = new TimeSpan(0);
+            for (int i = player == _startingPlayer ? 0 : 1; i < _playedMoves.Count; i += 2)
+            {
+                duration += _playedMoves.ElementAt(i).Duration; 
+            }
+            return duration;
+        }
+        public int GetBestMove(IPlayer player)
+        {
+            const int LOOK_AHEAD_MOVES = 8;
+            const int INVALID_BEST_MOVE = -1;
+
+            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
+
+            int value = int.MinValue;
+            int bestMove = INVALID_BEST_MOVE;
+            int alpha = int.MinValue;
+            int beta = int.MaxValue;
+
+            foreach (int col in _columnOrder)
+            {
+                int row;
+
+                if (!GetNextFreeRow(col, out row))
+                    continue;
+
+                Debug.Assert(row >= 0);
+
+                _connect4Board[col][row] = player;
+
+                int miniMaxValue;
+
+                if (NoMoveLeft())
+                    miniMaxValue = 0;
+                else if (HasWon(player, col, row))
+                    miniMaxValue = LOOK_AHEAD_MOVES * 1000;
+                else if (LOOK_AHEAD_MOVES <= 1)
+                    miniMaxValue = CalculateBoardValue(player);
+                else
+                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
+
+                _connect4Board[col][row] = null;
+
+                if (miniMaxValue > value)
+                {
+                    bestMove = col;
+                    value = miniMaxValue;
+                }
+
+                alpha = Math.Max(alpha, value);
+                if (alpha >= beta)
+                    break;
+            }
+
+            Debug.Assert(bestMove != INVALID_BEST_MOVE);
+            return bestMove;
+        }
         public void Dispose()
         {
             if (_disposed)
@@ -284,56 +349,6 @@ namespace backend.game
             OnGameEnded?.Invoke(gameResult);
         }
 
-        public int GetBestMove(IPlayer player)
-        {
-            const int LOOK_AHEAD_MOVES = 8;
-            const int INVALID_BEST_MOVE = -1;
-
-            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
-
-            int value = int.MinValue;
-            int bestMove = INVALID_BEST_MOVE;
-            int alpha = int.MinValue;
-            int beta = int.MaxValue;
-
-            foreach (int col in _columnOrder)
-            {
-                int row;
-
-                if (!GetNextFreeRow(col, out row))
-                    continue;
-
-                Debug.Assert(row >= 0);
-
-                _connect4Board[col][row] = player;
-
-                int miniMaxValue;
-
-                if (NoMoveLeft())
-                    miniMaxValue = 0;
-                else if (HasWon(player, col, row))
-                    miniMaxValue = LOOK_AHEAD_MOVES * 1000;
-                else if (LOOK_AHEAD_MOVES <= 1)
-                    miniMaxValue = CalculateBoardValue(player);
-                else
-                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
-
-                _connect4Board[col][row] = null;
-
-                if (miniMaxValue > value)
-                {
-                    bestMove = col;
-                    value = miniMaxValue;
-                }
-
-                alpha = Math.Max(alpha, value);
-                if (alpha >= beta)
-                    break;
-            }
-
-            Debug.Assert(bestMove != INVALID_BEST_MOVE);
-            return bestMove;
-        }
 
         private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing, int alpha, int beta)
         {
@@ -552,6 +567,7 @@ namespace backend.game
 
             return false;
         }
+
 
         private DateTime _moveStartingTime = DateTime.Now;
         private bool _disposed = false;

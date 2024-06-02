@@ -9,10 +9,12 @@ namespace backend.communication.DOTs
             HasConfirmedGameStart = player.HasConfirmedGameStart;
             HintsLeft = player.HintsLeft;
             CurrentHint = player.CurrentHint;
+            TotalPlayTime = Convert.ToInt64(player.TotalPlayTime.TotalMilliseconds);
         }
 
         public bool HasConfirmedGameStart { get; }
         public int HintsLeft { get; }
         public int? CurrentHint { get; }
+        public long TotalPlayTime { get; }
     }
 }

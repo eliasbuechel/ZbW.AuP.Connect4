@@ -241,6 +241,14 @@ namespace backend.services
             return _activeGame.GetBestMove(player);
         }
 
+        internal TimeSpan GetTotalPlayTime(IPlayer player)
+        {
+            if(_activeGame == null)
+                return new TimeSpan(0);
+            
+            return _activeGame.GetTotalPlayTime(player);
+        }
+
         private Connect4Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
         private readonly Func<Match, Connect4Game> _getConnect4Game;
