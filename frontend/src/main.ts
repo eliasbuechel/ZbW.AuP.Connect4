@@ -23,8 +23,8 @@ router.beforeEach(async (to, from, next) => {
     } else {
       next("/login");
     }
-  } else if (!store.state.isAuthenticated && !to.meta.requiresAuth) {
-    next("/home");
+  } else {
+    next();
   }
 });
 
