@@ -25,6 +25,7 @@ namespace backend.game
         public IPlayer ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
         public bool StartConfirmed => _match.Player1.HasConfirmedGameStart && _match.Player2.HasConfirmedGameStart;
+        public DateTime MoveStartTime => _moveStartingTime;
 
         public void PlayMove(IPlayer player, int column)
         {
@@ -42,7 +43,9 @@ namespace backend.game
             TimeSpan duration = DateTime.Now - _moveStartingTime;
             PlayedMove playedMove = new PlayedMove(column, duration);
             _playedMoves.Add(playedMove);
-            _moveStartingTime = DateTime.Now; _activePlayerPlacedStone = true;
+            _moveStartingTime = DateTime.Now; 
+
+            _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(IPlayer player)
         {

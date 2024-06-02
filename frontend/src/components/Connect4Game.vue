@@ -5,7 +5,7 @@
     </div>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
-      <!-- <label>{{ moveTimePlayerLeft }}</label> -->
+      <label v-if="inGamePlayerLeft?.id === game?.activePlayerId">{{ moveDuration }}</label>
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
       <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
@@ -13,7 +13,7 @@
     </div>
     <div class="grid-item-player2 player-info player-info-right">
       <label> {{ namePlayerRight }}</label>
-      <!-- <label>{{ moveTimePlayerRight }}</label> -->
+      <label v-if="inGamePlayerRight?.id === game?.activePlayerId">{{ moveDuration }}</label>
       <div class="playing-state">{{ gameStatePlayerRight }}</div>
       <button v-if="game != null && inGamePlayerRight!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
@@ -70,6 +70,10 @@ export default defineComponent({
     },
   },
   computed: {
+    moveDuration(): number {
+      if (this.game == null) return 0;
+      return (Date.now() - this.game!.moveStartTime.getMilliseconds()) / 1000
+    },
     inGamePlayerLeft(): InGamePlayer | undefined {
       if (this.game != null)
         return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;

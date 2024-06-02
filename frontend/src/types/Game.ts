@@ -6,4 +6,5 @@ export interface Game extends Entity {
   activePlayerId: string;
   connect4Board: string[][];
   startConfirmed: boolean;
+  moveStartTime: Date;
 }
