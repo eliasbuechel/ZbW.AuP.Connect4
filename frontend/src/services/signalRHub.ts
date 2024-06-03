@@ -6,8 +6,7 @@ type Callback = (...arg: any[]) => void;
 class SignalRHub {
   constructor() {
     this._client = new HubConnectionBuilder()
-      // .withUrl("https://api.r4d4.work/playerHub", { withCredentials: true })
-      .withUrl("http://localhost:8082/playerHub", { withCredentials: true })
+      .withUrl("https://api.r4d4.work/playerHub", { withCredentials: true })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Error)
       .build();

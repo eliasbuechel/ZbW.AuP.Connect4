@@ -38,8 +38,7 @@ declare module "@vue/runtime-core" {
   }
 }
 app.config.globalProperties.$axios = axios;
-// axios.defaults.baseURL = "https://api.r4d4.work";
-axios.defaults.baseURL = "http://localhost:8082";
+axios.defaults.baseURL = "https://api.r4d4.work";
 
 app.use(router);
 app.use(VueCookies);
