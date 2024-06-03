@@ -265,9 +265,21 @@ export default defineComponent({
           return;
         }
       });
+      this.connectedPlayers.opponentRoboterPlayers.forEach((p) => {
+        if (p.id === playerId) {
+          p.requestedMatch = true;
+          return;
+        }
+      });
     },
     onYouRequestedMatch(playerId: string): void {
       this.connectedPlayers.webPlayers.forEach((p) => {
+        if (p.id === playerId) {
+          p.youRequestedMatch = true;
+          return;
+        }
+      });
+      this.connectedPlayers.opponentRoboterPlayers.forEach((p) => {
         if (p.id === playerId) {
           p.youRequestedMatch = true;
           return;
@@ -281,9 +293,21 @@ export default defineComponent({
           return;
         }
       });
+      this.connectedPlayers.opponentRoboterPlayers.forEach((p) => {
+        if (p.id === playerId) {
+          p.youRequestedMatch = false;
+          return;
+        }
+      });
     },
     onYouRejectedMatch(playerId: string): void {
       this.connectedPlayers.webPlayers.forEach((p) => {
+        if (p.id === playerId) {
+          p.requestedMatch = false;
+          return;
+        }
+      });
+      this.connectedPlayers.opponentRoboterPlayers.forEach((p) => {
         if (p.id === playerId) {
           p.requestedMatch = false;
           return;

@@ -83,9 +83,10 @@ namespace backend.communication.signalR
                 {
                     IPlayer? opponent = _connectedPlayerProvider.GetPlayer(playerId);
                     
-                    if (opponent is AlgorythmPlayer algorythmPlayer && !(algorythmPlayer.OpponentPlayer is WebPlayer))
+                    if (opponent is OpponentRoboterPlayer || opponent is OpponentRoboterPlayerHubClient)
                     {
-                        await algorythmPlayer.AcceptMatch(algorythmPlayer.OpponentPlayer);
+                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(opponent);
+                        await algorythmPlayer.AcceptMatch(opponent);
                         return;
                     }
                     
