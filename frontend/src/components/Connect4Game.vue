@@ -5,10 +5,14 @@
     </div>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
-      <label v-if="game != null && game.startConfirmed && inGamePlayerLeft?.id === game?.activePlayerId">{{
+      <label class="move-label"
+        v-if="game != null && game.startConfirmed && inGamePlayerLeft?.id === game?.activePlayerId">Move: {{
         currentMoveDuration.toFixed(2) }}</label>
-      <label v-if="game != null && game.startConfirmed">{{
-        totalTimePlayerLeft.toFixed(2) }}</label>
+      <label class="move-label"
+        v-if="game != null && game.startConfirmed && inGamePlayerLeft?.id === game.activePlayerId && activePlayer != null">Total
+        Time: {{
+        activePlayer.totalPlayTime.toFixed(2) }}</label>
+
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
       <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
@@ -16,10 +20,6 @@
     </div>
     <div class="grid-item-player2 player-info player-info-right">
       <label> {{ namePlayerRight }}</label>
-      <label v-if="game != null && game.startConfirmed && inGamePlayerRight?.id === game?.activePlayerId">{{
-        currentMoveDuration.toFixed(2) }}</label>
-      <label v-if="game != null && game.startConfirmed">{{
-        totalTimePlayerRight.toFixed(2) }}</label>
       <div class="playing-state">{{ gameStatePlayerRight }}</div>
       <button v-if="game != null && inGamePlayerRight!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
@@ -177,27 +177,23 @@ export default defineComponent({
       }
       return "";
     },
-    totalTimePlayerLeft(): number {
-      if (this.game == null) return 0;
-      if (this.inGamePlayerLeft == null) return 0;
+    // totalTimePlayerLeft(): number {
+    //   if (this.game == null) return 0;
+    //   console.log("totalTimePlayerLeft: game is null")
+    //   if (this.inGamePlayerLeft == null) return 0;
+    //   console.log("totalTimePlayerLeft: inGamePlayerLeft is null")
 
-      let playTime = this.inGamePlayerLeft.totalPlayTime / 1000;
-      if (this.inGamePlayerLeft.id == this.game.activePlayerId) playTime += this.currentMoveDuration;
-      return playTime;
-    },
-    totalTimePlayerRight(): number {
-      if (this.game == null) return 0;
-      if (this.inGamePlayerRight == null) return 0;
+    //   let playTime = this.inGamePlayerLeft.totalPlayTime / 1000;
+    //   if (this.inGamePlayerLeft.id == this.game.activePlayerId) playTime += this.currentMoveDuration;
+    //   return playTime;
+    // },
 
-      let playTime = this.inGamePlayerRight.totalPlayTime / 1000;
-      if (this.inGamePlayerRight.id == this.game.activePlayerId) playTime += this.currentMoveDuration;
-      return playTime;
-    },
     activePlayer(): InGamePlayer | undefined {
       if (this.game == null) return undefined;
+      console.log("activePlayer: game is null")
       if (this.game.activePlayerId === this.game.match.player1.id) return this.game.match.player1;
       return this.game.match.player2;
-    }
+    },
   },
 });
 </script>
@@ -234,5 +230,9 @@ export default defineComponent({
   width: fit-content;
   justify-self: center;
   align-self: center;
+}
+
+.move-label {
+  background-color: unset;
 }
 </style>
