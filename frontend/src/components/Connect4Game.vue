@@ -64,7 +64,7 @@ export default defineComponent({
     Connect4Board,
   },
   mounted() {
-    this.calculateMoveDuration()
+    this.calculateCurrentMoveDuration()
   },
   beforeUnmount() {
     clearTimeout(this.timerId);
@@ -90,10 +90,10 @@ export default defineComponent({
     milisecondsToNow(): number {
       return Date.now() + 7200000
     },
-    calculateMoveDuration(): void {
+    calculateCurrentMoveDuration(): void {
       if (this.game == null) return;
       this.currentMoveDuration = (this.milisecondsToNow() - this.game.moveStartTime) / 1000
-      this.timerId = setTimeout(this.calculateMoveDuration, 100)
+      this.timerId = setTimeout(this.calculateCurrentMoveDuration, 100)
     },
   },
   computed: {
