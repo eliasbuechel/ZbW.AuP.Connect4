@@ -168,7 +168,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await PlayerRequestedMatch(connection, playerId);
         }
-        public async void RejectedMatch(IPlayer player)
+        public virtual async void RejectedMatch(IPlayer player)
         {
             string playerId = player.Id;
             foreach (string connection in Connections)
@@ -194,7 +194,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await GameStarted(connection, connect4GameDTO);
         }
-        public async void GameEnded(GameResult gameResult)
+        public virtual async void GameEnded(GameResult gameResult)
         {
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
             foreach (string connection in Connections)
@@ -220,7 +220,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 GameStartConfirmed(connection);
         }
-        public async void ConfirmedGameStart(IPlayer player)
+        public virtual async void ConfirmedGameStart(IPlayer player)
         {
             foreach (var connection in Connections)
                 await ConfirmedGameStart(connection, player.Id);
