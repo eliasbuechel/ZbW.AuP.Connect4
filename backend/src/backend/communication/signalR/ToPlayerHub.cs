@@ -102,6 +102,6 @@ namespace backend.communication.signalR
             await _hubContext.Clients.Client(connection).SendAsync(nameof(SendHint), hint);
         }
 
-        private readonly IHubContext<THub> _hubContext;
+        protected readonly IHubContext<THub> _hubContext;
     }
 }

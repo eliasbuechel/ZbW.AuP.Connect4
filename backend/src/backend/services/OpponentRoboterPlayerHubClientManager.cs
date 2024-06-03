@@ -9,6 +9,11 @@ namespace backend.services
         {
             return _connectedPlayers.First(x => x.HubUrl == hubUrl);
         }
+        protected override void PlayerConnected(OpponentRoboterPlayerHubClient player)
+        {
+            base.PlayerConnected(player);
+            player.OnDisconnected += DisconnectRoboterPlayerHubClient;
+        }
 
         protected override OpponentRoboterPlayerHubClient GetOrCreatePlayer(string hubUrl, Func<string, OpponentRoboterPlayerHubClient> createPlayer)
         {
@@ -31,6 +36,12 @@ namespace backend.services
             }
 
             return player;
+        }
+
+        private void DisconnectRoboterPlayerHubClient(OpponentRoboterPlayerHubClient player)
+        {
+            DisconnectPlayer(player);
+            player.OnDisconnected -= DisconnectRoboterPlayerHubClient;
         }
     }
 }

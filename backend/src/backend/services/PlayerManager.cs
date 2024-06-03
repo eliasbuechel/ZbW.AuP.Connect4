@@ -37,7 +37,15 @@ namespace backend.services
         public TPlayer DisconnectPlayer(TIdentitfication identitfication)
         {
             TPlayer player = GetConnectedPlayerByIdentification(identitfication);
+            return DisconnectPlayer(player);
+        }
+        public abstract TPlayer GetConnectedPlayerByIdentification(TIdentitfication identitfication);
 
+        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, Func<TIdentitfication, TPlayer> createPlayer);
+        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, TOpponent opponentPlayer, Func<TIdentitfication, TOpponent, TPlayer> createPlayer);
+
+        protected TPlayer DisconnectPlayer(TPlayer player)
+        {
             _playerConnectionCounterMap[player.Id]--;
 
             if (_playerConnectionCounterMap[player.Id] > 0)
@@ -64,11 +72,6 @@ namespace backend.services
 
             return player;
         }
-        public abstract TPlayer GetConnectedPlayerByIdentification(TIdentitfication identitfication);
-
-        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, Func<TIdentitfication, TPlayer> createPlayer);
-        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, TOpponent opponentPlayer, Func<TIdentitfication, TOpponent, TPlayer> createPlayer);
-
         private void PlayerDisconnected(TPlayer player)
         {
             foreach (var onlinePlayer in _connectedPlayers)
@@ -76,7 +79,7 @@ namespace backend.services
 
             OnPlayerDisconnected?.Invoke(player);
         }
-        private void PlayerConnected(TPlayer player)
+        protected virtual void PlayerConnected(TPlayer player)
         {
             foreach (var connectedPlayer in _connectedPlayers)
                 if (connectedPlayer.Id != player.Id)

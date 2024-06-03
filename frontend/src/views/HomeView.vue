@@ -253,7 +253,9 @@ export default defineComponent({
       );
     },
     onOpponentRoboterPlayerDisconnected(playerId: string): void {
-      this.connectedPlayers.webPlayers = this.connectedPlayers.webPlayers.filter((o) => o.id !== playerId);
+      this.connectedPlayers.opponentRoboterPlayers = this.connectedPlayers.opponentRoboterPlayers.filter(
+        (o) => o.id !== playerId
+      );
       this.gamePlan = this.gamePlan.filter((m) => m.player1.id !== playerId && m.player2.id !== playerId);
     },
     onPlayerRequestedMatch(playerId: string): void {

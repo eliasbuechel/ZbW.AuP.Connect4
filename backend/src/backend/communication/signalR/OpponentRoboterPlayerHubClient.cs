@@ -1,5 +1,7 @@
-﻿using backend.game;
+﻿using backend.communication.DOTs;
+using backend.game;
 using backend.services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace backend.communication.signalR
@@ -32,6 +34,9 @@ namespace backend.communication.signalR
 
             StartAsync().Wait();
         }
+
+        public event Action<OpponentRoboterPlayerHubClient>? OnDisconnected;
+        public string HubUrl => _hubUrl;
 
         // reciving
         private async void ReqeustMatchHandler()
@@ -67,11 +72,30 @@ namespace backend.communication.signalR
         {
             await _connection.SendAsync(nameof(RequestMatch));
         }
-
-        public string HubUrl => _hubUrl;
+        protected override async Task Matched(string connection, MatchDTO match)
+        {
+            await _connection.SendAsync(nameof(AcceptMatch));
+        }
+        protected override async Task PlayerRejectedMatch(string connection, string playerId)
+        {
+            await _connection.SendAsync(nameof(RejectMatch));
+        }
+        protected override async Task ConfirmedGameStart(string connection, string playerId)
+        {
+            await _connection.SendAsync(nameof(ConfirmGameStart));
+        }
+        protected override async Task MovePlayed(string connection, string playerId, FieldDTO field)
+        {
+            await _connection.SendAsync(nameof(PlayMove), field.Column);
+        }
+        protected override async Task GameEnded(string connection, GameResultDTO gameResult)
+        {
+            await _connection.SendAsync(nameof(QuitGame));
+        }
 
         private Task Closed(Exception? exception)
         {
+            OnDisconnected?.Invoke(this);
             Console.WriteLine("SignalR Client disconnected.");
             return Task.CompletedTask;
         }

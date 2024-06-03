@@ -5,12 +5,12 @@ namespace backend.services
 {
     internal class ConnectedPlayerProvider : IDisposable
     {
-        public ConnectedPlayerProvider(WebPlayerManager webPlayerManager, OpponentRoboterPlayerHubManager opponentRoboterPlayerHubManager, OpponentRoboterPlayerHubClientManager opponentRoboterPlayerHubClientManager)
+        public ConnectedPlayerProvider(WebPlayerManager webPlayerManager, OpponentRoboterPlayerHubManager opponentRoboterPlayerHubManager, OpponentRoboterPlayerHubClientManager opponentRoboterPlayerHubClientManager, AlgorythmPlayerManager algorythmPlayerManager)
         {
             _webPlayerManager = webPlayerManager;
             _opponentRoboterPlayerHubManager = opponentRoboterPlayerHubManager;
             _opponentRoboterPlayerHubClientManager = opponentRoboterPlayerHubClientManager;
-
+            _algorythmPlayerManager = algorythmPlayerManager;
             _webPlayerManager.OnPlayerDisconnected += PlayerDisconnected;
             _opponentRoboterPlayerHubManager.OnPlayerDisconnected += PlayerDisconnected;
             _opponentRoboterPlayerHubClientManager.OnPlayerDisconnected += PlayerDisconnected;
@@ -20,6 +20,7 @@ namespace backend.services
 
         public IEnumerable<IPlayer> WebPlayers => _webPlayerManager.ConnectedPlayers;
         public IEnumerable<IPlayer> OpponentRoboterePlayers => _opponentRoboterPlayerHubManager.ConnectedPlayers.Concat<IPlayer>(_opponentRoboterPlayerHubClientManager.ConnectedPlayers);
+        public IEnumerable<AlgorythmPlayer> AlgorythmPlayers => _algorythmPlayerManager.ConnectedPlayers;
         public void Dispose()
         {
             if (_disposed)
@@ -62,5 +63,6 @@ namespace backend.services
         private readonly WebPlayerManager _webPlayerManager;
         private readonly OpponentRoboterPlayerHubManager _opponentRoboterPlayerHubManager;
         private readonly OpponentRoboterPlayerHubClientManager _opponentRoboterPlayerHubClientManager;
+        private readonly AlgorythmPlayerManager _algorythmPlayerManager;
     }
 }
