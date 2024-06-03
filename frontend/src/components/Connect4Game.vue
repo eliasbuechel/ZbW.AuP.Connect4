@@ -6,9 +6,9 @@
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
       <label v-if="game != null && game.startConfirmed && inGamePlayerLeft?.id === game?.activePlayerId">{{
-        currentMoveDuration }}</label>
+        currentMoveDuration.toFixed(2) }}</label>
       <label v-if="game != null && game.startConfirmed">{{
-        totalTimePlayerLeft }}</label>
+        totalTimePlayerLeft.toFixed(2) }}</label>
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
       <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
@@ -17,9 +17,9 @@
     <div class="grid-item-player2 player-info player-info-right">
       <label> {{ namePlayerRight }}</label>
       <label v-if="game != null && game.startConfirmed && inGamePlayerRight?.id === game?.activePlayerId">{{
-        currentMoveDuration }}</label>
+        currentMoveDuration.toFixed(2) }}</label>
       <label v-if="game != null && game.startConfirmed">{{
-        totalTimePlayerRight }}</label>
+        totalTimePlayerRight.toFixed(2) }}</label>
       <div class="playing-state">{{ gameStatePlayerRight }}</div>
       <button v-if="game != null && inGamePlayerRight!.id === identity.id" class="button-light" @click="quitGame">
         Quit game
