@@ -238,7 +238,12 @@ namespace backend.services
 
         public void ConfirmedGameStart(IPlayer player)
         {
-            Debug.Assert(_activeGame != null);
+            if (_activeGame == null)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
             _activeGame.ConnfirmedGameStart(player);
         }
         public int GetBestMove(IPlayer player)

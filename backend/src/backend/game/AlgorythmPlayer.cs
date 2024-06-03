@@ -1,5 +1,4 @@
-﻿using backend.communication.DOTs;
-using backend.communication.signalR;
+﻿using backend.communication.signalR;
 using backend.game.entities;
 using backend.services;
 
@@ -16,8 +15,11 @@ namespace backend.game
 
         public override async void RequestedMatch(IPlayer player)
         {
-            base.RequestedMatch(player);
-            await AcceptMatch(player);
+            if (OpponentPlayer is WebPlayer)
+            {
+                base.RequestedMatch(player);
+                await AcceptMatch(player);
+            }
         }
 
         public override void GameStarted(Game connect4Game)

@@ -82,6 +82,13 @@ namespace backend.communication.signalR
                 RequestHandler.Enqueue(async () =>
                 {
                     IPlayer? opponent = _connectedPlayerProvider.GetPlayer(playerId);
+                    
+                    if (opponent is AlgorythmPlayer algorythmPlayer && !(algorythmPlayer.OpponentPlayer is WebPlayer))
+                    {
+                        await algorythmPlayer.AcceptMatch(algorythmPlayer.OpponentPlayer);
+                        return;
+                    }
+                    
                     if (opponent == null)
                     {
                         Debug.Assert(false);
