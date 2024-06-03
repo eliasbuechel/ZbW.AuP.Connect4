@@ -1,5 +1,6 @@
 ﻿using backend.communication.DOTs;
 using backend.game;
+using backend.game.entities;
 using backend.services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -68,27 +69,27 @@ namespace backend.communication.signalR
         }
 
         // sending
-        protected override async Task PlayerRequestedMatch(string connection, string playerId)
+        public override async void RequestedMatch(IPlayer player)
         {
             await _connection.SendAsync(nameof(RequestMatch));
         }
-        protected override async Task Matched(string connection, MatchDTO match)
+        public override async void Matched(Match match)
         {
             await _connection.SendAsync(nameof(AcceptMatch));
         }
-        protected override async Task PlayerRejectedMatch(string connection, string playerId)
+        public override async void RejectedMatch(IPlayer player)
         {
             await _connection.SendAsync(nameof(RejectMatch));
         }
-        protected override async Task ConfirmedGameStart(string connection, string playerId)
+        public override async void ConfirmedGameStart(IPlayer player)
         {
             await _connection.SendAsync(nameof(ConfirmGameStart));
         }
-        protected override async Task MovePlayed(string connection, string playerId, FieldDTO field)
+        public override async void MovePlayed(IPlayer player, Field field)
         {
             await _connection.SendAsync(nameof(PlayMove), field.Column);
         }
-        protected override async Task GameEnded(string connection, GameResultDTO gameResult)
+        public override async void GameEnded(GameResult gameResult)
         {
             await _connection.SendAsync(nameof(QuitGame));
         }

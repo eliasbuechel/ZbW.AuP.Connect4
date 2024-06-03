@@ -174,7 +174,7 @@ namespace backend.game
             foreach (string connection in Connections)
                 await PlayerRejectedMatch(connection, playerId);
         }
-        public async void Matched(Match match)
+        public virtual async void Matched(Match match)
         {
             MatchDTO matchDTO = new MatchDTO(match);
             foreach (string connection in Connections)
