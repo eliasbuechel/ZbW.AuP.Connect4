@@ -54,15 +54,13 @@ namespace backend.communication.signalR
                     }
                     else if (opponent is OpponentRoboterPlayer opponentRoboterPlayer)
                     {
-                        _algorythmPlayerManager.ConnectPlayer(opponentRoboterPlayer, _createAlgorythmPlayer);
-                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
-                        await opponentRoboterPlayer.RequestMatch(algorythmPlayer);
+                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.ConnectPlayer(opponentRoboterPlayer, _createAlgorythmPlayer);
+                        await algorythmPlayer.RequestMatch(opponentRoboterPlayer);
                     }
                     else if (opponent is OpponentRoboterPlayerHubClient opponentRoboterPlayerHubClient)
                     {
-                        _algorythmPlayerManager.ConnectPlayer(opponentRoboterPlayerHubClient, _createAlgorythmPlayer);
-                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.GetConnectedPlayerByIdentification(opponentRoboterPlayerHubClient);
-                        await opponentRoboterPlayerHubClient.RequestMatch(algorythmPlayer);
+                        AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.ConnectPlayer(opponentRoboterPlayerHubClient, _createAlgorythmPlayer);
+                        await algorythmPlayer.RequestMatch(opponentRoboterPlayerHubClient);
                     }
                     else
                     {

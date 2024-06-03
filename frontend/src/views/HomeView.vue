@@ -90,6 +90,8 @@ export default defineComponent({
       if (this.isSubscribed) return;
       signalRHub.on("PlayerConnected", this.onPlayerConnected);
       signalRHub.on("PlayerDisconnected", this.onPlayerDisconnected);
+      signalRHub.on("OpponentRoboterPlayerConnected", this.onOpponentRoboterPlayerConnected);
+      signalRHub.on("OpponentRoboterPlayerDisconnected", this.onOpponentRoboterPlayerDisconnected);
       signalRHub.on("PlayerRequestedMatch", this.onPlayerRequestedMatch);
       signalRHub.on("PlayerRejectedMatch", this.onPlayerRejectedMatch);
       signalRHub.on("Matched", this.onMatched);
@@ -112,6 +114,8 @@ export default defineComponent({
       if (!this.isSubscribed) return;
       signalRHub.off("PlayerConnected", this.onPlayerConnected);
       signalRHub.off("PlayerDisconnected", this.onPlayerDisconnected);
+      signalRHub.on("OpponentRoboterPlayerConnected", this.onOpponentRoboterPlayerConnected);
+      signalRHub.on("OpponentRoboterPlayerDisconnected", this.onOpponentRoboterPlayerDisconnected);
       signalRHub.off("PlayerRequestedMatch", this.onPlayerRequestedMatch);
       signalRHub.off("PlayerRejectedMatch", this.onPlayerRejectedMatch);
       signalRHub.off("Matched", this.onMatched);
@@ -216,10 +220,6 @@ export default defineComponent({
         this.game = undefined;
       }
     },
-    onPlayerDisconnected(playerId: string): void {
-      this.connectedPlayers.webPlayers = this.connectedPlayers.webPlayers.filter((o) => o.id !== playerId);
-      this.gamePlan = this.gamePlan.filter((m) => m.player1.id !== playerId && m.player2.id !== playerId);
-    },
     onMovePlayed(playerId: string, field: Field): void {
       if (this.game == null) return;
       if (this.identity == null) return;
@@ -241,6 +241,20 @@ export default defineComponent({
     },
     onPlayerConnected(onlinePlayer: OnlinePlayer): void {
       this.connectedPlayers.webPlayers = new Array<OnlinePlayer>(...this.connectedPlayers.webPlayers, onlinePlayer);
+    },
+    onPlayerDisconnected(playerId: string): void {
+      this.connectedPlayers.webPlayers = this.connectedPlayers.webPlayers.filter((o) => o.id !== playerId);
+      this.gamePlan = this.gamePlan.filter((m) => m.player1.id !== playerId && m.player2.id !== playerId);
+    },
+    onOpponentRoboterPlayerConnected(onlinePlayer: OnlinePlayer): void {
+      this.connectedPlayers.opponentRoboterPlayers = new Array<OnlinePlayer>(
+        ...this.connectedPlayers.webPlayers,
+        onlinePlayer
+      );
+    },
+    onOpponentRoboterPlayerDisconnected(playerId: string): void {
+      this.connectedPlayers.webPlayers = this.connectedPlayers.webPlayers.filter((o) => o.id !== playerId);
+      this.gamePlan = this.gamePlan.filter((m) => m.player1.id !== playerId && m.player2.id !== playerId);
     },
     onPlayerRequestedMatch(playerId: string): void {
       this.connectedPlayers.webPlayers.forEach((p) => {

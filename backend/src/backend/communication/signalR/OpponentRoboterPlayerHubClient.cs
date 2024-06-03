@@ -33,6 +33,7 @@ namespace backend.communication.signalR
             StartAsync().Wait();
         }
 
+        // reciving
         private async void ReqeustMatchHandler()
         {
             AlgorythmPlayer algorythmPlayer = _algorythmPlayerManager.ConnectPlayer(this, _createAlgorythmPlayer);
@@ -59,6 +60,12 @@ namespace backend.communication.signalR
         private async void QuitGameHandler()
         {
             await QuitGame();
+        }
+
+        // sending
+        protected override async Task PlayerRequestedMatch(string connection, string playerId)
+        {
+            await _connection.SendAsync(nameof(RequestMatch));
         }
 
         public string HubUrl => _hubUrl;

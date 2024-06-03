@@ -7,13 +7,15 @@ using System.Diagnostics;
 
 namespace backend.services
 {
-    internal class GameManager
+    internal class GameManager : IDisposable
     {
         public GameManager(ConnectedPlayerProvider connectedPlayerProvider, Func<Match, Game> getConnect4Game, GameResultsService gameResultsService)
         {
             _connectedPlayerProvider = connectedPlayerProvider;
             _getConnect4Game = getConnect4Game;
             _gameResultsService = gameResultsService;
+
+            _connectedPlayerProvider.OnPlayerDisconnected += PlayerQuit;
         }
 
         public event Action<IPlayer, IPlayer>? OnGameStarted;
@@ -128,6 +130,18 @@ namespace backend.services
         {
             Debug.Assert(_activeGame != null);
             return _activeGame;
+        }
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            _disposed = true;
+
+            _connectedPlayerProvider.OnPlayerDisconnected -= PlayerQuit;
         }
 
         private void StartNewGame(Match match)
@@ -259,6 +273,8 @@ namespace backend.services
             _activeGame.RemoveWatcher(player);
         }
 
+
+        private bool _disposed;
         private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
         private readonly Func<Match, Game> _getConnect4Game;
