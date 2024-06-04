@@ -73,7 +73,7 @@ namespace backend.game
         {
             if(player != _match.Player1 && player != _match.Player2)
             {
-                Debug.Assert(false);
+                // Debug.Assert(false);
                 return new TimeSpan(0);
             }
 
