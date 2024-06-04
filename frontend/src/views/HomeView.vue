@@ -119,8 +119,14 @@ export default defineComponent({
     confirmGameStart(): void {
       signalRHub.invoke("ConfirmGameStart");
     },
-    placeStone(column: number): void {
+    placeStone(column: number, currentMoveDuration: number): void {
       signalRHub.invoke("PlayMove", column);
+      if (this.game != null) {
+        if (this.game.activePlayerId === this.game.match.player1.id)
+          this.game.match.player1.totalPlayTime += currentMoveDuration;
+        else
+          this.game.match.player2.totalPlayTime += currentMoveDuration;
+      }
     },
     quitGame(): void {
       signalRHub.invoke("QuitGame");

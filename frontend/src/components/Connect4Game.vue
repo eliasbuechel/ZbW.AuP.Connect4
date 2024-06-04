@@ -1,17 +1,19 @@
 <template>
   <div class="grid-container">
-    <div class="grid-item-page-info container">
+    <div class="grid-item-page-info-container">
       <h2>Connect Four</h2>
+      <span v-if="game?.startConfirmed">game time: {{ totalGameTime }} sec</span>
     </div>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
+
       <label class="move-label"
         v-if="game != null && game.startConfirmed && inGamePlayerLeft?.id === game?.activePlayerId">Move: {{
-        currentMoveDuration.toFixed(2) }}</label>
+        currentMoveDuration }} sec</label>
       <label class="move-label"
         v-if="game != null && game.startConfirmed && inGamePlayerLeft?.id === game.activePlayerId && activePlayer != null">Total
         Time: {{
-        activePlayer.totalPlayTime.toFixed(2) }}</label>
+        totalPlayTimeWithCurrentMove }} sec</label>
 
       <div class="playing-state">{{ gameStatePlayerLeft }}</div>
       <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
@@ -54,9 +56,10 @@ export default defineComponent({
       type: Object as PropType<PlayerIdentity>,
     },
   },
-  data(): { currentMoveDuration: number, timerId?: number } {
+  data(): { currentMoveDuration: number, totalGameTime: number, timerId?: number } {
     return {
       currentMoveDuration: 0,
+      totalGameTime: 0,
       timerId: undefined,
     }
   },
@@ -68,13 +71,13 @@ export default defineComponent({
   },
   beforeUnmount() {
     clearTimeout(this.timerId);
+
   },
   methods: {
     reemitPlaceStone(column: number): void {
       if (this.game == null) return;
       if (this.game.activePlayerId !== this.identity.id) return;
-      if (this.activePlayer != null) this.activePlayer.totalPlayTime += this.currentMoveDuration;
-      this.$emit("place-stone", column);
+      this.$emit("place-stone", column, this.currentMoveDuration);
     },
     confirmGameStart(): void {
       this.$emit("confirm-game-start");
@@ -92,22 +95,32 @@ export default defineComponent({
     },
     calculateCurrentMoveDuration(): void {
       if (this.game == null) return;
-      this.currentMoveDuration = (this.milisecondsToNow() - this.game.moveStartTime) / 1000
+      this.currentMoveDuration = parseFloat(((this.milisecondsToNow() - this.game.moveStartTime) / 1000).toFixed(1));
       this.timerId = setTimeout(this.calculateCurrentMoveDuration, 100)
     },
+    // calculateTotalGameTime() {
+    //   if (this.game == null) return;
+    //   this.totalGameTime = this.inGamePlayerLeft!.totalPlayTime + this.inGamePlayerRight!.totalPlayTime + this.currentMoveDuration;
+    // },
   },
   computed: {
     inGamePlayerLeft(): InGamePlayer | undefined {
-      if (this.game != null)
+      if (this.game != null) {
         return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
+      }
 
       return undefined;
     },
     inGamePlayerRight(): InGamePlayer | undefined {
-      if (this.game != null)
+      if (this.game != null) {
         return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
+      }
 
       return undefined;
+    },
+    totalPlayTimeWithCurrentMove(): number {
+      if (this.inGamePlayerLeft == null) return 0;
+      return parseFloat((this.inGamePlayerLeft.totalPlayTime + this.currentMoveDuration).toFixed(1));
     },
     // gameResultPlayerLeft(): PlayerIdentity | undefined {
     //   if (this.gameResult != null)
@@ -177,20 +190,8 @@ export default defineComponent({
       }
       return "";
     },
-    // totalTimePlayerLeft(): number {
-    //   if (this.game == null) return 0;
-    //   console.log("totalTimePlayerLeft: game is null")
-    //   if (this.inGamePlayerLeft == null) return 0;
-    //   console.log("totalTimePlayerLeft: inGamePlayerLeft is null")
-
-    //   let playTime = this.inGamePlayerLeft.totalPlayTime / 1000;
-    //   if (this.inGamePlayerLeft.id == this.game.activePlayerId) playTime += this.currentMoveDuration;
-    //   return playTime;
-    // },
-
     activePlayer(): InGamePlayer | undefined {
       if (this.game == null) return undefined;
-      console.log("activePlayer: game is null")
       if (this.game.activePlayerId === this.game.match.player1.id) return this.game.match.player1;
       return this.game.match.player2;
     },
@@ -199,7 +200,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.grid-item-page-info {
+.grid-item-page-info-container {
   grid-column: 4 / span 6;
   grid-row: 1 / span 2;
 }
@@ -234,5 +235,6 @@ export default defineComponent({
 
 .move-label {
   background-color: unset;
+  font-size: small;
 }
 </style>
