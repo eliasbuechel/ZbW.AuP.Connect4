@@ -1,4 +1,6 @@
-﻿using backend.game.entities;
+﻿using backend.communication.signalR.frontendApi;
+using backend.Data;
+using backend.game.entities;
 using System.Diagnostics;
 using System.Numerics;
 
@@ -19,14 +21,15 @@ namespace backend.game
         }
 
         public event Action<GameResult>? OnGameEnded;
+        public event Action<Player, Field>? OnMovePlayed;
+        public event Action<Game>? OnGameStarted;
 
         public Guid Id { get; } = new Guid();
         public Match Match => _match;
-        public IPlayer ActivePlayer => _activePlayer;
+        public Player ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
-        public bool StartConfirmed => _match.Player1.HasConfirmedGameStart && _match.Player2.HasConfirmedGameStart;
 
-        public void PlayMove(IPlayer player, int column)
+        public void PlayMove(Player player, int column)
         {
             if (_activePlayer != player)
                 return;
@@ -42,9 +45,9 @@ namespace backend.game
             _playedMoves.Add(column);
             _activePlayerPlacedStone = true;
         }
-        public void PlayerQuit(IPlayer player)
+        public void PlayerQuit(Player player)
         {
-            IPlayer winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
+            Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
@@ -52,30 +55,16 @@ namespace backend.game
         {
             _connect4Board.Reset();
         }
-        public void ConnfirmedGameStart(IPlayer player)
+        public void ConnfirmGameStart(Player player)
         {
-            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
-            player.ConfirmedGameStart(player);
-            opponent.ConfirmedGameStart(player);
-
-            foreach (var watcher in _watchlist)
-                watcher.ConfirmedGameStart(player);
-
-            if (opponent.HasConfirmedGameStart)
-            {
-                _match.Player1.GameStartConfirmed();
-                _match.Player2.GameStartConfirmed();
-
-                foreach (var watcher in _watchlist)
-                    watcher.GameStartConfirmed();
-            }
+            player.HasConfirmedGameStart = true;
         }
-        public int GetBestMove(IPlayer player)
+        public int GetBestMove(Player player)
         {
             const int LOOK_AHEAD_MOVES = 8;
             const int INVALID_BEST_MOVE = -1;
 
-            IPlayer opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
+            Player opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
 
             int value = int.MinValue;
             int bestMove = INVALID_BEST_MOVE;
@@ -128,32 +117,28 @@ namespace backend.game
                 return;
             }
 
+            _disposed = true;
+
             _connect4Board.OnStonePlaced -= OnStonePlaced;
             _connect4Board.OnBoardReset -= OnBoardReset;
-            _disposed = true;
         }
 
         private void OnBoardReset()
         {
-            _match.Player1.GameStarted(this);
-            _match.Player2.GameStarted(this);
+            OnGameStarted?.Invoke(this);
         }
-        private void OnStonePlaced(IPlayer player, Field field)
+        private void OnStonePlaced(Player player, Field field)
         {
             SwapActivePlayer();
+            OnMovePlayed?.Invoke(player, field);
             CheckForWin(field, player);
-            Match.Player1.MovePlayed(player, field);
-            Match.Player2.MovePlayed(player, field);
-
-            foreach (var watcher in _watchlist)
-                watcher.MovePlayed(player, field);
         }
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
             _activePlayerPlacedStone = false;
         }
-        private void CheckForWin(Field field, IPlayer player)
+        private void CheckForWin(Field field, Player player)
         {
             if (CheckForWinInColumn(field, player))
                 return;
@@ -166,7 +151,7 @@ namespace backend.game
             if (CheckForNoMoveLeft())
                 return;
         }
-        private bool CheckForWinInColumn(Field lastPlacedStone, IPlayer player)
+        private bool CheckForWinInColumn(Field lastPlacedStone, Player player)
         {
             Field[] line = new Field[4];
             int count = 0;
@@ -189,7 +174,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinInRow(Field lastPlacedStone, IPlayer player)
+        private bool CheckForWinInRow(Field lastPlacedStone, Player player)
         {
             Field[] line = new Field[4];
             int count = 0;
@@ -224,7 +209,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonallyUp(Field lastPlacedStone, IPlayer player)
+        private bool CheckForWinDiagonallyUp(Field lastPlacedStone, Player player)
         {
             Field[] line = new Field[4];
             int count = 0;
@@ -263,7 +248,7 @@ namespace backend.game
 
             return false;
         }
-        private bool CheckForWinDiagonallyDown(Field lastPlacedStone, IPlayer player)
+        private bool CheckForWinDiagonallyDown(Field lastPlacedStone, Player player)
         {
             Field[] line = new Field[4];
             int count = 0;
@@ -307,7 +292,7 @@ namespace backend.game
             bool allCollumnsFull = true;
             for (int i = 0; i  < _connect4Board.Columns; i++)
             {
-                IPlayer?[] column = _connect4Board[i];
+                Player?[] column = _connect4Board[i];
 
                 if (column[_connect4Board[i].Length - 1] == null)
                     allCollumnsFull = false;
@@ -319,7 +304,7 @@ namespace backend.game
             OnNoMoveLeft();
             return true;
         }
-        private void OnConnect4(ICollection<Field> connect4Line, IPlayer player)
+        private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
             GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
@@ -331,19 +316,13 @@ namespace backend.game
         }
         private void OnGameEndet(GameResult gameResult)
         {
-            _match.Player1.GameEnded(gameResult);
-            _match.Player2.GameEnded(gameResult);
-
             _match.Player1.HasConfirmedGameStart = false;
             _match.Player2.HasConfirmedGameStart = false;
-
-            foreach (var watcher in _watchlist)
-                watcher.GameEnded(gameResult);
 
             OnGameEnded?.Invoke(gameResult);
         }
 
-        private int MiniMax(int depth, IPlayer maxPlayer, IPlayer minPlayer, bool maximizing, int alpha, int beta)
+        private int MiniMax(int depth, Player maxPlayer, Player minPlayer, bool maximizing, int alpha, int beta)
         {
             int value;
 
@@ -436,7 +415,7 @@ namespace backend.game
             row = -1;
             return false;
         }
-        private int CalculateBoardValue(IPlayer maxPlayer)
+        private int CalculateBoardValue(Player maxPlayer)
         {
             int boardValue = 0;
 
@@ -463,7 +442,7 @@ namespace backend.game
 
             return true;
         }
-        private bool HasWon(IPlayer player, int col, int row)
+        private bool HasWon(Player player, int col, int row)
         {
             // vertically
 
@@ -560,35 +539,12 @@ namespace backend.game
             return false;
         }
 
-        public void AddWatcher(IPlayer player)
-        {
-            if (_watchlist.Contains(player))
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _watchlist.Add(player);
-            player.SendGame(this);
-        }
-        public void RemoveWatcher(IPlayer player)
-        {
-            if (!_watchlist.Contains(player))
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _watchlist.Remove(player);
-        }
-
         private bool _disposed = false;
-        private IPlayer _activePlayer;
+        private Player _activePlayer;
         private bool _activePlayerPlacedStone;
-        private readonly IPlayer _startingPlayer;
+        private readonly Player _startingPlayer;
         private readonly Match _match;
         private readonly GameBoard _connect4Board;
-        private readonly ICollection<IPlayer> _watchlist = new List<IPlayer>();
         private readonly ICollection<int> _playedMoves = new List<int>();
         private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],

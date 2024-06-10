@@ -5,11 +5,11 @@ namespace backend.communication.mqtt
 {
     internal class TestingRoboterAPI : IRoboterAPI
     {
-        public event Action<IPlayer, Field>? OnStonePlaced;
+        public event Action<Player, Field>? OnStonePlaced;
         public event Action? OnBoardReset;
         public event Action<int>? OnManualMove;
 
-        public void PlaceStone(IPlayer player, Field field)
+        public void PlaceStone(Player player, Field field)
         {
             OnStonePlaced?.Invoke(player, field);
         }

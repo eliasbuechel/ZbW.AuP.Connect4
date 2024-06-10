@@ -4,14 +4,14 @@ namespace backend.communication.DOTs
 {
     internal class ConnectedPlayerDTO : PlayerInfoDTO
     {
-        public ConnectedPlayerDTO(IPlayer player, IPlayer potentialOpponent) : base(player)
+        public ConnectedPlayerDTO(Player player, Player potentialOpponent) : base(player)
         {
-            RequestedMatch = player.HasRequestedMatch(potentialOpponent);
-            YouRequestedMatch = potentialOpponent.HasRequestedMatch(player);
-            Matched = potentialOpponent.HasMatched(player);
+            RequestedMatch = potentialOpponent.MatchingRequests.Contains(player);
+            YouRequestedMatch = player.MatchingRequests.Contains(potentialOpponent);
+            Matched = player.Matching == potentialOpponent;
         }
 
-        public ConnectedPlayerDTO(IPlayer player) : base(player)
+        public ConnectedPlayerDTO(Player player) : base(player)
         {
             RequestedMatch = false;
             YouRequestedMatch = false;

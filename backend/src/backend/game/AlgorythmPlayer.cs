@@ -1,60 +1,61 @@
-﻿using backend.communication.signalR;
-using backend.game.entities;
-using backend.services;
-
-namespace backend.game
+﻿namespace backend.game
 {
     internal class AlgorythmPlayer : Player
     {
-        public AlgorythmPlayer(IPlayer opponentPlayer, GameManager gameManager) : base(Guid.NewGuid().ToString(), "Algorythm player", gameManager)
+        public AlgorythmPlayer(Player opponentPlayer) : base(Guid.NewGuid().ToString(), "R4D4-Algorythm")
         {
-            _opponentPlayer = opponentPlayer;
+            OpponentPlayer = opponentPlayer;
         }
 
-        public IPlayer OpponentPlayer => _opponentPlayer;
-
-        public override async void RequestedMatch(IPlayer player)
-        {
-            if (OpponentPlayer is WebPlayer)
-            {
-                base.RequestedMatch(player);
-                await AcceptMatch(player);
-            }
-        }
-
-        public override void GameStarted(Game connect4Game)
-        {
-            base.GameStarted(connect4Game);
-            _startingPlayer = connect4Game.ActivePlayer;
-            ConfirmGameStart();
-        }
-        public override void GameStartConfirmed()
-        {
-            base.GameStartConfirmed();
-            if (_startingPlayer != this)
-                return;
-
-            PlaceBestStone();
-        }
-        public override void MovePlayed(IPlayer player, Field field)
-        {
-            if (player == this)
-                return;
-
-            PlaceBestStone();
-        }
-
-        private void PlaceBestStone()
-        {
-            Thread thread = new Thread(() =>
-            {
-                int bestMove = _gameManager.GetBestMove(this);
-                PlayMove(bestMove);
-            });
-            thread.Start();
-        }
-
-        private IPlayer? _startingPlayer;
-        private readonly IPlayer _opponentPlayer;
+        public Player OpponentPlayer { get; }
     }
+
+    //internal class AlgorythmPlayer : Player
+    //{
+    //    public AlgorythmPlayer(Player opponentPlayer, GameManager gameManager) : base(Guid.NewGuid().ToString(), "R4D4-Algorythm", gameManager)
+    //    {
+    //        _opponentPlayer = opponentPlayer;
+    //    }
+
+    //    public Player OpponentPlayer => _opponentPlayer;
+
+    //    public override void RequestedMatch(Player player)
+    //    {
+    //        AcceptMatch(OpponentPlayer);
+    //    }
+    //    public override void RejectedMatch(Player player) { }
+    //    public override void Matched(Match match) { }
+    //    public override void GameStarted(Game connect4Game)
+    //    {
+    //        _startingPlayer = connect4Game.ActivePlayer;
+    //        ConfirmGameStart();
+    //    }
+    //    public override void ConfirmedGameStart(Player player)
+    //    {
+    //        if (_startingPlayer != this)
+    //            return;
+
+    //        PlaceBestStone();
+    //    }
+    //    public override void MovePlayed(Player player, Field field)
+    //    {
+    //        if (player == this)
+    //            return;
+
+    //        PlaceBestStone();
+    //    }
+
+    //    private void PlaceBestStone()
+    //    {
+    //        Thread thread = new Thread(() =>
+    //        {
+    //            int bestMove = _gameManager.GetBestMove(this);
+    //            PlayMove(bestMove);
+    //        });
+    //        thread.Start();
+    //    }
+
+    //    private Player? _startingPlayer;
+    //    private readonly Player _opponentPlayer;
+    //}
 }

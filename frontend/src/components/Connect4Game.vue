@@ -28,7 +28,7 @@
       Confirm game start
     </button>
     <Connect4Board
-      v-if="game != null && game.startConfirmed"
+      v-if="game != null && inGamePlayerLeft?.hasConfirmedGameStart && inGamePlayerRight?.hasConfirmedGameStart"
       :identity="identity"
       :connect4Board="game.connect4Board"
       :playerLeft="inGamePlayerLeft!"
@@ -122,7 +122,7 @@ export default defineComponent({
         return this.inGamePlayerLeft.id === this.identity.id
           ? "confirm to start the game"
           : "confirming game start ...";
-      if (!this.game.startConfirmed) return "";
+      if (!this.inGamePlayerRight?.hasConfirmedGameStart) return "";
       if (this.game.activePlayerId === this.inGamePlayerLeft.id) {
         if (this.inGamePlayerLeft.id == this.identity.id) return "your turn!";
         return "playing...";
@@ -136,7 +136,7 @@ export default defineComponent({
         return this.inGamePlayerRight.id === this.identity.id
           ? "confirm to start the game"
           : "confirming game start ...";
-      if (!this.game.startConfirmed) return "";
+      if (!this.inGamePlayerLeft?.hasConfirmedGameStart) return "";
       if (this.game.activePlayerId === this.inGamePlayerRight.id) {
         if (this.inGamePlayerRight.id == this.identity.id) return "your turn!";
         return "playing...";

@@ -1,7 +1,5 @@
-﻿
-using backend.game;
+﻿using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
 using System.Diagnostics;
 
 namespace backend.communication.mqtt
@@ -25,11 +23,11 @@ namespace backend.communication.mqtt
             _mqttTopicClient.DisconnectAsync().Wait();
         }
 
-        public event Action<IPlayer, Field>? OnStonePlaced;
+        public event Action<Player, Field>? OnStonePlaced;
         public event Action? OnBoardReset;
         public event Action<int>? OnManualMove;
 
-        public void PlaceStone(IPlayer player, Field field)
+        public void PlaceStone(Player player, Field field)
         {
             _placingPlayer = player;
             _placingField = field;
@@ -124,7 +122,7 @@ namespace backend.communication.mqtt
 
         private bool _resettingBoard;
         private Field? _placingField;
-        private IPlayer? _placingPlayer;
+        private Player? _placingPlayer;
         private readonly MQTTNetTopicClient _mqttTopicClient;
     }
 }

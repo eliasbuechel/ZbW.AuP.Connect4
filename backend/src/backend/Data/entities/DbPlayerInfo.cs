@@ -6,7 +6,7 @@ namespace backend.Data.entities
     internal class DbPlayerInfo : DbEntity
     {
         public DbPlayerInfo() { }
-        public DbPlayerInfo(IPlayer player) : base(player.Id)
+        public DbPlayerInfo(Player player) : base(player.Id)
         {
             Id = player.Id;
             Username = player.Username;

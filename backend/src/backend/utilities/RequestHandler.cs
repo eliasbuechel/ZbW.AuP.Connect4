@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
 
-namespace backend.communication.signalR
+namespace backend.utilities
 {
-    internal class PlayerRequestHandler
+    internal class RequestHandler
     {
-        public PlayerRequestHandler()
+        public RequestHandler()
         {
             _workerThread = new Thread(ProcessRequests);
             _workerThread.Start();

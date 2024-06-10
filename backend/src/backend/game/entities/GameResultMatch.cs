@@ -19,16 +19,4 @@ namespace backend.game.entities
         public PlayerInfo Player1 { get; }
         public PlayerInfo Player2 { get; }
     }
-
-    internal class Match : Entity
-    {
-        public Match(MatchRequest matchRequest) : base(matchRequest)
-        {
-            Player1 = matchRequest.Requester;
-            Player2 = matchRequest.Opponent;
-        }
-
-        public IPlayer Player1 { get; }
-        public IPlayer Player2 { get; }
-    }
 }

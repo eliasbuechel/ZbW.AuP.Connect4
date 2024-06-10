@@ -100,13 +100,12 @@ export default defineComponent({
       signalRHub.on("GameStarted", this.onGameStarted);
       signalRHub.on("GameEnded", this.onGameEnded);
       signalRHub.on("SendUserData", this.updateUserIdentity);
-      signalRHub.on("SendOnlinePlayers", this.onUdateOnlinePlayers);
+      signalRHub.on("SendConnectedPlayers", this.onUdateConnectedPlayers);
       signalRHub.on("SendGamePlan", this.onUpdateGamePlan);
       signalRHub.on("SendGame", this.updateGame);
       signalRHub.on("YouRequestedMatch", this.onYouRequestedMatch);
       signalRHub.on("YouRejectedMatch", this.onYouRejectedMatch);
       signalRHub.on("ConfirmedGameStart", this.onConfirmedGameStart);
-      signalRHub.on("GameStartConfirmed", this.onGameStartConfirmed);
       signalRHub.on("SendHint", this.onSendHint);
       signalRHub.on("SendBestlist", this.onSendBestlist);
     },
@@ -124,13 +123,12 @@ export default defineComponent({
       signalRHub.off("GameStarted", this.onGameStarted);
       signalRHub.off("GameEnded", this.onGameEnded);
       signalRHub.off("SendUserData", this.updateUserIdentity);
-      signalRHub.off("SendOnlinePlayers", this.onUdateOnlinePlayers);
+      signalRHub.off("SendOnlinePlayers", this.onUdateConnectedPlayers);
       signalRHub.off("SendGamePlan", this.onUpdateGamePlan);
       signalRHub.off("SendGame", this.updateGame);
       signalRHub.off("YouRequestedMatch", this.onYouRequestedMatch);
       signalRHub.off("YouRejectedMatch", this.onYouRejectedMatch);
       signalRHub.off("ConfirmedGameStart", this.onConfirmedGameStart);
-      signalRHub.off("GameStartConfirmed", this.onGameStartConfirmed);
       signalRHub.off("SendHint", this.onSendHint);
       signalRHub.off("SendBestlist", this.onSendBestlist);
     },
@@ -178,7 +176,7 @@ export default defineComponent({
     },
     onUpdateGamePlan(gamePlan: Match[]) {
       this.gamePlan = gamePlan;
-      if (this.gamePlan.length > 0) signalRHub.invoke("GetCurrentGame");
+      if (this.gamePlan.length > 0) signalRHub.invoke("GetGame");
     },
     showReplay(gameResult: GameResult): void {
       this.gameResult = gameResult;
@@ -215,10 +213,19 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
-      if (this.isInGame != null) {
-        this.gameResult = gameResult;
-        this.game = undefined;
-      }
+      this.gameResult = gameResult;
+      this.game = undefined;
+
+      if (this.identity == null) return;
+
+      this.gamePlan = this.gamePlan.filter((x, i) => i != 0);
+
+      this.connectedPlayers.webPlayers.forEach((p) => {
+        if (gameResult.match.player1.id === this.identity!.id && p.id === gameResult.match.player2.id)
+          p.matched = false;
+        if (gameResult.match.player2.id === this.identity!.id && p.id === gameResult.match.player1.id)
+          p.matched = false;
+      });
     },
     onMovePlayed(playerId: string, field: Field): void {
       if (this.game == null) return;
@@ -236,7 +243,7 @@ export default defineComponent({
           ? this.game!.match.player2.id
           : this.game!.match.player1.id;
     },
-    onUdateOnlinePlayers(connectedPlayers: ConnectedPlayers): void {
+    onUdateConnectedPlayers(connectedPlayers: ConnectedPlayers): void {
       this.connectedPlayers = connectedPlayers;
     },
     onPlayerConnected(onlinePlayer: OnlinePlayer): void {
@@ -319,10 +326,6 @@ export default defineComponent({
       if (this.game.match.player1.id === playerId) this.game.match.player1.hasConfirmedGameStart = true;
       else this.game.match.player2.hasConfirmedGameStart = true;
     },
-    onGameStartConfirmed(): void {
-      if (this.game == null) return;
-      this.game.startConfirmed = true;
-    },
     onSendHint(hint: number): void {
       if (this.identity == null) return;
       if (this.game == null) return;
@@ -347,7 +350,7 @@ export default defineComponent({
     onSignalRConnected(): void {
       this.subscribe();
       signalRHub.invoke("GetUserData");
-      signalRHub.invoke("GetOnlinePlayers");
+      signalRHub.invoke("GetConnectedPlayers");
       signalRHub.invoke("GetGamePlan");
       signalRHub.invoke("GetGame");
       signalRHub.invoke("GetBestlist");

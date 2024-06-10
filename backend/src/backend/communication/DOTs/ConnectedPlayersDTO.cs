@@ -1,21 +1,14 @@
 ﻿using backend.game;
-using backend.services;
+using backend.services.player;
 
 namespace backend.communication.DOTs
 {
     internal class ConnectedPlayersDTO
     {
-        public ConnectedPlayersDTO(ConnectedPlayerProvider connectedPlayerProvider, IPlayer requester)
+        public ConnectedPlayersDTO(IEnumerable<ConnectedPlayerDTO> webPlayers, IEnumerable<ConnectedPlayerDTO> opponentRoboterPlayers)
         {
-            WebPlayers = connectedPlayerProvider.WebPlayers.Where(x => x.Id != requester.Id).Select(x => new ConnectedPlayerDTO(x, requester)).ToArray();
-            OpponentRoboterPlayers = connectedPlayerProvider.OpponentRoboterePlayers.Where(x => x.Id != requester.Id).Select(x =>
-            {
-                AlgorythmPlayer? algorythmPlayer = connectedPlayerProvider.AlgorythmPlayers.FirstOrDefault(o => o.OpponentPlayer == x);
-                if (algorythmPlayer == null)
-                    return new ConnectedPlayerDTO(x);
-                
-                return new ConnectedPlayerDTO(x, algorythmPlayer);
-            }).ToArray();
+            WebPlayers = webPlayers.ToArray();
+            OpponentRoboterPlayers = opponentRoboterPlayers.ToArray();
         }
 
         public ConnectedPlayerDTO[] WebPlayers { get; }
