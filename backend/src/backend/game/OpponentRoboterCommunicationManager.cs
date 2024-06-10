@@ -188,6 +188,13 @@ namespace backend.game
             _opponentRoboterClientApi.OnConfirmGameStart -= OnConfirmGameStart;
             _opponentRoboterClientApi.OnPlayMove -= OnPlayMove;
             _opponentRoboterClientApi.OnQuitGame -= OnQuitGame;
+
+            _gameManager.OnRequestedMatch -= OnRequestedMatch;
+            _gameManager.OnMatched -= OnMatched;
+            _gameManager.OnRejectedMatch -= OnRejectedMatch;
+            _gameManager.OnConfirmedGameStart -= OnConfirmedGameStart;
+            _gameManager.OnMovePlayed -= OnMovePlayed;
+            _gameManager.OnGameEnded -= OnGameEnded;
         }
 
         private readonly OpponentRoboterHubApi _opponentRoboterHubApi;

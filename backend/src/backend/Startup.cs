@@ -13,6 +13,7 @@ using backend.services.player;
 using backend.communication.signalR.frontendApi;
 using backend.communication.signalR.opponentRoboterApi;
 using backend.utilities;
+using Google.Protobuf.WellKnownTypes;
 
 namespace backend
 {
@@ -91,8 +92,10 @@ namespace backend
             services.AddSingleton<AlgorythmPlayerConnectionManager>();
             services.AddSingleton<OpponentRoboterPlayerConnectionManager>();
             services.AddTransient<PlayerConnectionService>();
+
             services.AddSingleton<FrontendCommunicationManager>();
             services.AddSingleton<AlgorythmPlayerCommunicationManager>();
+            services.AddSingleton<OpponentRoboterCommunicationManager>();
 
             services.AddSingleton<FrontendApi>();
             services.AddSingleton<OpponentRoboterHubApi>();
@@ -157,6 +160,7 @@ namespace backend
 
             app.ApplicationServices.GetRequiredService<FrontendCommunicationManager>();
             app.ApplicationServices.GetRequiredService<AlgorythmPlayerCommunicationManager>();
+            app.ApplicationServices.GetRequiredService<OpponentRoboterCommunicationManager>();
         }
 
         private static void ConfigureIdentity(IServiceCollection services)
