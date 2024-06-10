@@ -57,7 +57,7 @@ namespace backend.game
 
             _frontendApi.OnConnectToOpponentRoboterPlayer += OnConnectToOpponentRoboterPlayer;
             _frontendApi.OnRequestSinglePlayerMatch += RequestSinglePlayerMatch;
-            _frontendApi.OnRequestOppoenntRoboterPlyerMatch += RequestMatchFromOpponentRoboterPlayer;
+            _frontendApi.OnRequestOppoenntRoboterPlyerMatch += RequestOpponentRoboterPlayerMatch;
             _frontendApi.OnAcceptOppoenntRoboterPlyerMatch += AcceptOppoenntRoboterPlyerMatch;
             _frontendApi.OnRejectOppoenntRoboterPlyerMatch += RejectOppoenntRoboterPlyerMatch;
 
@@ -104,7 +104,7 @@ namespace backend.game
 
             _frontendApi.OnConnectToOpponentRoboterPlayer -= OnConnectToOpponentRoboterPlayer;
             _frontendApi.OnRequestSinglePlayerMatch -= RequestSinglePlayerMatch;
-            _frontendApi.OnRequestOppoenntRoboterPlyerMatch -= RequestMatchFromOpponentRoboterPlayer;
+            _frontendApi.OnRequestOppoenntRoboterPlyerMatch -= RequestOpponentRoboterPlayerMatch;
             _frontendApi.OnAcceptOppoenntRoboterPlyerMatch -= AcceptOppoenntRoboterPlyerMatch;
             _frontendApi.OnRejectOppoenntRoboterPlyerMatch -= RejectOppoenntRoboterPlyerMatch;
 
@@ -239,27 +239,27 @@ namespace backend.game
             OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
             _playerConnectionService.OpponentRoboterPlayerConnectionManager.ConnectPlayer(hubUrl, hubUrl);
         }
-        private void RequestMatchFromOpponentRoboterPlayer(string requestingOpponentRoboterPlayerId)
+        private void RequestOpponentRoboterPlayerMatch(string requestingOpponentRoboterPlayerId)
         {
             OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(requestingOpponentRoboterPlayerId);
             _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(opponentRoboterPlayer, "R4D4-Algorythm");
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
-            _gameManager.RequestMatch(opponentRoboterPlayer, algorythmPlayer);
+            _gameManager.RequestMatch(algorythmPlayer, opponentRoboterPlayer);
         }
         private void AcceptOppoenntRoboterPlyerMatch(string acceptingOpponentRoboterPlayerId)
         {
             OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(acceptingOpponentRoboterPlayerId);
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
-            _gameManager.AcceptMatch(opponentRoboterPlayer, algorythmPlayer);
+            _gameManager.AcceptMatch(algorythmPlayer, opponentRoboterPlayer);
         }
         private void RejectOppoenntRoboterPlyerMatch(string rejectingOpponentRoboterPlayerId)
         {
             OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(rejectingOpponentRoboterPlayerId);
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
-            _gameManager.RejectMatch(opponentRoboterPlayer, algorythmPlayer);
+            _gameManager.RejectMatch(algorythmPlayer, opponentRoboterPlayer);
         }
 
         private void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity)
