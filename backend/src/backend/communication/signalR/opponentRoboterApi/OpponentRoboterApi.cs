@@ -2,8 +2,8 @@
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
-    internal delegate void Connected(string connectionId);
-    internal delegate void Disconnected(string connectionId);
+    internal delegate void Connected(string callerUrl, string connectionId);
+    internal delegate void Disconnected(string callerUrl, string connectionId);
     internal delegate void RequestMatch(string connectionId);
     internal delegate void AcceptMatch(string connectionId);
     internal delegate void RejectMatch(string connectionId);
@@ -28,19 +28,19 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
 
         // receving
-        public void Connected(string connectionId)
+        public void Connected(string callerUrl, string connectionId)
         {
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
-                OnConnected?.Invoke(connectionId);
+                OnConnected?.Invoke(callerUrl, connectionId);
                 return Task.CompletedTask;
             });
         }
-        public void Disconnected(string connectionId)
+        public void Disconnected(string callerUrl, string connectionId)
         {
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
-                OnDisconnected?.Invoke(connectionId);
+                OnDisconnected?.Invoke(callerUrl, connectionId);
                 return Task.CompletedTask;
             });
         }

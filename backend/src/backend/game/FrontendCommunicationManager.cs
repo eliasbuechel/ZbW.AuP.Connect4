@@ -57,7 +57,9 @@ namespace backend.game
 
             _frontendApi.OnConnectToOpponentRoboterPlayer += OnConnectToOpponentRoboterPlayer;
             _frontendApi.OnRequestSinglePlayerMatch += RequestSinglePlayerMatch;
-            _frontendApi.OnRequestMatchFromOpponentRoboterPlayer += RequestMatchFromOpponentRoboterPlayer;
+            _frontendApi.OnRequestOppoenntRoboterPlyerMatch += RequestMatchFromOpponentRoboterPlayer;
+            _frontendApi.OnAcceptOppoenntRoboterPlyerMatch += AcceptOppoenntRoboterPlyerMatch;
+            _frontendApi.OnRejectOppoenntRoboterPlyerMatch += RejectOppoenntRoboterPlyerMatch;
 
             _gameManager.OnRequestedMatch += OnRequestedMatch;
             _gameManager.OnRejectedMatch += OnRejectedMatch;
@@ -102,7 +104,9 @@ namespace backend.game
 
             _frontendApi.OnConnectToOpponentRoboterPlayer -= OnConnectToOpponentRoboterPlayer;
             _frontendApi.OnRequestSinglePlayerMatch -= RequestSinglePlayerMatch;
-            _frontendApi.OnRequestMatchFromOpponentRoboterPlayer -= RequestMatchFromOpponentRoboterPlayer;
+            _frontendApi.OnRequestOppoenntRoboterPlyerMatch -= RequestMatchFromOpponentRoboterPlayer;
+            _frontendApi.OnAcceptOppoenntRoboterPlyerMatch -= AcceptOppoenntRoboterPlyerMatch;
+            _frontendApi.OnRejectOppoenntRoboterPlyerMatch -= RejectOppoenntRoboterPlyerMatch;
 
             _gameManager.OnRequestedMatch -= OnRequestedMatch;
             _gameManager.OnRejectedMatch -= OnRejectedMatch;
@@ -116,12 +120,12 @@ namespace backend.game
         // requests
         private void GetUserData(PlayerIdentity playerIdentity, string connectionId)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             SendUserData(connectionId, webPlayer);
         }
         public void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             ConnectedPlayersDTO connectedPlayers = _playerConnectionService.GetConnectedPlayersExcept(webPlayer, connectionId);
 
             SendConnectedPlayers(connectionId, connectedPlayers);
@@ -134,7 +138,7 @@ namespace backend.game
 
         public void GetGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
 
             Game? game = _gameManager.Game;
             if (game == null)
@@ -153,13 +157,14 @@ namespace backend.game
         }
         public void GetHint(PlayerIdentity playerIdentity)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             _gameManager.GetHint(webPlayer);
         }
 
         private void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId)
         {
-            WebPlayer requestingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(requestingPlayerIdentity);
+
+            WebPlayer requestingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(requestingPlayerIdentity);
             Player? opponentPlayer = _playerConnectionService.GetPlayer(opponentPlayerId);
             if (opponentPlayer == null)
             {
@@ -171,31 +176,31 @@ namespace backend.game
         }
         private void AcceptMatch(PlayerIdentity acceptingPlayerIdentity, string opponentPlayerId)
         {
-            WebPlayer acceptingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(acceptingPlayerIdentity);
+            WebPlayer acceptingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(acceptingPlayerIdentity);
             Player opponentPlayer = _playerConnectionService.GetPlayer(opponentPlayerId);
 
             _gameManager.AcceptMatch(acceptingWebPlayer, opponentPlayer);
         }
         private void RejectMatch(PlayerIdentity rejectingPlayerIdentity, string opponentPlayerId)
         {
-            WebPlayer rejectingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(rejectingPlayerIdentity);
+            WebPlayer rejectingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(rejectingPlayerIdentity);
             Player opponentPlayer = _playerConnectionService.GetPlayer(opponentPlayerId);
 
             _gameManager.RejectMatch(rejectingWebPlayer, opponentPlayer);
         }
         private void ConfirmedGameStart(PlayerIdentity playerIdentity)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             _gameManager.ConfirmGameStart(webPlayer);
         }
         private void PlayMove(PlayerIdentity playerIdentity, int column)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             _gameManager.PlayMove(webPlayer, column);
         }
         private void QuitGame(PlayerIdentity playerIdentity)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             _gameManager.QuitGame(webPlayer);
         }
         private void PlayerDisconnected(WebPlayer webPlayer)
@@ -214,7 +219,7 @@ namespace backend.game
 
         private void WatchGame(PlayerIdentity playerIdentity)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             webPlayer.IsWatchingGame = true;
 
             Game? game = _gameManager.Game;
@@ -225,7 +230,7 @@ namespace backend.game
         }
         private void StopWatchingGame(PlayerIdentity playerIdentity)
         {
-            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             webPlayer.IsWatchingGame = false;
         }
 
@@ -234,19 +239,34 @@ namespace backend.game
             OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
             _playerConnectionService.OpponentRoboterPlayerConnectionManager.ConnectPlayer(hubUrl, hubUrl);
         }
-        private void RequestMatchFromOpponentRoboterPlayer(string opponentRoboterPlayerId)
+        private void RequestMatchFromOpponentRoboterPlayer(string requestingOpponentRoboterPlayerId)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(opponentRoboterPlayerId);
-            _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(opponentRoboterPlayer, "Algorythm player");
-            AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayer(opponentRoboterPlayer);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(requestingOpponentRoboterPlayerId);
+            _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(opponentRoboterPlayer, "R4D4-Algorythm");
+            AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
             _gameManager.RequestMatch(opponentRoboterPlayer, algorythmPlayer);
         }
+        private void AcceptOppoenntRoboterPlyerMatch(string acceptingOpponentRoboterPlayerId)
+        {
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(acceptingOpponentRoboterPlayerId);
+            AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
+
+            _gameManager.AcceptMatch(opponentRoboterPlayer, algorythmPlayer);
+        }
+        private void RejectOppoenntRoboterPlyerMatch(string rejectingOpponentRoboterPlayerId)
+        {
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(rejectingOpponentRoboterPlayerId);
+            AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
+
+            _gameManager.RejectMatch(opponentRoboterPlayer, algorythmPlayer);
+        }
+
         private void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity)
         {
-            WebPlayer requestingPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(requestingPlayerIdentity);
+            WebPlayer requestingPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(requestingPlayerIdentity);
             _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(requestingPlayer, "Algorythm player");
-            AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayer(requestingPlayer);
+            AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(requestingPlayer);
 
             _gameManager.RequestMatch(requestingPlayer, algorythmPlayer);
         }

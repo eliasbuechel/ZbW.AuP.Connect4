@@ -24,7 +24,7 @@ namespace backend.services.player
 
         protected override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity)
         {
-            WebPlayer? player = GetConnectedPlayerOrDefault(playerIdentity);
+            WebPlayer? player = GetConnectedPlayerByIdentificationOrDefault(playerIdentity);
             if (player == null)
             {
                 player = new WebPlayer(playerIdentity);

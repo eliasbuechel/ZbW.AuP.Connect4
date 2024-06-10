@@ -20,9 +20,6 @@ namespace backend.services
             _gameResultsService = gameResultsService;
         }
 
-        public event Action<string, IEnumerable<Match>>? OnSendGamePlan;
-
-
         public event Action<Player, Player>? OnRequestedMatch;
         public event Action<Player, Player>? OnRejectedMatch;
         public event Action<Match>? OnMatched;
@@ -36,11 +33,6 @@ namespace backend.services
         public IEnumerable<Match> GamePlan => _gamePlan.ToArray();
 
         // requests
-        public void GetGamePlan(string connectionId)
-        {
-            IEnumerable<Match> gamePlan = _gamePlan.ToArray();
-            OnSendGamePlan?.Invoke(connectionId, gamePlan);
-        }
         public void GetHint(Player player)
         {
             int column = GetBestMove(player);

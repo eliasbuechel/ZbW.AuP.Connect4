@@ -125,14 +125,14 @@ export default defineComponent({
       this.errors.addingHubUrl = "";
     },
     requestMatch(player: OnlinePlayer): void {
-      signalRHub.invoke("RequestMatch", player.id);
+      signalRHub.invoke("RequestOppoenntRoboterPlyerMatch", player.id);
       player.youRequestedMatch = true;
     },
     acceptMatch(player: OnlinePlayer): void {
-      signalRHub.invoke("AcceptMatch", player.id);
+      signalRHub.invoke("AcceptOppoenntRoboterPlyerMatch", player.id);
     },
     rejectMatch(player: OnlinePlayer): void {
-      signalRHub.invoke("RejectMatch", player.id);
+      signalRHub.invoke("RejectOppoenntRoboterPlyerMatch", player.id);
       player.requestedMatch = false;
     },
   },

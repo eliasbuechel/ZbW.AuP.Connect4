@@ -80,9 +80,17 @@ namespace backend.communication.signalR.frontendApi
         {
             _frontendApi.RequestSinglePlayerMatch(Identification);
         }
-        public void RequestMatchFromOpponentRoboterPlayer(string opponentRoboterPlayerId)
+        public void RequestOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.RequestMatchFromOpponentRoboterPlayer(Identification, opponentRoboterPlayerId);
+            _frontendApi.RequestOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+        }
+        public void AcceptOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
+        {
+            _frontendApi.AcceptOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+        }
+        public void RejectOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
+        {
+            _frontendApi.RejectOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
         }
         public void ConnectToOpponentRoboterPlayer(string hubUrl)
         {

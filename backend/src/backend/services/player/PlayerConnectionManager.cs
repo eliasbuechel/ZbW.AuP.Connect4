@@ -18,7 +18,7 @@ namespace backend.services.player
             Debug.Assert(player != null);
             return player;
         }
-        public TPlayer GetConnectedPlayer(TIdentitfication identitfication)
+        public TPlayer GetConnectedPlayerByIdentification(TIdentitfication identitfication)
         {
             return _connectedPlayersAndIdentification.Where(x => x.Item2.Equals(identitfication)).Select(x => x.Item1).First();
         }
@@ -26,7 +26,7 @@ namespace backend.services.player
         {
             return _connectedPlayersAndIdentification.Select(x => x.Item1).FirstOrDefault(p => p.Id == playerId);
         }
-        public TPlayer? GetConnectedPlayerOrDefault(TIdentitfication identitfication)
+        public TPlayer? GetConnectedPlayerByIdentificationOrDefault(TIdentitfication identitfication)
         {
             return _connectedPlayersAndIdentification.Where(x => x.Item2.Equals(identitfication)).Select(x => x.Item1).FirstOrDefault();
         }
@@ -37,7 +37,7 @@ namespace backend.services.player
         }
         public void DisconnectPlayer(TIdentitfication identitfication, string connectionId)
         {
-            TPlayer player = GetConnectedPlayer(identitfication);
+            TPlayer player = GetConnectedPlayerByIdentification(identitfication);
             DisconnectPlayer(player, identitfication, connectionId);
         }
         public void ForeachConnectedPlayerConnection(Action<string> action)

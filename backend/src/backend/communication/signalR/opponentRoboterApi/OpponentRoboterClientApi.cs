@@ -91,6 +91,7 @@ namespace backend.communication.signalR.opponentRoboterApi
                 Debug.Assert(false);
                 Dispose();
             }
+
         }
         private async void Disconnect()
         {
@@ -98,7 +99,10 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         private Task OnConnectionClosed(Exception? exception)
         {
-            throw new NotImplementedException();
+            string? connectionId = _connection.ConnectionId;
+            Debug.Assert(connectionId != null);
+            Disconnected(_hubUrl, connectionId);
+            return Task.CompletedTask;
         }
 
         public void Dispose()

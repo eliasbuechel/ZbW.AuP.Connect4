@@ -7,8 +7,8 @@ namespace backend.communication.signalR.opponentRoboterApi
     internal class OpponentRoboterHubApi : OpponentRoboterApi
     {
         public OpponentRoboterHubApi(
-            RequestHandlerManager<string> requestHandlerManager,
-            IHubContext<OpponentRoboterHub> opponentRoboterHubContext
+            IHubContext<OpponentRoboterHub> opponentRoboterHubContext,
+            RequestHandlerManager<string> requestHandlerManager
             ) : base(requestHandlerManager)
         {
             _opponentRoboterHubConetxt = opponentRoboterHubContext;

@@ -24,7 +24,9 @@ namespace backend.communication.signalR.frontendApi
 
     internal delegate void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity);
     internal delegate void ConnectToOpponentRoboterPlayer(string hubUrl);
-    internal delegate void RequestMatchFromOpponentRoboterPlayer(string opponentRoboterPlayerId);
+    internal delegate void RequestMatchFromOpponentRoboterPlayer(string requestingOpponentRoboterPlayerId);
+    internal delegate void AcceptOppoenntRoboterPlyerMatch(string acceptingOpponentRoboterPlayerId);
+    internal delegate void RejectOppoenntRoboterPlyerMatch(string rejectingOpponentRoboterPlayerId);
 
     internal class FrontendApi : SignalRApi<FrontendHub, PlayerIdentity>
     {
@@ -53,7 +55,9 @@ namespace backend.communication.signalR.frontendApi
 
         public event RequestSinglePlayerMatch? OnRequestSinglePlayerMatch;
         public event ConnectToOpponentRoboterPlayer? OnConnectToOpponentRoboterPlayer;
-        public event RequestMatchFromOpponentRoboterPlayer? OnRequestMatchFromOpponentRoboterPlayer;
+        public event RequestMatchFromOpponentRoboterPlayer? OnRequestOppoenntRoboterPlyerMatch;
+        public event AcceptOppoenntRoboterPlyerMatch? OnAcceptOppoenntRoboterPlyerMatch;
+        public event RejectOppoenntRoboterPlyerMatch? OnRejectOppoenntRoboterPlyerMatch;
 
         // reciving
         public void GetUserData(PlayerIdentity playerIdentity, string connectionId)
@@ -179,11 +183,27 @@ namespace backend.communication.signalR.frontendApi
                 return Task.CompletedTask;
             });
         }
-        public void RequestMatchFromOpponentRoboterPlayer(PlayerIdentity playerIdentity, string opponentRoboterPlayerId)
+        public void RequestOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string requestingOpponentRoboterPlayerId)
         {
             _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
             {
-                OnRequestMatchFromOpponentRoboterPlayer?.Invoke(opponentRoboterPlayerId);
+                OnRequestOppoenntRoboterPlyerMatch?.Invoke(requestingOpponentRoboterPlayerId);
+                return Task.CompletedTask;
+            });
+        }
+        public void AcceptOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string acceptingOpponentRoboterPlayerId)
+        {
+            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            {
+                OnAcceptOppoenntRoboterPlyerMatch?.Invoke(acceptingOpponentRoboterPlayerId);
+                return Task.CompletedTask;
+            });
+        }
+        public void RejectOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string rejectingOpponentRoboterPlayerId)
+        {
+            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            {
+                OnRejectOppoenntRoboterPlyerMatch?.Invoke(rejectingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
             });
         }
@@ -195,6 +215,7 @@ namespace backend.communication.signalR.frontendApi
                 return Task.CompletedTask;
             });
         }
+
 
         // sending
         public async Task SendUserData(string connection, PlayerInfoDTO userData)

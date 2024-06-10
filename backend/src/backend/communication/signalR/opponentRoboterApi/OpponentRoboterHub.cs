@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.SignalR;
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
@@ -36,13 +37,26 @@ namespace backend.communication.signalR.opponentRoboterApi
 
         public override Task OnConnectedAsync()
         {
-            _opponentRoboterHubApi.Connected(Context.ConnectionId);
+            _opponentRoboterHubApi.Connected(CallerUrl, Context.ConnectionId);
             return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            _opponentRoboterHubApi.Connected(Context.ConnectionId);
+            _opponentRoboterHubApi.Disconnected(CallerUrl, Context.ConnectionId);
             return Task.CompletedTask;
+        }
+
+        private string CallerUrl
+        {
+            get
+            {
+                var callerUrl = Context.GetHttpContext()?.Request.GetDisplayUrl();
+
+                if (callerUrl == null)
+                    callerUrl = "Opponent URL not found!";
+
+                return callerUrl;
+            }
         }
 
         private readonly OpponentRoboterHubApi _opponentRoboterHubApi;
