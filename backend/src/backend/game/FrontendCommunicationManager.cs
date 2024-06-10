@@ -5,6 +5,7 @@ using backend.game.entities;
 using backend.Infrastructure;
 using backend.services;
 using backend.services.player;
+using backend.utilities;
 using System.Diagnostics;
 
 namespace backend.game
@@ -21,13 +22,21 @@ namespace backend.game
 
     internal class FrontendCommunicationManager : DisposingObject
     {
-        public FrontendCommunicationManager(FrontendApi frontendApi, PlayerConnectionService playerConnectionService, GameManager gameManager)
+        public FrontendCommunicationManager(FrontendApi frontendApi, PlayerConnectionService playerConnectionService, GameManager gameManager, GameResultsService gameResultsService)
         {
             _frontendApi = frontendApi;
             _playerConnectionService = playerConnectionService;
             _gameManager = gameManager;
+            _gameResultsService = gameResultsService;
 
             _playerConnectionService.WebPlayerConnectionManager.OnPlayerDisconnected += PlayerDisconnected;
+
+            _frontendApi.OnGetConnectedPlayers += GetConnectedPlayers;
+            _frontendApi.OnGetGamePlan += GetGamePlan;
+            _frontendApi.OnGetGame += GetGame;
+            _frontendApi.OnGetBestlist += GetBestlist;
+            _frontendApi.OnGetHint += GetHint;
+
             _frontendApi.OnGetUserData += GetUserData;
             _frontendApi.OnRequestMatch += RequestMatch;
             _frontendApi.OnAcceptMatch += AcceptMatch;
@@ -64,6 +73,14 @@ namespace backend.game
 
         protected override void OnDispose()
         {
+            _playerConnectionService.WebPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
+
+            _frontendApi.OnGetConnectedPlayers -= GetConnectedPlayers;
+            _frontendApi.OnGetGamePlan -= GetGamePlan;
+            _frontendApi.OnGetGame -= GetGame;
+            _frontendApi.OnGetBestlist -= GetBestlist;
+            _frontendApi.OnGetHint -= GetHint;
+
             _frontendApi.OnGetUserData -= GetUserData;
             _frontendApi.OnRequestMatch -= RequestMatch;
             _frontendApi.OnAcceptMatch -= AcceptMatch;
@@ -93,6 +110,44 @@ namespace backend.game
             WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
             SendUserData(connectionId, webPlayer);
         }
+        public void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
+        {
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            ConnectedPlayersDTO connectedPlayers = _playerConnectionService.GetConnectedPlayersExcept(webPlayer, connectionId);
+
+            SendConnectedPlayers(connectionId, connectedPlayers);
+        }
+        public void GetGamePlan(string connectionId)
+        {
+            IEnumerable<Match> gamePlan = _gameManager.GamePlan;
+            SendGamePlan(connectionId, gamePlan);
+        }
+
+        public void GetGame(PlayerIdentity playerIdentity, string connectionId)
+        {
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+
+            Game? game = _gameManager.Game;
+            if (game == null)
+                return;
+
+            if (!webPlayer.IsInGame && !webPlayer.IsWatchingGame)
+                return;
+
+            SendGame(connectionId, game);
+        }
+
+        public void GetBestlist(string connectionId)
+        {
+            IEnumerable<GameResult> bestlist = _gameResultsService.Bestlist;
+            SendBestlist(connectionId, bestlist);
+        }
+        public void GetHint(PlayerIdentity playerIdentity)
+        {
+            WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
+            _gameManager.GetHint(webPlayer);
+        }
+
         private void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId)
         {
             WebPlayer requestingWebPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(requestingPlayerIdentity);
@@ -151,12 +206,18 @@ namespace backend.game
         private void WatchGame(PlayerIdentity playerIdentity)
         {
             WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
-            webPlayer.WatchingGame = true;
+            webPlayer.IsWatchingGame = true;
+
+            Game? game = _gameManager.Game;
+            if (game == null)
+                return;
+
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(webPlayer, c => SendGame(c, game));
         }
         private void StopWatchingGame(PlayerIdentity playerIdentity)
         {
             WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
-            webPlayer.WatchingGame = false;
+            webPlayer.IsWatchingGame = false;
         }
 
         private void RequestMatchFromOpponentRoboterPlayer(string opponentRoboterPlayerId)
@@ -183,6 +244,26 @@ namespace backend.game
             PlayerInfoDTO playerInfoDTO = new PlayerInfoDTO(player);
             await _frontendApi.SendUserData(connectionId, playerInfoDTO);
         }
+        private async void SendConnectedPlayers(string connectionId, ConnectedPlayersDTO connectedPlayersDTO)
+        {
+            await _frontendApi.SendConnectedPlayers(connectionId, connectedPlayersDTO);
+        }
+        private async void SendBestlist(string connectionId, IEnumerable<GameResult> bestlist)
+        {
+            IEnumerable<GameResultDTO> bestlistDTO = bestlist.Select(x => new GameResultDTO(x));
+            await _frontendApi.SendBestList(connectionId, bestlistDTO);
+        }
+        private async void SendGame(string connectionId, Game game)
+        {
+            GameDTO gameDTO = new GameDTO(game);
+            await _frontendApi.SendGame(connectionId, gameDTO);
+        }
+        private async void SendGamePlan(string connectionId, IEnumerable<Match> gamePlan)
+        {
+            IEnumerable<MatchDTO> gamePlanDTO = gamePlan.Select(x => new MatchDTO(x));
+            await _frontendApi.SendGamePlan(connectionId, gamePlanDTO);
+        }
+
         private void OnRequestedMatch(Player requester, Player opponent)
         {
             if (opponent is WebPlayer opponentWebPlayer)
@@ -201,21 +282,21 @@ namespace backend.game
         private void OnGameStarted(Game game)
         {
             GameDTO gameDTO = new GameDTO(game);
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.GameStarted(c, gameDTO));
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(_sendGameInformationCondition, async c => await _frontendApi.GameStarted(c, gameDTO));
         }
         private void OnGameEnded(GameResult gameResult)
         {
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.GameEnded(c, gameResultDTO));
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(_sendGameInformationCondition, async c => await _frontendApi.GameEnded(c, gameResultDTO));
         }
         private void OnConfirmedGameStart(Player player)
         {
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.ConfirmedGameStart(c, player.Id));
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(_sendGameInformationCondition, async c => await _frontendApi.ConfirmedGameStart(c, player.Id));
         }
         private void OnMovePlayed(Player player, Field field)
         {
             FieldDTO fieldDTO = new FieldDTO(field);
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.MovePlayed(c, player.Id, fieldDTO));
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(_sendGameInformationCondition, async c => await _frontendApi.MovePlayed(c, player.Id, fieldDTO));
         }
         private void OnSendHint(Player player, int column)
         {
@@ -227,5 +308,7 @@ namespace backend.game
         private readonly FrontendApi _frontendApi;
         private readonly PlayerConnectionService _playerConnectionService;
         private readonly GameManager _gameManager;
+        private readonly GameResultsService _gameResultsService;
+        private readonly Func<WebPlayer, bool> _sendGameInformationCondition = (p) => p.IsInGame || p.IsWatchingGame;
     }
 }

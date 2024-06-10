@@ -7,10 +7,10 @@ namespace backend.communication.signalR.frontendApi
 {
     internal delegate void GetUserData(PlayerIdentity playerIdentity, string connectionId);
     internal delegate void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId);
-    internal delegate void GetGamePlan(PlayerIdentity playerIdentity, string connectionId);
+    internal delegate void GetGamePlan(string connectionId);
     internal delegate void GetGame(PlayerIdentity playerIdentity, string connectionId);
-    internal delegate void GetBestlist(PlayerIdentity playerIdentity, string connectionId);
-    internal delegate void GetHint(PlayerIdentity playerIdentity, string connectionId);
+    internal delegate void GetBestlist(string connectionId);
+    internal delegate void GetHint(PlayerIdentity playerIdentity);
 
     internal delegate void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId);
     internal delegate void AcceptMatch(PlayerIdentity acceptingPlayerIdentity, string opponentPlayerId);
@@ -76,7 +76,7 @@ namespace backend.communication.signalR.frontendApi
         {
             _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
             {
-                OnGetGamePlan?.Invoke(playerIdentity, connectionId);
+                OnGetGamePlan?.Invoke(connectionId);
                 return Task.CompletedTask;
             });
         }
@@ -92,15 +92,15 @@ namespace backend.communication.signalR.frontendApi
         {
             _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
             {
-                OnGetBestlist?.Invoke(playerIdentity, connectionId);
+                OnGetBestlist?.Invoke(connectionId);
                 return Task.CompletedTask;
             });
         }
-        public void GetHint(PlayerIdentity playerIdentity, string connectionId)
+        public void GetHint(PlayerIdentity playerIdentity)
         {
             _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
             {
-                OnGetHint?.Invoke(playerIdentity, connectionId);
+                OnGetHint?.Invoke(playerIdentity);
                 return Task.CompletedTask;
             });
         }

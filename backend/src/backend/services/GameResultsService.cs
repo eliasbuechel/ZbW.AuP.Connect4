@@ -1,22 +1,15 @@
-﻿using backend.communication.DOTs;
-using backend.communication.signalR.frontendApi;
-using backend.Data;
+﻿using backend.Data;
 using backend.Data.entities;
-using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.services
 {
-    internal class GameResultsService : DisposingObject
+    internal class GameResultsService
     {
-        public GameResultsService(BackendDbContextFacory dbContextFactory, FrontendApi frontendApi)
+        public GameResultsService(BackendDbContextFacory dbContextFactory)
         {
             _dbContextFactory = dbContextFactory;
-            _frontendApi = frontendApi;
-
-            _frontendApi.OnGetBestlist += OnGetBestlist;
         }
 
         public IEnumerable<GameResult> Bestlist
@@ -73,21 +66,6 @@ namespace backend.services
             await context.SaveChangesAsync();
         }
 
-        protected override void OnDispose()
-        {
-            _frontendApi.OnGetBestlist -= OnGetBestlist;
-        }
-
-        private async void OnGetBestlist(PlayerIdentity playerIdentity, string connectionId)
-        {
-            IEnumerable<GameResultDTO> bestlistDTO = Bestlist.Select(x => new GameResultDTO(x));
-            await _frontendApi.SendBestList(connectionId, bestlistDTO);
-        }
-        private void UpdateFrontend(Player player)
-        {
-        }
-
-        private readonly FrontendApi _frontendApi;
         private readonly BackendDbContextFacory _dbContextFactory;
     }
 }

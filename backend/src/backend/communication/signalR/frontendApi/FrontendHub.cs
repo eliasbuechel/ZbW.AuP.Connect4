@@ -41,7 +41,7 @@ namespace backend.communication.signalR.frontendApi
         }
         public void GetHint()
         {
-            _frontendApi.GetHint(Identification, Context.ConnectionId);
+            _frontendApi.GetHint(Identification);
         }
 
         public void RequestMatch(string requestingPlayerId)

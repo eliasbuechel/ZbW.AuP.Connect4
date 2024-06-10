@@ -8,19 +8,17 @@ namespace backend.game
 {
     internal class AlgorythmPlayerCommunicationManager : DisposingObject
     {
-        public AlgorythmPlayerCommunicationManager(FrontendApi frontendApi, PlayerConnectionService playerConnectionService, GameManager gameManager)
+        public AlgorythmPlayerCommunicationManager(GameManager gameManager)
         {
-            _frontendApi = frontendApi;
             _gameManager = gameManager;
-            _playerConnectionService = playerConnectionService;
 
             _gameManager.OnRequestedMatch += OnRequestedMatch;
             _gameManager.OnGameStarted += OnGameStarted;
             _gameManager.OnConfirmedGameStart += OnConfirmedGameStart;
-            _gameManager.OnMovePlayed += OnMovePlayer;
+            _gameManager.OnMovePlayed += OnMovePlayed;
         }
 
-        private void OnMovePlayer(Player player, Field field)
+        private void OnMovePlayed(Player player, Field field)
         {
             if (player != _opponentPlayer)
                 return;
@@ -82,10 +80,11 @@ namespace backend.game
         protected override void OnDispose()
         {
             _gameManager.OnRequestedMatch -= OnRequestedMatch;
+            _gameManager.OnGameStarted -= OnGameStarted;
+            _gameManager.OnConfirmedGameStart -= OnConfirmedGameStart;
+            _gameManager.OnMovePlayed -= OnMovePlayed;
         }
 
-        private readonly FrontendApi _frontendApi;
-        private readonly PlayerConnectionService _playerConnectionService;
         private readonly GameManager _gameManager;
         private bool _algorythmPlayerIsStartingPlayer;
         private Player? _opponentPlayer;

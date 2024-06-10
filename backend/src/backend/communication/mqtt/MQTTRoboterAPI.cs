@@ -1,5 +1,6 @@
 ﻿using backend.game;
 using backend.game.entities;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace backend.communication.mqtt
@@ -29,6 +30,8 @@ namespace backend.communication.mqtt
 
         public void PlaceStone(Player player, Field field)
         {
+            Debug.Assert(_placingPlayer == null && _placingField == null);
+
             _placingPlayer = player;
             _placingField = field;
             _mqttTopicClient.PublishAsync(TOPIC_COLUMN, field.Column.ToString()).Wait();
@@ -44,7 +47,6 @@ namespace backend.communication.mqtt
 
             _mqttTopicClient.OnConnected += RequestConnect4BoardReset;
         }
-
 
         private void RequestConnect4BoardReset()
         {
@@ -76,10 +78,13 @@ namespace backend.communication.mqtt
                     //Debug.Assert(false);
                     return Task.CompletedTask;
                 }
+                Field placingField = _placingField;
+                Player placingPlayer = _placingPlayer;
 
-                OnStonePlaced?.Invoke(_placingPlayer, _placingField);
                 _placingField = null;
                 _placingPlayer = null;
+
+                OnStonePlaced?.Invoke(placingPlayer, placingField);
                 return Task.CompletedTask;
             }
 

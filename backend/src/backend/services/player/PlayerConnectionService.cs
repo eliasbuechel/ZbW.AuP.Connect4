@@ -1,32 +1,26 @@
 ﻿using backend.communication.DOTs;
-using backend.communication.signalR.frontendApi;
-using backend.Data;
 using backend.game;
-using Org.BouncyCastle.Asn1.Mozilla;
+using backend.game.entities;
+using backend.Infrastructure;
 using System.Diagnostics;
 
 namespace backend.services.player
 {
-    internal class PlayerConnectionService : IDisposable
+    internal class PlayerConnectionService : DisposingObject
     {
         public PlayerConnectionService(
             WebPlayerConnectionManager webPlayerConnectionManager,
             AlgorythmPlayerConnectionManager algorythmPlayerManager,
-            OpponentRoboterPlayerConnectionManager opponentRoboterPlayerConnectionManager,
-            FrontendApi frontendApi
+            OpponentRoboterPlayerConnectionManager opponentRoboterPlayerConnectionManager
             )
         {
             WebPlayerConnectionManager = webPlayerConnectionManager;
             AlgorythmPlayerConnectionManager = algorythmPlayerManager;
             OpponentRoboterPlayerConnectionManager = opponentRoboterPlayerConnectionManager;
-            _frontendApi = frontendApi;
-
-            _frontendApi.OnGetConnectedPlayers += OnGetConnectedPlayers;
 
             WebPlayerConnectionManager.OnPlayerDisconnected += PlayerDisconnected;
             OpponentRoboterPlayerConnectionManager.OnPlayerDisconnected += PlayerDisconnected;
         }
-
 
         public event Action<Player>? OnPlayerDisconnected;
 
@@ -52,36 +46,10 @@ namespace backend.services.player
             Debug.Assert(false);
             return null;
         }
-        public WebPlayer GetWebPlayerByIdentification(string playerIdentityId)
+        public ConnectedPlayersDTO GetConnectedPlayersExcept(WebPlayer requestingWebPlayer, string connectionId)
         {
-            return WebPlayerConnectionManager.GetConnectedPlayer(playerIdentityId);
-        }
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _disposed = true;
-
-            _frontendApi.OnGetConnectedPlayers -= OnGetConnectedPlayers;
-
-            WebPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
-            OpponentRoboterPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
-        }
-
-        private void PlayerDisconnected(Player player)
-        {
-            OnPlayerDisconnected?.Invoke(player);
-        }
-        private async void OnGetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
-        {
-            WebPlayer requester = WebPlayerConnectionManager.GetConnectedPlayer(playerIdentity);
-
-            IEnumerable<ConnectedPlayerDTO> connectedWebPlayers = WebPlayers.Where(x => x.Id != requester.Id).Select(x => new ConnectedPlayerDTO(x, requester));
-            IEnumerable<ConnectedPlayerDTO> connectedOpponentRoboterPlayers = OpponentRoboterePlayers.Where(x => x.Id != requester.Id).Select(x =>
+            IEnumerable<ConnectedPlayerDTO> connectedWebPlayers = WebPlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x => new ConnectedPlayerDTO(x, requestingWebPlayer));
+            IEnumerable<ConnectedPlayerDTO> connectedOpponentRoboterPlayers = OpponentRoboterePlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x =>
             {
                 AlgorythmPlayer? algorythmPlayer = AlgorythmPlayerConnectionManager.GetConnectedPlayer(x);
                 if (algorythmPlayer == null)
@@ -91,15 +59,18 @@ namespace backend.services.player
             });
 
             ConnectedPlayersDTO connectedPlayers = new ConnectedPlayersDTO(connectedWebPlayers, connectedOpponentRoboterPlayers);
-            await _frontendApi.SendConnectedPlayers(connectionId, connectedPlayers);
+            return connectedPlayers;
         }
 
-        internal OpponentRoboterPlayer GetOponentRoboterPlayer(string opponentRoboterPlayerId)
+        private void PlayerDisconnected(Player player)
         {
-            return OpponentRoboterePlayers.Where(x => x.Id == opponentRoboterPlayerId).First();
+            OnPlayerDisconnected?.Invoke(player);
         }
 
-        private bool _disposed;
-        private readonly FrontendApi _frontendApi;
+        protected override void OnDispose()
+        {
+            WebPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
+            OpponentRoboterPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
+        }
     }
 }

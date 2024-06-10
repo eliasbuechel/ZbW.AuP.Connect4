@@ -48,6 +48,17 @@ namespace backend.services.player
                     action(c);
             }
         }
+        public void ForeachConnectedPlayerConnection(Func<TPlayer, bool> condition, Action<string> action)
+        {
+            foreach (var p in _connectedPlayersAndIdentification)
+            {
+                if (!condition(p.Item1))
+                    continue;
+
+                foreach (var c in _playerConnections[p.Item2])
+                    action(c);
+            }
+        }
         public void ForeachConnectionOfPlayer(TPlayer player, Action<string> action)
         {
             foreach (var pi in _connectedPlayersAndIdentification)
