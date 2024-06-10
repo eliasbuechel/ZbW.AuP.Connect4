@@ -78,6 +78,7 @@ namespace backend.services.player
                 if (_playerConnections[identitfication][i] == connectionId)
                 {
                     _playerConnections[identitfication].Remove(_playerConnections[identitfication][i]);
+                    _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>(_connectedPlayersAndIdentification.Where(x => !x.Item2.Equals(identitfication)).ToList());
                     break;
                 }
             }
@@ -99,6 +100,7 @@ namespace backend.services.player
 
                 List<string>? value;
                 _playerConnections.Remove(identitfication, out value);
+                _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>(_connectedPlayersAndIdentification.Where(x => !x.Item2.Equals(identitfication)).ToList());
 
                 PlayerDisconnected(player);
             });
@@ -141,7 +143,7 @@ namespace backend.services.player
                 PlayerConnected(player);
         }
 
-        protected readonly ConcurrentBag<Tuple<TPlayer, TIdentitfication>> _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>();
+        protected ConcurrentBag<Tuple<TPlayer, TIdentitfication>> _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>();
         protected readonly ConcurrentDictionary<TIdentitfication, List<string>> _playerConnections = new ConcurrentDictionary<TIdentitfication, List<string>>();
     }
 }

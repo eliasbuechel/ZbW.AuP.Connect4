@@ -97,6 +97,13 @@ namespace backend
             services.AddSingleton<FrontendApi>();
             services.AddSingleton<OpponentRoboterHubApi>();
 
+            services.AddTransient<Func<string, OpponentRoboterClientApi>>(s => hubUrl =>
+            {
+                RequestHandlerManager<string> requestHandlerManager = s.GetRequiredService<RequestHandlerManager<string>>();
+                return new OpponentRoboterClientApi(requestHandlerManager, hubUrl);
+            }
+            );
+
 
             services.AddSingleton<GameManager>();
             services.AddSingleton<GameBoard>();

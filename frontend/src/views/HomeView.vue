@@ -244,9 +244,11 @@ export default defineComponent({
           : this.game!.match.player1.id;
     },
     onUdateConnectedPlayers(connectedPlayers: ConnectedPlayers): void {
+      console.log("Update connected players: ", connectedPlayers);
       this.connectedPlayers = connectedPlayers;
     },
     onPlayerConnected(onlinePlayer: OnlinePlayer): void {
+      console.log("player connected: ", onlinePlayer);
       this.connectedPlayers.webPlayers = new Array<OnlinePlayer>(...this.connectedPlayers.webPlayers, onlinePlayer);
     },
     onPlayerDisconnected(playerId: string): void {
@@ -255,7 +257,7 @@ export default defineComponent({
     },
     onOpponentRoboterPlayerConnected(onlinePlayer: OnlinePlayer): void {
       this.connectedPlayers.opponentRoboterPlayers = new Array<OnlinePlayer>(
-        ...this.connectedPlayers.webPlayers,
+        ...this.connectedPlayers.opponentRoboterPlayers,
         onlinePlayer
       );
     },

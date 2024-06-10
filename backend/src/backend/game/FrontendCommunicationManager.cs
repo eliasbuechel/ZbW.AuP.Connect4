@@ -1,5 +1,6 @@
 ﻿using backend.communication.DOTs;
 using backend.communication.signalR.frontendApi;
+using backend.communication.signalR.opponentRoboterApi;
 using backend.Data;
 using backend.game.entities;
 using backend.Infrastructure;
@@ -22,13 +23,19 @@ namespace backend.game
 
     internal class FrontendCommunicationManager : DisposingObject
     {
-        public FrontendCommunicationManager(FrontendApi frontendApi, PlayerConnectionService playerConnectionService, GameManager gameManager, GameResultsService gameResultsService)
+        public FrontendCommunicationManager(
+            FrontendApi frontendApi,
+            PlayerConnectionService playerConnectionService,
+            GameManager gameManager,
+            GameResultsService gameResultsService,
+            Func<string, OpponentRoboterClientApi> createOpponentRoboterClientApi
+            )
         {
             _frontendApi = frontendApi;
             _playerConnectionService = playerConnectionService;
             _gameManager = gameManager;
             _gameResultsService = gameResultsService;
-
+            _createOpponentRoboterClientApi = createOpponentRoboterClientApi;
             _playerConnectionService.WebPlayerConnectionManager.OnPlayerDisconnected += PlayerDisconnected;
 
             _frontendApi.OnGetConnectedPlayers += GetConnectedPlayers;
@@ -48,6 +55,7 @@ namespace backend.game
             _frontendApi.OnWatchGame += WatchGame;
             _frontendApi.OnStopWatchingGame += StopWatchingGame;
 
+            _frontendApi.OnConnectToOpponentRoboterPlayer += OnConnectToOpponentRoboterPlayer;
             _frontendApi.OnRequestSinglePlayerMatch += RequestSinglePlayerMatch;
             _frontendApi.OnRequestMatchFromOpponentRoboterPlayer += RequestMatchFromOpponentRoboterPlayer;
 
@@ -92,6 +100,7 @@ namespace backend.game
             _frontendApi.OnWatchGame -= WatchGame;
             _frontendApi.OnStopWatchingGame -= StopWatchingGame;
 
+            _frontendApi.OnConnectToOpponentRoboterPlayer -= OnConnectToOpponentRoboterPlayer;
             _frontendApi.OnRequestSinglePlayerMatch -= RequestSinglePlayerMatch;
             _frontendApi.OnRequestMatchFromOpponentRoboterPlayer -= RequestMatchFromOpponentRoboterPlayer;
 
@@ -220,6 +229,11 @@ namespace backend.game
             webPlayer.IsWatchingGame = false;
         }
 
+        private void OnConnectToOpponentRoboterPlayer(string hubUrl)
+        {
+            OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
+            _playerConnectionService.OpponentRoboterPlayerConnectionManager.ConnectPlayer(hubUrl, hubUrl);
+        }
         private void RequestMatchFromOpponentRoboterPlayer(string opponentRoboterPlayerId)
         {
             OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(opponentRoboterPlayerId);
@@ -309,6 +323,7 @@ namespace backend.game
         private readonly PlayerConnectionService _playerConnectionService;
         private readonly GameManager _gameManager;
         private readonly GameResultsService _gameResultsService;
+        private readonly Func<string, OpponentRoboterClientApi> _createOpponentRoboterClientApi;
         private readonly Func<WebPlayer, bool> _sendGameInformationCondition = (p) => p.IsInGame || p.IsWatchingGame;
     }
 }
