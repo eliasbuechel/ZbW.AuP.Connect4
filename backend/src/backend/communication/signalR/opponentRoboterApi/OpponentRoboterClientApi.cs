@@ -1,6 +1,7 @@
 ﻿using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace backend.communication.signalR.opponentRoboterApi
@@ -99,9 +100,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         private Task OnConnectionClosed(Exception? exception)
         {
-            string? connectionId = _connection.ConnectionId;
-            Debug.Assert(connectionId != null);
-            Disconnected(_hubUrl, connectionId);
+            Disconnected(_hubUrl, _hubUrl);
             return Task.CompletedTask;
         }
 

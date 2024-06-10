@@ -6,7 +6,6 @@ using backend.game.entities;
 using backend.Infrastructure;
 using backend.services;
 using backend.services.player;
-using backend.utilities;
 using System.Diagnostics;
 
 namespace backend.game
@@ -28,14 +27,15 @@ namespace backend.game
             PlayerConnectionService playerConnectionService,
             GameManager gameManager,
             GameResultsService gameResultsService,
-            Func<string, OpponentRoboterClientApi> createOpponentRoboterClientApi
+            OpponentRoboterClientApiManager opponentRoboterClientApiManager
             )
         {
             _frontendApi = frontendApi;
             _playerConnectionService = playerConnectionService;
             _gameManager = gameManager;
             _gameResultsService = gameResultsService;
-            _createOpponentRoboterClientApi = createOpponentRoboterClientApi;
+            _opponentRoboterClientApiManager = opponentRoboterClientApiManager;
+
             _playerConnectionService.WebPlayerConnectionManager.OnPlayerDisconnected += PlayerDisconnected;
 
             _frontendApi.OnGetConnectedPlayers += GetConnectedPlayers;
@@ -236,8 +236,9 @@ namespace backend.game
 
         private void OnConnectToOpponentRoboterPlayer(string hubUrl)
         {
-            OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
             _playerConnectionService.OpponentRoboterPlayerConnectionManager.ConnectPlayer(hubUrl, hubUrl);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(hubUrl);
+            _opponentRoboterClientApiManager.Create(opponentRoboterPlayer.Id);
         }
         private void RequestOpponentRoboterPlayerMatch(string requestingOpponentRoboterPlayerId)
         {
@@ -343,7 +344,7 @@ namespace backend.game
         private readonly PlayerConnectionService _playerConnectionService;
         private readonly GameManager _gameManager;
         private readonly GameResultsService _gameResultsService;
-        private readonly Func<string, OpponentRoboterClientApi> _createOpponentRoboterClientApi;
+        private readonly OpponentRoboterClientApiManager _opponentRoboterClientApiManager;
         private readonly Func<WebPlayer, bool> _sendGameInformationCondition = (p) => p.IsInGame || p.IsWatchingGame;
     }
 }

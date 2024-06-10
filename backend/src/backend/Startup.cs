@@ -100,6 +100,7 @@ namespace backend
             services.AddSingleton<FrontendApi>();
             services.AddSingleton<OpponentRoboterHubApi>();
 
+            services.AddSingleton<OpponentRoboterClientApiManager>();
             services.AddTransient<Func<string, OpponentRoboterClientApi>>(s => hubUrl =>
             {
                 RequestHandlerManager<string> requestHandlerManager = s.GetRequiredService<RequestHandlerManager<string>>();
