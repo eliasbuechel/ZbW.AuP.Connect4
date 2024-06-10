@@ -22,13 +22,13 @@ namespace backend.services.player
             _opponentRoboterPlayerConnectionManager.OnPlayerDisconnected += OnOpponentRoboterPlayerDisconnected;
         }
 
-        protected override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity)
+        protected override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, string connectionId)
         {
             WebPlayer? player = GetConnectedPlayerByIdentificationOrDefault(playerIdentity);
             if (player == null)
             {
                 player = new WebPlayer(playerIdentity);
-                _connectedPlayersAndIdentification.Add(new Tuple<WebPlayer, PlayerIdentity>(player, playerIdentity));
+                _connections.Add(new PlayerConnection(player, playerIdentity, connectionId));
             }
 
             return player;
@@ -54,10 +54,6 @@ namespace backend.services.player
             _opponentRoboterPlayerConnectionManager.OnPlayerConnected -= OnOpponentRoboterPlayerConnected;
             _opponentRoboterPlayerConnectionManager.OnPlayerDisconnected -= OnOpponentRoboterPlayerDisconnected;
         }
-        protected override bool IdentificationsAreEqal(PlayerIdentity identification1, PlayerIdentity identification2)
-        {
-            return identification1.Id == identification2.Id;
-        }
 
         private void OnOpponentRoboterPlayerConnected(OpponentRoboterPlayer opponentRoboterPlayer)
         {
@@ -68,7 +64,6 @@ namespace backend.services.player
         {
             ForeachConnectedPlayerConnection(async (connectionId) => await _frontendApi.OpponentRoboterPlayerDisconnected(connectionId, opponentRoboterPlayer.Id));
         }
-
 
         private readonly FrontendApi _frontendApi;
         private readonly OpponentRoboterPlayerConnectionManager _opponentRoboterPlayerConnectionManager;

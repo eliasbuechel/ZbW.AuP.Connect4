@@ -237,8 +237,8 @@ namespace backend.game
         private void OnConnectToOpponentRoboterPlayer(string hubUrl)
         {
             _playerConnectionService.OpponentRoboterPlayerConnectionManager.ConnectPlayer(hubUrl, hubUrl);
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayer(hubUrl);
-            _opponentRoboterClientApiManager.Create(opponentRoboterPlayer.Id);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(hubUrl);
+            _opponentRoboterClientApiManager.Create(opponentRoboterPlayer.Id, hubUrl);
         }
         private void RequestOpponentRoboterPlayerMatch(string requestingOpponentRoboterPlayerId)
         {

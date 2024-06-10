@@ -1,6 +1,7 @@
 ﻿using backend.game;
 using backend.Infrastructure;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace backend.services.player
@@ -10,29 +11,29 @@ namespace backend.services.player
         public event Action<TPlayer>? OnPlayerConnected;
         public event Action<TPlayer>? OnPlayerDisconnected;
 
-        public IEnumerable<TPlayer> ConnectedPlayers => _connectedPlayersAndIdentification.Select(x => x.Item1).ToArray();
+        public IEnumerable<TPlayer> ConnectedPlayers => _connections.Select(x => x.Player).ToArray();
 
         public TPlayer GetConnectedPlayer(string playerId)
         {
-            TPlayer? player = _connectedPlayersAndIdentification.Select(x => x.Item1).FirstOrDefault(p => p.Id == playerId);
+            TPlayer? player = _connections.Select(x => x.Player).FirstOrDefault(p => p.Id == playerId);
             Debug.Assert(player != null);
             return player;
         }
         public TPlayer GetConnectedPlayerByIdentification(TIdentitfication identitfication)
         {
-            return _connectedPlayersAndIdentification.Where(x => x.Item2.Equals(identitfication)).Select(x => x.Item1).First();
+            return _connections.Where(x => x.Identification.Equals(identitfication)).Select(x => x.Player).First();
         }
         public TPlayer? GetConnectedPlayerOrDefault(string playerId)
         {
-            return _connectedPlayersAndIdentification.Select(x => x.Item1).FirstOrDefault(p => p.Id == playerId);
+            return _connections.Select(x => x.Player).FirstOrDefault(p => p.Id == playerId);
         }
         public TPlayer? GetConnectedPlayerByIdentificationOrDefault(TIdentitfication identitfication)
         {
-            return _connectedPlayersAndIdentification.Where(x => x.Item2.Equals(identitfication)).Select(x => x.Item1).FirstOrDefault();
+            return _connections.Where(x => x.Identification.Equals(identitfication)).Select(x => x.Player).FirstOrDefault();
         }
         public void ConnectPlayer(TIdentitfication identification, string connectionId)
         {
-            TPlayer player = GetOrCreatePlayer(identification);
+            TPlayer player = GetOrCreatePlayer(identification, connectionId);
             ConnectPlayer(player, identification, connectionId);
         }
         public void DisconnectPlayer(TIdentitfication identitfication, string connectionId)
@@ -42,81 +43,69 @@ namespace backend.services.player
         }
         public void ForeachConnectedPlayerConnection(Action<string> action)
         {
-            foreach (var p in _connectedPlayersAndIdentification)
+            foreach (var c in _connections)
             {
-                foreach (var c in _playerConnections[p.Item2])
-                    action(c);
+                foreach (var connectionId in c.ConnectionIds)
+                    action(connectionId);
             }
         }
         public void ForeachConnectedPlayerConnection(Func<TPlayer, bool> condition, Action<string> action)
         {
-            foreach (var p in _connectedPlayersAndIdentification)
+            foreach (var c in _connections)
             {
-                if (!condition(p.Item1))
+                if (!condition(c.Player))
                     continue;
 
-                foreach (var c in _playerConnections[p.Item2])
-                    action(c);
+                foreach (var connectionId in c.ConnectionIds)
+                    action(connectionId);
             }
         }
         public void ForeachConnectionOfPlayer(TPlayer player, Action<string> action)
         {
-            foreach (var pi in _connectedPlayersAndIdentification)
+            foreach (var c in _connections)
             {
-                if (pi.Item1 != player)
+                if (c.Player != player)
                     continue;
 
-                foreach (var c in _playerConnections[pi.Item2])
-                    action(c);
+                foreach (var connectionId in c.ConnectionIds)
+                    action(connectionId);
             }
         }
 
-        protected TPlayer DisconnectPlayer(TPlayer player, TIdentitfication identitfication, string connectionId)
+        protected void DisconnectPlayer(TPlayer player, TIdentitfication identitfication, string connectionId)
         {
-            for (int i = 0; i < _playerConnections[identitfication].Count; i++)
-            {
-                if (_playerConnections[identitfication][i] == connectionId)
-                {
-                    _playerConnections[identitfication].Remove(_playerConnections[identitfication][i]);
-                    _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>(_connectedPlayersAndIdentification.Where(x => !x.Item2.Equals(identitfication)).ToList());
-                    break;
-                }
-            }
+            PlayerConnection connection = _connections.Where(x => x.Identification.Equals(identitfication)).First();
+            connection.ConnectionIds.Remove(connection.ConnectionIds.Where(x => x.Equals(connectionId)).First());
 
-            if (_playerConnections[identitfication].Count > 0)
-                return player;
+            if (connection.ConnectionIds.Count > 0)
+                return;
 
             Thread thread = new Thread(async () =>
             {
                 await Task.Delay(5000);
 
-                List<string>? connections;
+                PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identitfication)).FirstOrDefault();
 
-                if (!_playerConnections.TryGetValue(identitfication, out connections))
+                if (connection == null)
                     return;
 
-                if (connections.Count > 0)
+                if (connection.ConnectionIds.Count > 0)
                     return;
 
-                List<string>? value;
-                _playerConnections.Remove(identitfication, out value);
-                _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>(_connectedPlayersAndIdentification.Where(x => !x.Item2.Equals(identitfication)).ToList());
-
+                _connections = new ConcurrentBag<PlayerConnection>(_connections.Where(x => x.Equals(connection)));
                 PlayerDisconnected(player);
             });
             thread.Start();
-
-            return player;
         }
         protected void ForeachConnectedPlayerConnectionExcept(TPlayer exceptingPlayer, Action<string> action)
         {
-            foreach (var p in _connectedPlayersAndIdentification)
+            foreach (var c in _connections)
             {
-                if (p.Item1 == exceptingPlayer)
+                if (c.Player.Equals(exceptingPlayer))
                     continue;
 
-                foreach (var c in _playerConnections[p.Item2])
-                    action(c);
+                foreach (var connectionId in c.ConnectionIds)
+                    action(connectionId);
             }
         }
 
@@ -128,22 +117,35 @@ namespace backend.services.player
         {
             OnPlayerDisconnected?.Invoke(player);
         }
-        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification);
-        protected abstract bool IdentificationsAreEqal(TIdentitfication identification1, TIdentitfication identification2);
+        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, string connectionId);
 
         private void ConnectPlayer(TPlayer player, TIdentitfication identification, string connectionId)
         {
-            if (_playerConnections.ContainsKey(identification))
+            PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identification)).FirstOrDefault();
+
+            if (connection != null)
             {
-                _playerConnections[identification].Add(connectionId);
+                connection.ConnectionIds.Add(connectionId);
                 return;
             }
 
-            if (_playerConnections.TryAdd(identification, new List<string>([connectionId])))
-                PlayerConnected(player);
+            _connections.Add(new PlayerConnection(player, identification, connectionId));
         }
 
-        protected ConcurrentBag<Tuple<TPlayer, TIdentitfication>> _connectedPlayersAndIdentification = new ConcurrentBag<Tuple<TPlayer, TIdentitfication>>();
-        protected readonly ConcurrentDictionary<TIdentitfication, List<string>> _playerConnections = new ConcurrentDictionary<TIdentitfication, List<string>>();
+        protected ConcurrentBag<PlayerConnection> _connections = new ConcurrentBag<PlayerConnection>();
+
+        protected class PlayerConnection
+        {
+            public PlayerConnection(TPlayer player, TIdentitfication identification, string connectionId)
+            {
+                Player = player;
+                Identification = identification;
+                ConnectionIds = new List<string>() { connectionId };
+            }
+
+            public TPlayer Player { get; }
+            public TIdentitfication Identification { get; }
+            public List<string> ConnectionIds { get; }
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 namespace backend.game
 {
-    internal abstract class Player
+    internal abstract class Player : IEquatable<Player>
     {
         public Player(string playerId, string username)
         {
@@ -26,6 +26,12 @@ namespace backend.game
         public override int GetHashCode()
         {
             return HashCode.Combine(Id);
+        }
+
+        public bool Equals(Player? other)
+        {
+            return other != null
+                && Id == other.Id;
         }
     }
 }

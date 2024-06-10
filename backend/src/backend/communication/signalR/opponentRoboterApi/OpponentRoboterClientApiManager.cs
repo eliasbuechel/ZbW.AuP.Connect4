@@ -6,15 +6,15 @@
         {
             _createOpponentRoboterClientApi = createOpponentRoboterClientApi;
         }
-        public OpponentRoboterClientApi Create(string opponentRoboterPlayerApi)
+        public OpponentRoboterClientApi Create(string opponentRoboterPlayerId, string hubUrl)
         {
-            OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(opponentRoboterPlayerApi);
-            _opponentRoboterClientApiDictionary.Add(opponentRoboterPlayerApi, opponentRoboterClientApi);
+            OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
+            _opponentRoboterClientApiDictionary.Add(opponentRoboterPlayerId, opponentRoboterClientApi);
             return opponentRoboterClientApi;
         }
-        public OpponentRoboterClientApi Get(string opponentRoboterPlayerApi)
+        public OpponentRoboterClientApi Get(string opponentRoboterPlayerId)
         {
-            return _opponentRoboterClientApiDictionary[opponentRoboterPlayerApi];
+            return _opponentRoboterClientApiDictionary[opponentRoboterPlayerId];
         }
 
         public void ForEach(Action<OpponentRoboterClientApi> action)
