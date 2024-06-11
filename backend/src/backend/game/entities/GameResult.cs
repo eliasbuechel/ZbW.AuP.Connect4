@@ -4,7 +4,7 @@ namespace backend.game.entities
 {
     internal class GameResult : Entity
     {
-        public GameResult(IPlayer? winner, ICollection<Field>? line, ICollection<PlayedMove> playedMoves, IPlayer startingPlayer, Match match)
+        public GameResult(Player? winner, ICollection<Field>? line, ICollection<PlayedMove> playedMoves, Player startingPlayer, Match match)
         {
             WinnerId = winner == null ? null : winner.Id;
             Line = line;

@@ -1,9 +1,5 @@
-﻿using backend.communication.DOTs;
-using backend.communication.signalR.frontendApi;
-using backend.Data;
-using backend.game;
+﻿using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 

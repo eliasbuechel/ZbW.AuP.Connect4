@@ -1,5 +1,4 @@
 ﻿using backend.game.entities;
-using backend.services;
 using System.Diagnostics;
 
 namespace backend.game
@@ -555,7 +554,7 @@ namespace backend.game
         private bool _activePlayerPlacedStone;
         private readonly Player _startingPlayer;
         private readonly Match _match;
-        private readonly Connect4Board _connect4Board;
+        private readonly GameBoard _connect4Board;
         private readonly ICollection<PlayedMove> _playedMoves = new List<PlayedMove>();
         private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],

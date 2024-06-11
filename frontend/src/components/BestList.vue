@@ -15,57 +15,61 @@
 </template>
 
 <script lang="ts">
-import { GameResult } from "@/types/GameResult";
-import { PlayerIdentity } from "@/types/PlayerIdentity";
-import { PropType, defineComponent } from "vue";
+  import { GameResult } from "@/types/GameResult";
+  import { PlayerIdentity } from "@/types/PlayerIdentity";
+  import { PropType, defineComponent } from "vue";
 
-export default defineComponent({
-  name: "BestList",
-  props: {
-    bestlist: {
-      required: true,
-      type: Array as PropType<GameResult[]>,
+  export default defineComponent({
+    name: "BestList",
+    props: {
+      bestlist: {
+        required: true,
+        type: Array as PropType<GameResult[]>,
+      },
     },
-  },
-  emits: ["show-replay"],
-  methods: {
-    showReplay(idx: number): void {
-      this.$emit("show-replay", this.bestlist[idx]);
-    },
-    winner(idx: number): PlayerIdentity {
-      let gameResult: GameResult = this.bestlist[idx];
-      if (this.isDraw(idx)) return gameResult.match.player1;
+    emits: ["show-replay"],
+    methods: {
+      showReplay(idx: number): void {
+        this.$emit("show-replay", this.bestlist[idx]);
+      },
+      winner(idx: number): PlayerIdentity {
+        let gameResult: GameResult = this.bestlist[idx];
+        if (this.isDraw(idx)) return gameResult.match.player1;
 
-      return gameResult.winnerId === gameResult.match.player1.id ? gameResult.match.player1 : gameResult.match.player2;
+        return gameResult.winnerId === gameResult.match.player1.id
+          ? gameResult.match.player1
+          : gameResult.match.player2;
+      },
+      loser(idx: number): PlayerIdentity {
+        let gameResult: GameResult = this.bestlist[idx];
+        return this.winner(idx).id === gameResult.match.player1.id
+          ? gameResult.match.player2
+          : gameResult.match.player1;
+      },
+      isDraw(idx: number): boolean {
+        //   let gameResult: GameResult = this.bestlist[idx];
+        return this.bestlist[idx].winnerId == null;
+      },
     },
-    loser(idx: number): PlayerIdentity {
-      let gameResult: GameResult = this.bestlist[idx];
-      return this.winner(idx).id === gameResult.match.player1.id ? gameResult.match.player2 : gameResult.match.player1;
-    },
-    isDraw(idx: number): boolean {
-      //   let gameResult: GameResult = this.bestlist[idx];
-      return this.bestlist[idx].winnerId == null;
-    },
-  },
-});
+  });
 </script>
 
 <style scoped>
-.winner {
-  font-weight: bolder;
-}
+  .winner {
+    font-weight: bolder;
+  }
 
-.game-result-entrie {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-}
+  .game-result-entrie {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+  }
 
-.game-result-entrie>button {
-  margin-left: auto;
-}
+  .game-result-entrie > button {
+    margin-left: auto;
+  }
 
-.game-result-entrie>span {
-  margin-right: 0.5rem;
-}
+  .game-result-entrie > span {
+    margin-right: 0.5rem;
+  }
 </style>

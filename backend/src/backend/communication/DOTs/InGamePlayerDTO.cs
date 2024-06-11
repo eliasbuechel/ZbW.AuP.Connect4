@@ -7,8 +7,7 @@ namespace backend.communication.DOTs
         public InGamePlayerDTO(Player player) : base(player)
         {
             HasConfirmedGameStart = player.HasConfirmedGameStart;
-            CurrentHint = player.CurrentHint;
-            TotalPlayTime = Convert.ToInt64(player.TotalPlayTime.TotalMilliseconds);
+            // TotalPlayTime = Convert.ToInt64(player.TotalPlayTime.TotalMilliseconds);
 
             if (player is WebPlayer webPlayer)
             {
