@@ -236,9 +236,7 @@ namespace backend.game
 
         private void OnConnectToOpponentRoboterPlayer(string hubUrl)
         {
-            _playerConnectionService.OpponentRoboterPlayerConnectionManager.ConnectPlayer(hubUrl, hubUrl);
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(hubUrl);
-            _opponentRoboterClientApiManager.Create(opponentRoboterPlayer.Id, hubUrl);
+            _opponentRoboterClientApiManager.Create(hubUrl);
         }
         private void RequestOpponentRoboterPlayerMatch(string requestingOpponentRoboterPlayerId)
         {
@@ -266,7 +264,7 @@ namespace backend.game
         private void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity)
         {
             WebPlayer requestingPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(requestingPlayerIdentity);
-            _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(requestingPlayer, "Algorythm player");
+            _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(requestingPlayer, "R4D4-Algorythm");
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(requestingPlayer);
 
             _gameManager.RequestMatch(requestingPlayer, algorythmPlayer);

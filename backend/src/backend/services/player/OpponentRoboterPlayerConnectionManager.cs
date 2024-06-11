@@ -5,19 +5,24 @@ namespace backend.services.player
 {
     internal class OpponentRoboterPlayerConnectionManager : PlayerConnectionManager<OpponentRoboterPlayer, string>
     {
-        public OpponentRoboterPlayerConnectionManager(OpponentRoboterHubApi opponentRoboterHubApi)
+        public OpponentRoboterPlayerConnectionManager(
+            OpponentRoboterHubApi opponentRoboterHubApi,
+            OpponentRoboterClientApiManager opponentRoboterClientApiManager
+            )
         {
             _opponentRoboterHubApi = opponentRoboterHubApi;
+            _opponentRoboterClientApiManager = opponentRoboterClientApiManager;
 
-            _opponentRoboterHubApi.OnConnected += ConnectOpponentRoboterHubPlayer;
+            _opponentRoboterHubApi.OnConnected += OnConnectedOpponentRoboterHubApi;
             _opponentRoboterHubApi.OnDisconnected += DisconnectPlayer;
-        }
 
-        private void ConnectOpponentRoboterHubPlayer(string callerUrl, string connectionId)
-        {
-            ConnectPlayer(callerUrl, connectionId);
-            OpponentRoboterPlayer opponentRoboterPlayer = GetConnectedPlayerByIdentification(callerUrl);
-            opponentRoboterPlayer.IsHubPlayer = true;
+            _opponentRoboterClientApiManager.ForEach(x =>
+            {
+                x.OnConnected += OnConnectedOpponentRoboterClientApi;
+                x.OnDisconnected += DisconnectPlayer;
+            });
+
+            _opponentRoboterClientApiManager.OnCreated += OnCreatedOpponentRoboterClientApi;
         }
 
         protected override OpponentRoboterPlayer GetOrCreatePlayer(string hubUrl, string connectionId)
@@ -34,10 +39,37 @@ namespace backend.services.player
         }
         protected override void OnDispose()
         {
-            _opponentRoboterHubApi.OnConnected -= ConnectPlayer;
+            _opponentRoboterHubApi.OnConnected -= OnConnectedOpponentRoboterHubApi;
             _opponentRoboterHubApi.OnDisconnected -= DisconnectPlayer;
+
+            _opponentRoboterClientApiManager.ForEach(x =>
+            {
+                x.OnConnected -= OnConnectedOpponentRoboterClientApi;
+                x.OnDisconnected -= DisconnectPlayer;
+            });
+
+            _opponentRoboterClientApiManager.OnCreated -= OnCreatedOpponentRoboterClientApi;
+        }
+
+        private void OnCreatedOpponentRoboterClientApi(OpponentRoboterClientApi opponentRoboterClientApi)
+        {
+            opponentRoboterClientApi.OnConnected += OnConnectedOpponentRoboterClientApi;
+            opponentRoboterClientApi.OnDisconnected += DisconnectPlayer;
+        }
+        private void OnConnectedOpponentRoboterClientApi(string clientUrl, string connectionId)
+        {
+            ConnectPlayer(clientUrl, connectionId);
+            OpponentRoboterPlayer opponentRoboterPlayer = GetConnectedPlayerByIdentification(clientUrl);
+            opponentRoboterPlayer.IsHubPlayer = false;
+        }
+        private void OnConnectedOpponentRoboterHubApi(string callerUrl, string connectionId)
+        {
+            ConnectPlayer(callerUrl, connectionId);
+            OpponentRoboterPlayer opponentRoboterPlayer = GetConnectedPlayerByIdentification(callerUrl);
+            opponentRoboterPlayer.IsHubPlayer = true;
         }
 
         private readonly OpponentRoboterHubApi _opponentRoboterHubApi;
+        private readonly OpponentRoboterClientApiManager _opponentRoboterClientApiManager;
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace backend.communication.signalR.opponentRoboterApi
+﻿using backend.game;
+using backend.services.player;
+
+namespace backend.communication.signalR.opponentRoboterApi
 {
     internal class OpponentRoboterClientApiManager
     {
@@ -6,17 +9,19 @@
         {
             _createOpponentRoboterClientApi = createOpponentRoboterClientApi;
         }
-        public OpponentRoboterClientApi Create(string opponentRoboterPlayerId, string hubUrl)
+
+        public event Action<OpponentRoboterClientApi>? OnCreated;
+
+        public void Create(string hubUrl)
         {
             OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
-            _opponentRoboterClientApiDictionary.Add(opponentRoboterPlayerId, opponentRoboterClientApi);
-            return opponentRoboterClientApi;
+            OnCreated?.Invoke(opponentRoboterClientApi);
+            _opponentRoboterClientApiDictionary.Add(hubUrl, opponentRoboterClientApi);
         }
-        public OpponentRoboterClientApi Get(string opponentRoboterPlayerId)
+        public OpponentRoboterClientApi Get(string identification)
         {
-            return _opponentRoboterClientApiDictionary[opponentRoboterPlayerId];
+            return _opponentRoboterClientApiDictionary[identification];
         }
-
         public void ForEach(Action<OpponentRoboterClientApi> action)
         {
             foreach (OpponentRoboterClientApi opponentRoboterClientApi in _opponentRoboterClientApiDictionary.Values)

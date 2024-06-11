@@ -1,10 +1,8 @@
-﻿using backend.communication.DOTs;
-using backend.communication.signalR.opponentRoboterApi;
+﻿using backend.communication.signalR.opponentRoboterApi;
 using backend.game.entities;
 using backend.Infrastructure;
 using backend.services;
 using backend.services.player;
-using System.ComponentModel;
 
 namespace backend.game
 {
@@ -29,14 +27,15 @@ namespace backend.game
             _opponentRoboterHubApi.OnPlayMove += OnPlayMove;
             _opponentRoboterHubApi.OnQuitGame += OnQuitGame;
 
-            _opponentRoboterClientApiManager.ForEach((api) =>
+            _opponentRoboterClientApiManager.OnCreated += OnCreatedOpponentRoboterClientApi;
+            _opponentRoboterClientApiManager.ForEach((opponentRoboterClientApi) =>
             {
-                api.OnRequestMatch += OnRequestMatch;
-                api.OnAcceptMatch += OnAcceptMatch;
-                api.OnRejectMatch += OnRejectMatch;
-                api.OnConfirmGameStart += OnConfirmGameStart;
-                api.OnPlayMove += OnPlayMove;
-                api.OnQuitGame += OnQuitGame;
+                opponentRoboterClientApi.OnRequestMatch += OnRequestMatch;
+                opponentRoboterClientApi.OnAcceptMatch += OnAcceptMatch;
+                opponentRoboterClientApi.OnRejectMatch += OnRejectMatch;
+                opponentRoboterClientApi.OnConfirmGameStart += OnConfirmGameStart;
+                opponentRoboterClientApi.OnPlayMove += OnPlayMove;
+                opponentRoboterClientApi.OnQuitGame += OnQuitGame;
             });
 
             _gameManager.OnRequestedMatch += OnRequestedMatch;
@@ -47,42 +46,52 @@ namespace backend.game
             _gameManager.OnGameEnded += OnGameEnded;
         }
 
-        // reciving
-        private void OnRequestMatch(string identification)
+        private void OnCreatedOpponentRoboterClientApi(OpponentRoboterClientApi opponentRoboterClientApi)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(identification);
-            _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(opponentRoboterPlayer, identification);
+            opponentRoboterClientApi.OnRequestMatch += OnRequestMatch;
+            opponentRoboterClientApi.OnAcceptMatch += OnAcceptMatch;
+            opponentRoboterClientApi.OnRejectMatch += OnRejectMatch;
+            opponentRoboterClientApi.OnConfirmGameStart += OnConfirmGameStart;
+            opponentRoboterClientApi.OnPlayMove += OnPlayMove;
+            opponentRoboterClientApi.OnQuitGame += OnQuitGame;
+        }
+
+        // reciving
+        private void OnRequestMatch(string connectionId)
+        {
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByConnectionId(connectionId);
+            _playerConnectionService.AlgorythmPlayerConnectionManager.ConnectPlayer(opponentRoboterPlayer, connectionId);
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
             _gameManager.RequestMatch(opponentRoboterPlayer, algorythmPlayer);
         }
-        public void OnAcceptMatch(string identification)
+        public void OnAcceptMatch(string connectionId)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(identification);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByConnectionId(connectionId);
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
             _gameManager.AcceptMatch(opponentRoboterPlayer, algorythmPlayer);
         }
-        public void OnRejectMatch(string identification)
+        public void OnRejectMatch(string connectionId)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(identification);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByConnectionId(connectionId);
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
             _gameManager.RejectMatch(opponentRoboterPlayer, algorythmPlayer);
         }
-        public void OnConfirmGameStart(string identification)
+        public void OnConfirmGameStart(string connectionId)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(identification);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByConnectionId(connectionId);
             _gameManager.ConfirmGameStart(opponentRoboterPlayer);
         }
-        public void OnPlayMove(string identification, int column)
+        public void OnPlayMove(string connectionId, int column)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(identification);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByConnectionId(connectionId);
             _gameManager.PlayMove(opponentRoboterPlayer, column);
         }
-        public void OnQuitGame(string identification)
+        public void OnQuitGame(string connectionId)
         {
-            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByIdentification(identification);
+            OpponentRoboterPlayer opponentRoboterPlayer = _playerConnectionService.OpponentRoboterPlayerConnectionManager.GetConnectedPlayerByConnectionId(connectionId);
             _gameManager.QuitGame(opponentRoboterPlayer);
         }
 
@@ -95,7 +104,7 @@ namespace backend.game
                     _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer, c => _opponentRoboterHubApi.Send_RequestMatch(c));
                 else
                 {
-                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Id);
+                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Identification);
                     opponentRoboterClientApi.Send_RequestMatch();
                 }
             }
@@ -108,7 +117,7 @@ namespace backend.game
                     _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer, c => _opponentRoboterHubApi.Send_RejectMatch(c));
                 else
                 {
-                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Id);
+                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Identification);
                     opponentRoboterClientApi.Send_RejectMatch();
 
                 }
@@ -122,7 +131,7 @@ namespace backend.game
                     _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer1, c => _opponentRoboterHubApi.Send_AcceptMatch(c));
                 else
                 {
-                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer1.Id);
+                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer1.Identification);
                     opponentRoboterClientApi.Send_AcceptMatch();
                 }
             }
@@ -133,7 +142,7 @@ namespace backend.game
                     _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer2, c => _opponentRoboterHubApi.Send_AcceptMatch(c));
                 else
                 {
-                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer2.Id);
+                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer2.Identification);
                     opponentRoboterClientApi.Send_AcceptMatch();
                 }
             }
@@ -151,7 +160,7 @@ namespace backend.game
                         _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer1, c => _opponentRoboterHubApi.Send_QuitGame(c));
                     else
                     {
-                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer1.Id);
+                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer1.Identification);
                         opponentRoboterClientApi.Send_QuitGame(); ;
                     }
                 }
@@ -162,7 +171,7 @@ namespace backend.game
                         _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer2, c => _opponentRoboterHubApi.Send_QuitGame(c));
                     else
                     {
-                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer2.Id);
+                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer2.Identification);
                         opponentRoboterClientApi.Send_QuitGame();
                     }
                 }
@@ -178,7 +187,7 @@ namespace backend.game
                         _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer, c => _opponentRoboterHubApi.Send_ConfirmGameStart(c));
                     else
                     {
-                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Id);
+                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Identification);
                         opponentRoboterClientApi.Send_ConfirmGameStart();
                     }
                 }
@@ -194,7 +203,7 @@ namespace backend.game
                         _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer, c => _opponentRoboterHubApi.Send_PlayMove(c, field.Column));
                     else
                     {
-                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Id);
+                        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer.Identification);
                         opponentRoboterClientApi.Send_PlayMove(field.Column);
                     }
                 }
@@ -210,14 +219,15 @@ namespace backend.game
             _opponentRoboterHubApi.OnPlayMove -= OnPlayMove;
             _opponentRoboterHubApi.OnQuitGame -= OnQuitGame;
 
-            _opponentRoboterClientApiManager.ForEach((api) =>
+            _opponentRoboterClientApiManager.OnCreated -= OnCreatedOpponentRoboterClientApi;
+            _opponentRoboterClientApiManager.ForEach((opponentRoboterClientApi) =>
             {
-                api.OnRequestMatch += OnRequestMatch;
-                api.OnAcceptMatch += OnAcceptMatch;
-                api.OnRejectMatch += OnRejectMatch;
-                api.OnConfirmGameStart += OnConfirmGameStart;
-                api.OnPlayMove += OnPlayMove;
-                api.OnQuitGame += OnQuitGame;
+                opponentRoboterClientApi.OnRequestMatch -= OnRequestMatch;
+                opponentRoboterClientApi.OnAcceptMatch -= OnAcceptMatch;
+                opponentRoboterClientApi.OnRejectMatch -= OnRejectMatch;
+                opponentRoboterClientApi.OnConfirmGameStart -= OnConfirmGameStart;
+                opponentRoboterClientApi.OnPlayMove -= OnPlayMove;
+                opponentRoboterClientApi.OnQuitGame -= OnQuitGame;
             });
 
             _gameManager.OnRequestedMatch -= OnRequestedMatch;

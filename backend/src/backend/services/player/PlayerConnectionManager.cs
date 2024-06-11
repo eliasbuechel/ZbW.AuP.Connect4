@@ -23,6 +23,13 @@ namespace backend.services.player
         {
             return _connections.Where(x => x.Identification.Equals(identitfication)).Select(x => x.Player).First();
         }
+        public TPlayer GetConnectedPlayerByConnectionId(string connectionId)
+        {
+            return _connections
+                .Where(x => x.ConnectionIds.Where(c => c.Equals(connectionId)).Count() > 0)
+                .Select(x => x.Player)
+                .First();
+        }
         public TPlayer? GetConnectedPlayerOrDefault(string playerId)
         {
             return _connections.Select(x => x.Player).FirstOrDefault(p => p.Id == playerId);

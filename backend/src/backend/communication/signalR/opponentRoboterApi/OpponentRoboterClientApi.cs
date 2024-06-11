@@ -28,6 +28,9 @@ namespace backend.communication.signalR.opponentRoboterApi
             Connect().Wait();
         }
 
+        public string HubUrl => _hubUrl;
+        public string ConnectionId => _connectionId;
+
         // reciving
         private void RequestMatch()
         {
@@ -85,6 +88,16 @@ namespace backend.communication.signalR.opponentRoboterApi
             try
             {
                 await _connection.StartAsync();
+
+                string? connectionId = _connection.ConnectionId;
+                if (connectionId == null)
+                {
+                    Debug.Assert(false);
+                    connectionId = "";
+                }
+                _connectionId = connectionId;
+
+                Connected(_hubUrl, _connectionId);
             }
             catch (Exception ex)
             {
@@ -97,6 +110,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         private async void Disconnect()
         {
             await _connection.StopAsync();
+            Disconnected(_hubUrl, _connectionId);
         }
         private Task OnConnectionClosed(Exception? exception)
         {
@@ -130,6 +144,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         private bool _disposed;
         private readonly string _hubUrl;
         private readonly HubConnection _connection;
+        private string _connectionId = "";
         private readonly IDisposable _requestMatchHandler;
         private readonly IDisposable _acceptMatchHandler;
         private readonly IDisposable _rejectMatchHandler;
