@@ -5,7 +5,7 @@ namespace backend.communication.DOTs
 {
     internal class PlayerInfoDTO : EntityDTO
     {
-        public PlayerInfoDTO(IPlayer player) : base(player.Id)
+        public PlayerInfoDTO(Player player) : base(player.Id)
         {
             Username = player.Username;
         }
