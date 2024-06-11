@@ -32,8 +32,8 @@ namespace backend.game
 
         private void OnRequestedMatch(Player requester, Player opponent)
         {
-            if (opponent is AlgorythmPlayer opponentAlgorythmPlayer && opponent is WebPlayer)
-                _gameManager.AcceptMatch(opponentAlgorythmPlayer, requester);
+            if (opponent is AlgorythmPlayer && requester is WebPlayer)
+                _gameManager.AcceptMatch(opponent, requester);
         }
         private void OnGameStarted(Game game)
         {

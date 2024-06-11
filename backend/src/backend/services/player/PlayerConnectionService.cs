@@ -42,6 +42,10 @@ namespace backend.services.player
                 if (player.Id == playerId)
                     return player;
 
+            foreach (var player in AlgorythmPlayerConnectionManager.ConnectedPlayers)
+                if (player.Id == playerId)
+                    return player;
+
             Debug.Assert(false);
             return null;
         }
