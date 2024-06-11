@@ -1,8 +1,5 @@
-﻿using backend.communication.signalR.frontendApi;
-using backend.Data;
-using backend.game.entities;
+﻿using backend.game.entities;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace backend.game
 {
@@ -16,7 +13,13 @@ namespace backend.game
             _connect4Board.OnStonePlaced += OnStonePlaced;
             _connect4Board.OnBoardReset += OnBoardReset;
 
-            _startingPlayer = match.Player1;
+            if (match.Player1 is OpponentRoboterPlayer)
+                _startingPlayer = match.Player1;
+            else if (match.Player2 is OpponentRoboterPlayer)
+                _startingPlayer = match.Player1;
+            else
+                _startingPlayer = match.Player1;
+
             _activePlayer = _startingPlayer;
         }
 
