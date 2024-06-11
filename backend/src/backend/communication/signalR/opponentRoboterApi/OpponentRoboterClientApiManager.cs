@@ -14,9 +14,16 @@ namespace backend.communication.signalR.opponentRoboterApi
 
         public void Create(string hubUrl)
         {
-            OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
-            OnCreated?.Invoke(opponentRoboterClientApi);
-            _opponentRoboterClientApiDictionary.Add(hubUrl, opponentRoboterClientApi);
+            try
+            {
+                OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
+                OnCreated?.Invoke(opponentRoboterClientApi);
+                _opponentRoboterClientApiDictionary.Add(hubUrl, opponentRoboterClientApi);
+            }
+            catch
+            {
+                return;
+            }
         }
         public OpponentRoboterClientApi Get(string identification)
         {

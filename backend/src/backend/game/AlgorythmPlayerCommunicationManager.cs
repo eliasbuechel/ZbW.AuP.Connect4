@@ -40,11 +40,9 @@ namespace backend.game
             if (game.Match.Player1 is AlgorythmPlayer algorythmPlayer1)
             {
                 if (game.Match.Player1 == game.ActivePlayer)
-                {
                     _algorythmPlayerIsStartingPlayer = true;
-                    _opponentPlayer = game.Match.Player2;
-                }
 
+                _opponentPlayer = game.Match.Player2;
                 _algorythmPlayer = algorythmPlayer1;
                 _gameManager.ConfirmGameStart(algorythmPlayer1);
             }
@@ -52,11 +50,9 @@ namespace backend.game
             if (game.Match.Player2 is AlgorythmPlayer algorythmPlayer2)
             {
                 if (game.Match.Player2 == game.ActivePlayer)
-                {
                     _algorythmPlayerIsStartingPlayer = true;
-                    _opponentPlayer = game.Match.Player1;
-                }
 
+                _opponentPlayer = game.Match.Player1;
                 _algorythmPlayer = algorythmPlayer2;
                 _gameManager.ConfirmGameStart(algorythmPlayer2);
             }

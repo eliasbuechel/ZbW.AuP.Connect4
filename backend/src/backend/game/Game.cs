@@ -13,11 +13,11 @@ namespace backend.game
             _connect4Board.OnStonePlaced += OnStonePlaced;
             _connect4Board.OnBoardReset += OnBoardReset;
 
-            if (match.Player1 is OpponentRoboterPlayer)
-                _startingPlayer = match.Player1;
-            else if (match.Player2 is OpponentRoboterPlayer)
-                _startingPlayer = match.Player1;
-            else
+            //if (match.Player1 is OpponentRoboterPlayer)
+            //    _startingPlayer = match.Player1;
+            //else if (match.Player2 is OpponentRoboterPlayer)
+            //    _startingPlayer = match.Player1;
+            //else
                 _startingPlayer = match.Player1;
 
             _activePlayer = _startingPlayer;

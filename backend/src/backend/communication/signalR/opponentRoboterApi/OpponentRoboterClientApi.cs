@@ -73,7 +73,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public async void Send_PlayMove(int column)
         {
-            await _connection.SendAsync(nameof(PlayMove));
+            await _connection.SendAsync(nameof(PlayMove), column);
         }
         public async void Send_QuitGame()
         {
