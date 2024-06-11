@@ -5,7 +5,12 @@
   </div>
   <div class="main-board-container">
     <SinglePlayerModeSelection class="content-card" />
-    <OnlinePlayersListing :onlinePlayers="onlinePlayers" :identity="identity" class="content-card" />
+    <OnlinePlayersListing :onlinePlayers="connectedPlayers.webPlayers" :identity="identity" class="content-card" />
+    <OpponentRoboterPlayerListing
+      :connectedOpponentRoboterPlayers="connectedPlayers.opponentRoboterPlayers"
+      :identity="identity"
+      class="content-card"
+    />
     <GamePlan class="content-card" :gamePlan="gamePlan" />
     <BestList :bestlist="bestlist" @show-replay="showReplay" class="content-card" />
   </div>
@@ -17,11 +22,12 @@ import OnlinePlayersListing from "@/components/OnlinePlayersListing.vue";
 import GamePlan from "@/components/GamePlan.vue";
 import UserInfo from "@/components/UserInfo.vue";
 import { Match } from "@/types/Match";
-import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import SinglePlayerModeSelection from "./SinglePlayerModeSelection.vue";
 import { GameResult } from "@/types/GameResult";
 import BestList from "@/components/BestList.vue";
+import OpponentRoboterPlayerListing from "./OpponentRoboterPlayerListing.vue";
+import { ConnectedPlayers } from "@/types/ConnectedPlayers";
 
 interface MainBoardState {
   isSubscribed: boolean;
@@ -34,9 +40,9 @@ export default defineComponent({
       required: true,
       type: Object as PropType<PlayerIdentity>,
     },
-    onlinePlayers: {
+    connectedPlayers: {
       required: true,
-      type: Array as PropType<OnlinePlayer[]>,
+      type: Object as PropType<ConnectedPlayers>,
     },
     gamePlan: {
       required: true,
@@ -58,6 +64,7 @@ export default defineComponent({
     BestList,
     SinglePlayerModeSelection,
     OnlinePlayersListing,
+    OpponentRoboterPlayerListing,
     GamePlan,
   },
   methods: {

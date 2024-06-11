@@ -3,6 +3,9 @@
     <div class="grid-item-page-info container">
       <h2>Connect Four</h2>
     </div>
+    <button v-if="!isGameParticipant" class="button-light grid-item-leave-game-view-button" @click="stopWatchingGame">
+      Back home
+    </button>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
       <!-- <label>{{ moveTimePlayerLeft }}</label> -->
@@ -19,13 +22,24 @@
         Quit game
       </button>
     </div>
-    <button v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
-      class="button-light grid-item-connect4-board confirm-game-start-button" @click="confirmGameStart">
+    <button
+      v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
+      class="button-light grid-item-connect4-board confirm-game-start-button"
+      @click="confirmGameStart"
+    >
       Confirm game start
     </button>
-    <Connect4Board v-if="game != null && game.startConfirmed" :identity="identity" :connect4Board="game.connect4Board"
-      :playerLeft="inGamePlayerLeft!" :playerRight="inGamePlayerRight!" :activePlayerId="game.activePlayerId"
-      @place-stone="reemitPlaceStone" @quit-game="reemitQuitGame" class="grid-item-connect4-board" />
+    <Connect4Board
+      v-if="game != null && inGamePlayerLeft?.hasConfirmedGameStart && inGamePlayerRight?.hasConfirmedGameStart"
+      :identity="identity"
+      :connect4Board="game.connect4Board"
+      :playerLeft="inGamePlayerLeft!"
+      :playerRight="inGamePlayerRight!"
+      :activePlayerId="game.activePlayerId"
+      @place-stone="reemitPlaceStone"
+      @quit-game="reemitQuitGame"
+      class="grid-item-connect4-board"
+    />
   </div>
 </template>
 
@@ -35,6 +49,7 @@ import { Game } from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import Connect4Board from "./Connect4Board.vue";
 import { InGamePlayer } from "@/types/InGamePlayer";
+import signalRHub from "@/services/signalRHub";
 
 export default defineComponent({
   props: {
@@ -68,6 +83,10 @@ export default defineComponent({
     quitGame(): void {
       this.$emit("quit-game");
     },
+    stopWatchingGame(): void {
+      signalRHub.invoke("StopWatchingGame");
+      this.$emit("stop-watching-game");
+    },
   },
   computed: {
     inGamePlayerLeft(): InGamePlayer | undefined {
@@ -82,31 +101,11 @@ export default defineComponent({
 
       return undefined;
     },
-    // gameResultPlayerLeft(): PlayerIdentity | undefined {
-    //   if (this.gameResult != null)
-    //     return this.gameResult.match.player1.id == this.identity.id
-    //       ? this.gameResult.match.player1
-    //       : this.gameResult.match.player2;
-
-    //   return undefined;
-    // },
-    // gameResultPlayerRight(): PlayerIdentity | undefined {
-    //   if (this.gameResult != null)
-    //     return this.gameResult.match.player1.id == this.identity.id
-    //       ? this.gameResult.match.player2
-    //       : this.gameResult.match.player1;
-
-    //   return undefined;
-    // },
     namePlayerLeft(): string {
       if (this.inGamePlayerLeft != null) {
         if (this.inGamePlayerLeft.id == this.identity.id) return "you";
         return this.inGamePlayerLeft.username;
       }
-      // } else if (this.gameResultPlayerLeft != null) {
-      //   if (this.gameResultPlayerLeft.id == this.identity.id) return "you";
-      //   return this.gameResultPlayerLeft.username;
-      // }
 
       return "";
     },
@@ -115,10 +114,6 @@ export default defineComponent({
         if (this.inGamePlayerRight.id == this.identity.id) return "you";
         return this.inGamePlayerRight.username;
       }
-      // } else if (this.gameResultPlayerRight != null) {
-      //   if (this.gameResultPlayerRight.id == this.identity.id) return "you";
-      //   return this.gameResultPlayerRight.username;
-      // }
 
       return "";
     },
@@ -129,7 +124,7 @@ export default defineComponent({
         return this.inGamePlayerLeft.id === this.identity.id
           ? "confirm to start the game"
           : "confirming game start ...";
-      if (!this.game.startConfirmed) return "";
+      if (!this.inGamePlayerRight?.hasConfirmedGameStart) return "";
       if (this.game.activePlayerId === this.inGamePlayerLeft.id) {
         if (this.inGamePlayerLeft.id == this.identity.id) return "your turn!";
         return "playing...";
@@ -143,12 +138,16 @@ export default defineComponent({
         return this.inGamePlayerRight.id === this.identity.id
           ? "confirm to start the game"
           : "confirming game start ...";
-      if (!this.game.startConfirmed) return "";
+      if (!this.inGamePlayerLeft?.hasConfirmedGameStart) return "";
       if (this.game.activePlayerId === this.inGamePlayerRight.id) {
         if (this.inGamePlayerRight.id == this.identity.id) return "your turn!";
         return "playing...";
       }
       return "";
+    },
+    isGameParticipant(): boolean {
+      if (this.game == null) return false;
+      return this.identity.id === this.game.match.player1.id || this.identity.id === this.game.match.player2.id;
     },
   },
 });
@@ -157,7 +156,15 @@ export default defineComponent({
 <style scoped>
 .grid-item-page-info {
   grid-column: 4 / span 6;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 1;
+}
+.grid-item-leave-game-view-button {
+  grid-column: 4 / span 6;
+  grid-row: 2 / span 1;
+  width: fit-content;
+  height: fit-content;
+  align-self: center;
+  justify-self: center;
 }
 
 .grid-item-player1 {

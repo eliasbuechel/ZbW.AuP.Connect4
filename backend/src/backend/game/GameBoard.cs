@@ -3,26 +3,26 @@ using backend.game.entities;
 
 namespace backend.game
 {
-    internal class Connect4Board
+    internal class GameBoard
     {
-        public Connect4Board(IRoboterAPI roboterAPI)
+        public GameBoard(IRoboterAPI roboterAPI)
         {
-            _field = new IPlayer?[COLUMNS][];
+            _field = new Player?[COLUMNS][];
 
             for (int i = 0; i < _field.Length; i++)
-                _field[i] = new IPlayer?[ROWS];
+                _field[i] = new Player?[ROWS];
             _roboterAPI = roboterAPI;
 
             _roboterAPI.OnStonePlaced += OnStonePlacedOnRoboter;
             _roboterAPI.OnBoardReset += OnRoboterBoardReset;
         }
-        ~Connect4Board()
+        ~GameBoard()
         {
             _roboterAPI.OnStonePlaced -= OnStonePlacedOnRoboter;
             _roboterAPI.OnBoardReset -= OnRoboterBoardReset;
         }
 
-        public event Action<IPlayer, Field>? OnStonePlaced;
+        public event Action<Player, Field>? OnStonePlaced;
         public event Action? OnBoardReset;
 
         public string[][] FieldAsIds
@@ -37,7 +37,7 @@ namespace backend.game
 
                     for (int j = 0; j < _field[i].Length; j++)
                     {
-                        IPlayer? player = _field[i][j];
+                        Player? player = _field[i][j];
                         fieldAsIds[i][j] = player == null ? "" : player.Id;
                     }
                 }
@@ -47,12 +47,12 @@ namespace backend.game
         }
         public int Columns => COLUMNS;
         public int Rows => ROWS;
-        public IPlayer?[] this[int index]
+        public Player?[] this[int index]
         {
             get { return _field[index]; }
         }
 
-        public bool PlaceStone(IPlayer player, int column)
+        public bool PlaceStone(Player player, int column)
         {
             if (column < 0 || column >= COLUMNS)
                 return false;
@@ -83,7 +83,7 @@ namespace backend.game
             _roboterAPI.ResetConnect4Board();
         }
 
-        private void OnStonePlacedOnRoboter(IPlayer player, Field field)
+        private void OnStonePlacedOnRoboter(Player player, Field field)
         {
             OnStonePlaced?.Invoke(player, field);
         }
@@ -92,7 +92,7 @@ namespace backend.game
             OnBoardReset?.Invoke();
         }
 
-        private readonly IPlayer?[][] _field;
+        private readonly Player?[][] _field;
         private readonly IRoboterAPI _roboterAPI;
         private const int ROWS = 6;
         private const int COLUMNS = 7;

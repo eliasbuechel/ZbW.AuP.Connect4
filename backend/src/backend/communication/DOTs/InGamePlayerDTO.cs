@@ -4,11 +4,18 @@ namespace backend.communication.DOTs
 {
     internal class InGamePlayerDTO : PlayerInfoDTO
     {
-        public InGamePlayerDTO(IPlayer player) : base(player)
+        public InGamePlayerDTO(Player player) : base(player)
         {
             HasConfirmedGameStart = player.HasConfirmedGameStart;
-            HintsLeft = player.HintsLeft;
-            CurrentHint = player.CurrentHint;
+
+            if (player is WebPlayer webPlayer)
+            {
+                HintsLeft = webPlayer.HintsLeft;
+                CurrentHint = webPlayer.CurrentHint;
+            }
+
+            HintsLeft = 0;
+            CurrentHint = null;
         }
 
         public bool HasConfirmedGameStart { get; }

@@ -132,7 +132,7 @@ namespace backend.communication.mqtt
                 _topicValueMappings.Remove(topic);
             }
         }
-
+            
         private async Task OnConnectedToBorker(MqttClientConnectedEventArgs e)
         {
             Console.WriteLine("Connected to broker!");
