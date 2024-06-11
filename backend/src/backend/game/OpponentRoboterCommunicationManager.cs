@@ -125,16 +125,16 @@ namespace backend.game
         }
         private void OnMatched(Match match)
         {
-            if (match.Player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
-            {
-                if (opponentRboboterPlayer1.IsHubPlayer)
-                    _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer1, c => _opponentRoboterHubApi.Send_AcceptMatch(c));
-                else
-                {
-                    OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer1.Identification);
-                    opponentRoboterClientApi.Send_AcceptMatch();
-                }
-            }
+            //if (match.Player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
+            //{
+            //    if (opponentRboboterPlayer1.IsHubPlayer)
+            //        _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer1, c => _opponentRoboterHubApi.Send_AcceptMatch(c));
+            //    else
+            //    {
+            //        OpponentRoboterClientApi opponentRoboterClientApi = _opponentRoboterClientApiManager.Get(opponentRboboterPlayer1.Identification);
+            //        opponentRoboterClientApi.Send_AcceptMatch();
+            //    }
+            //}
 
             if (match.Player2 is OpponentRoboterPlayer opponentRboboterPlayer2)
             {

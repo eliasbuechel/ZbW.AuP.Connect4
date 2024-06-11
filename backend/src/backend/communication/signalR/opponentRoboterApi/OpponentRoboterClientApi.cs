@@ -28,33 +28,30 @@ namespace backend.communication.signalR.opponentRoboterApi
             Connect().Wait();
         }
 
-        public string HubUrl => _hubUrl;
-        public string ConnectionId => _connectionId;
-
         // reciving
         private void RequestMatch()
         {
-            RequestMatch(_hubUrl);
+            RequestMatch(_connectionId);
         }
         private void AcceptMatch()
         {
-            AcceptMatch(_hubUrl);
+            AcceptMatch(_connectionId);
         }
         private void RejectMatch()
         {
-            RejectMatch(_hubUrl);
+            RejectMatch(_connectionId);
         }
         private void ConfirmGameStart()
         {
-            ConfirmGameStart(_hubUrl);
+            ConfirmGameStart(_connectionId);
         }
         private void PlayMove(int column)
         {
-            PlayMove(_hubUrl, column);
+            PlayMove(_connectionId, column);
         }
         private void QuitGame()
         {
-            QuitGame(_hubUrl);
+            QuitGame(_connectionId);
         }
 
         // sending
@@ -114,7 +111,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         private Task OnConnectionClosed(Exception? exception)
         {
-            Disconnected(_hubUrl, _hubUrl);
+            Disconnected(_hubUrl, _connectionId);
             return Task.CompletedTask;
         }
 

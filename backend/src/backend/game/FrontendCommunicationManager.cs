@@ -301,11 +301,15 @@ namespace backend.game
         {
             if (opponent is WebPlayer opponentWebPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(opponentWebPlayer, async c => await _frontendApi.PlayerRequestedMatch(c, requester.Id));
+            if (requester is OpponentRoboterPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.PlayerRequestedMatch(c, requester.Id));
         }
         private void OnRejectedMatch(Player rejecter, Player opponent)
         {
             if (opponent is WebPlayer opponentWebPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(opponentWebPlayer, async c => await _frontendApi.PlayerRejectedMatch(c, rejecter.Id));
+            if (rejecter is OpponentRoboterPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.PlayerRejectedMatch(c, rejecter.Id));
         }
         private void OnMatched(Match match)
         {
