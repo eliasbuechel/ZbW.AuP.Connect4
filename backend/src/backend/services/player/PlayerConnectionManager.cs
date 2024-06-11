@@ -40,8 +40,7 @@ namespace backend.services.player
         }
         public void ConnectPlayer(TIdentitfication identification, string connectionId)
         {
-            TPlayer player = GetOrCreatePlayer(identification, connectionId);
-            ConnectPlayer(player, identification, connectionId);
+            CreateOrConnectPlayer(identification, connectionId);
         }
         public void DisconnectPlayer(TIdentitfication identitfication, string connectionId)
         {
@@ -99,7 +98,7 @@ namespace backend.services.player
                 if (connection.ConnectionIds.Count > 0)
                     return;
 
-                _connections = new ConcurrentBag<PlayerConnection>(_connections.Where(x => x.Equals(connection)));
+                _connections = new ConcurrentBag<PlayerConnection>(_connections.Where(x => !x.Equals(connection)));
                 PlayerDisconnected(player);
             });
             thread.Start();
@@ -124,9 +123,9 @@ namespace backend.services.player
         {
             OnPlayerDisconnected?.Invoke(player);
         }
-        protected abstract TPlayer GetOrCreatePlayer(TIdentitfication identification, string connectionId);
+        protected abstract void CreateOrConnectPlayer(TIdentitfication identification, string connectionId);
 
-        private void ConnectPlayer(TPlayer player, TIdentitfication identification, string connectionId)
+        protected void ConnectPlayer(TPlayer player, TIdentitfication identification, string connectionId)
         {
             PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identification)).FirstOrDefault();
 
@@ -137,6 +136,7 @@ namespace backend.services.player
             }
 
             _connections.Add(new PlayerConnection(player, identification, connectionId));
+            PlayerConnected(player);
         }
 
         protected ConcurrentBag<PlayerConnection> _connections = new ConcurrentBag<PlayerConnection>();
@@ -153,6 +153,16 @@ namespace backend.services.player
             public TPlayer Player { get; }
             public TIdentitfication Identification { get; }
             public List<string> ConnectionIds { get; }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is PlayerConnectionManager<TPlayer, TIdentitfication>.PlayerConnection connection &&
+                       EqualityComparer<TIdentitfication>.Default.Equals(Identification, connection.Identification);
+            }
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Identification);
+            }
         }
     }
 }

@@ -4,16 +4,13 @@ namespace backend.services.player
 {
     internal class AlgorythmPlayerConnectionManager : PlayerConnectionManager<AlgorythmPlayer, Player>
     {
-        protected override AlgorythmPlayer GetOrCreatePlayer(Player opponent, string connectionId)
+        protected override void CreateOrConnectPlayer(Player opponent, string connectionId)
         {
             AlgorythmPlayer? player = ConnectedPlayers.FirstOrDefault(x => x.OpponentPlayer == opponent);
             if (player == null)
-            {
                 player = new AlgorythmPlayer(opponent);
-                _connections.Add(new PlayerConnection(player, opponent, connectionId));
-            }
 
-            return player;
+            ConnectPlayer(player, opponent, connectionId);
         }
         protected override void OnDispose()
         { }

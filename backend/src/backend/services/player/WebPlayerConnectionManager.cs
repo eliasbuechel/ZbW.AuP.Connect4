@@ -22,16 +22,13 @@ namespace backend.services.player
             _opponentRoboterPlayerConnectionManager.OnPlayerDisconnected += OnOpponentRoboterPlayerDisconnected;
         }
 
-        protected override WebPlayer GetOrCreatePlayer(PlayerIdentity playerIdentity, string connectionId)
+        protected override void CreateOrConnectPlayer(PlayerIdentity playerIdentity, string connectionId)
         {
             WebPlayer? player = GetConnectedPlayerByIdentificationOrDefault(playerIdentity);
             if (player == null)
-            {
                 player = new WebPlayer(playerIdentity);
-                _connections.Add(new PlayerConnection(player, playerIdentity, connectionId));
-            }
 
-            return player;
+            ConnectPlayer(player, playerIdentity, connectionId);
         }
         protected override void PlayerConnected(WebPlayer player)
         {

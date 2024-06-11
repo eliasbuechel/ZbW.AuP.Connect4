@@ -1,5 +1,6 @@
 ﻿using backend.communication.signalR.opponentRoboterApi;
 using backend.game;
+using System.ComponentModel;
 
 namespace backend.services.player
 {
@@ -25,17 +26,14 @@ namespace backend.services.player
             _opponentRoboterClientApiManager.OnCreated += OnCreatedOpponentRoboterClientApi;
         }
 
-        protected override OpponentRoboterPlayer GetOrCreatePlayer(string hubUrl, string connectionId)
+        protected override void CreateOrConnectPlayer(string hubUrl, string connectionId)
         {
             OpponentRoboterPlayer? player = GetConnectedPlayerOrDefault(hubUrl);
 
             if (player == null)
-            {
                 player = new OpponentRoboterPlayer(hubUrl);
-                _connections.Add(new PlayerConnection(player, hubUrl, connectionId));
-            }
 
-            return player;
+            ConnectPlayer(player, hubUrl, connectionId);
         }
         protected override void OnDispose()
         {
