@@ -84,7 +84,6 @@
       },
       reemitQuitGame(): void {
         if (this.game === undefined) return;
-        // if (this.gameResult !== undefined) return;
         this.$emit("quit-game");
       },
       quitGame(): void {
