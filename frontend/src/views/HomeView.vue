@@ -8,7 +8,7 @@
     @show-replay="showReplay"
   />
   <Connect4Game
-    v-else-if="isInGame && identity != null && game != null && playedMove != null"
+    v-else-if="isInGame && identity != null && game != null"
     :game="game"
     :identity="identity"
     :playedMove="playedMove"
