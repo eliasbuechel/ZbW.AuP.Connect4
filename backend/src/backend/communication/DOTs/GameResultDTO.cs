@@ -7,7 +7,7 @@ namespace backend.communication.DOTs
         public GameResultDTO(GameResult gameResult) : base(gameResult)
         {
             WinnerId = gameResult.WinnerId;
-            Line = gameResult.Line == null ? null : gameResult.Line.Select(x => new FieldDTO(x)).ToArray();
+            Line = gameResult.Line == null ? null : gameResult.Line.Select(x => new FieldDTO(x)).ToArray(); // Proposal: change to "winningrow" 
             PlayedMoves = gameResult.PlayedMoves.Select(x => new PlayedMoveDTO(x)).ToArray();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatchDTO(gameResult.Match);

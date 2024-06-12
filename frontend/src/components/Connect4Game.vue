@@ -56,6 +56,7 @@
   import { InGamePlayer } from "@/types/InGamePlayer";
   import signalRHub from "@/services/signalRHub";
   import PlayerInfo from "./PlayerInfo.vue";
+  import { PlayedMove } from "@/types/PlayedMove";
 
   export default defineComponent({
     props: {
@@ -67,6 +68,10 @@
       identity: {
         required: true,
         type: Object as PropType<PlayerIdentity>,
+      },
+      playedMoves: {
+        required: true,
+        type: Object as PropType<PlayedMove | undefined>,
       },
     },
     components: {
