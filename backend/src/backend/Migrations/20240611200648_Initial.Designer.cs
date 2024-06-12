@@ -11,7 +11,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240528200619_Initial")]
+    [Migration("20240611200648_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -246,9 +246,6 @@ namespace backend.Migrations
                     b.Property<string>("StartingPlayerId")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<double>("TotalGameTime")
-                        .HasColumnType("double");
 
                     b.Property<string>("WinnerId")
                         .HasColumnType("longtext");

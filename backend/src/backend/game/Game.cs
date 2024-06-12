@@ -22,7 +22,6 @@ namespace backend.game
                 _startingPlayer = match.Player1;
 
             _activePlayer = _startingPlayer;
-            _gameTimeService = new GameTimeService();
         }
 
         public event Action<GameResult>? OnGameEnded;
@@ -547,7 +546,6 @@ namespace backend.game
         }
 
         private DateTime _moveStartingTime = DateTime.Now;
-        private readonly GameTimeService _gameTimeService;
         private bool _disposed = false;
         private Player _activePlayer;
         private bool _activePlayerPlacedStone;

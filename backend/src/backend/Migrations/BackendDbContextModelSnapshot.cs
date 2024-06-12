@@ -244,9 +244,6 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<double>("TotalGameTime")
-                        .HasColumnType("double");
-
                     b.Property<string>("WinnerId")
                         .HasColumnType("longtext");
 

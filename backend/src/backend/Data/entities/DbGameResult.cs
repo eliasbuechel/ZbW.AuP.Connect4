@@ -1,5 +1,4 @@
 ﻿using backend.game.entities;
-using System.Diagnostics;
 
 namespace backend.Data.entities
 {
@@ -14,7 +13,6 @@ namespace backend.Data.entities
             PlayedMoves = gameResult.PlayedMoves.Select(x => new DbPlayedMove(x)).ToList();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new DbGameResultMatch(gameResult.Match);
-            TotalGameTime = gameResult.TotalGameTime;
         }
 
         public string? WinnerId { get; set; } = null;
@@ -22,6 +20,5 @@ namespace backend.Data.entities
         public virtual IList<DbPlayedMove> PlayedMoves { get; set; } = new List<DbPlayedMove>();
         public string StartingPlayerId { get; set; } = string.Empty;
         public virtual DbGameResultMatch Match { get; set; } = new DbGameResultMatch();
-        public double TotalGameTime { get; set; } = 0;
     }
 }

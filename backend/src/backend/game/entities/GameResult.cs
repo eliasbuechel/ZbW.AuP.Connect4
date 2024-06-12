@@ -11,7 +11,6 @@ namespace backend.game.entities
             PlayedMoves = playedMoves;
             StartingPlayerId = startingPlayer.Id;
             Match = new GameResultMatch(match);
-            TotalGameTime = totalGameTime;
         }
         public GameResult(DbGameResult gameResult) : base(gameResult)
         {
@@ -20,7 +19,6 @@ namespace backend.game.entities
             PlayedMoves = gameResult.PlayedMoves.Select(x => new PlayedMove(x)).ToList();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatch(gameResult.Match);
-            TotalGameTime = gameResult.TotalGameTime;
         }
 
         public string? WinnerId { get; }
@@ -28,6 +26,5 @@ namespace backend.game.entities
         public ICollection<PlayedMove> PlayedMoves { get; }
         public string StartingPlayerId { get; }
         public GameResultMatch Match { get; }
-        public double TotalGameTime { get; }
     }
 }

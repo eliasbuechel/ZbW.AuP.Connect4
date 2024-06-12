@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using MySql.EntityFrameworkCore.Metadata;
 
 #nullable disable
@@ -210,8 +211,7 @@ namespace backend.Migrations
                     Id = table.Column<string>(type: "varchar(255)", nullable: false),
                     WinnerId = table.Column<string>(type: "longtext", nullable: true),
                     StartingPlayerId = table.Column<string>(type: "longtext", nullable: false),
-                    MatchId = table.Column<string>(type: "varchar(255)", nullable: true),
-                    TotalGameTime = table.Column<double>(type: "double", nullable: false)
+                    MatchId = table.Column<string>(type: "varchar(255)", nullable: true)
                 },
                 constraints: table =>
                 {
