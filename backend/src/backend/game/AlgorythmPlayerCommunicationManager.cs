@@ -1,6 +1,4 @@
-﻿using backend.communication.signalR.frontendApi;
-using backend.Infrastructure;
-using backend.services.player;
+﻿using backend.Infrastructure;
 using backend.services;
 using backend.game.entities;
 
@@ -24,6 +22,9 @@ namespace backend.game
                 return;
 
             if (_algorythmPlayer == null)
+                return;
+
+            if (_gameManager.Game == null || _gameManager.Game.GameEnded)
                 return;
 
             int column = _gameManager.GetBestMove(_algorythmPlayer);

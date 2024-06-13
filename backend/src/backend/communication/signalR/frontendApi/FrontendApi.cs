@@ -1,7 +1,9 @@
 ﻿using backend.communication.DOTs;
 using backend.Data;
+using backend.game;
 using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.communication.signalR.frontendApi
 {
@@ -264,9 +266,17 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connection).SendAsync(nameof(PlayerRequestedMatch), playerId);
         }
+        public async Task YouRequestedMatch(string connection, string playerId)
+        {
+            await _hubConetext.Clients.Client(connection).SendAsync(nameof(YouRequestedMatch), playerId);
+        }
         public async Task PlayerRejectedMatch(string connection, string playerId)
         {
             await _hubConetext.Clients.Client(connection).SendAsync(nameof(PlayerRejectedMatch), playerId);
+        }
+        public async Task YouRejectedMatch(string connection, string playerId)
+        {
+            await _hubConetext.Clients.Client(connection).SendAsync(nameof(YouRejectedMatch), playerId);
         }
         public async Task Matched(string connection, MatchDTO match)
         {
@@ -287,6 +297,10 @@ namespace backend.communication.signalR.frontendApi
         public async Task MovePlayed(string connection, string playerId, FieldDTO field)
         {
             await _hubConetext.Clients.Client(connection).SendAsync(nameof(MovePlayed), playerId, field);
+        }
+        public async Task YouStoppedWatchingGame(string connection)
+        {
+            await _hubConetext.Clients.Client(connection).SendAsync(nameof(YouStoppedWatchingGame));
         }
     }
 }

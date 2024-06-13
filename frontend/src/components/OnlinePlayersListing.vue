@@ -94,6 +94,10 @@ export default defineComponent({
       required: true,
       type: Object as PropType<PlayerIdentity>,
     },
+    hasPendingRequest: {
+      required: true,
+      type: Object as PropType<boolean>,
+    },
   },
   methods: {
     requestMatch(player: OnlinePlayer): void {
@@ -106,15 +110,6 @@ export default defineComponent({
     rejectMatch(player: OnlinePlayer): void {
       signalRHub.invoke("RejectMatch", player.id);
       player.requestedMatch = false;
-    },
-  },
-  computed: {
-    hasPendingRequest(): boolean {
-      let doesHavePendingRequest: boolean = false;
-      this.onlinePlayers.forEach((p) => {
-        if (p.youRequestedMatch) doesHavePendingRequest = true;
-      });
-      return doesHavePendingRequest;
     },
   },
 });

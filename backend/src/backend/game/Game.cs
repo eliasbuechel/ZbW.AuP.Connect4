@@ -32,6 +32,7 @@ namespace backend.game
         public Match Match => _match;
         public Player ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
+        public bool GameEnded => _gameEnded;
 
         public void PlayMove(Player player, int column)
         {
@@ -112,7 +113,6 @@ namespace backend.game
                     break;
             }
 
-            Debug.Assert(bestMove != INVALID_BEST_MOVE);
             return bestMove;
         }
         public void Dispose()
@@ -325,6 +325,7 @@ namespace backend.game
             _match.Player1.HasConfirmedGameStart = false;
             _match.Player2.HasConfirmedGameStart = false;
 
+            _gameEnded = true;
             OnGameEnded?.Invoke(gameResult);
         }
 
@@ -561,5 +562,6 @@ namespace backend.game
                                                        [5, 8, 11, 11, 8, 5],
                                                        [4, 6, 8, 8, 6, 4],
                                                        [3, 4, 5, 5, 4, 3]];
+        private bool _gameEnded;
     }
 }

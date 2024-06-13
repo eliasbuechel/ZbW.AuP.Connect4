@@ -1,9 +1,5 @@
-﻿using backend.communication.DOTs;
-using backend.communication.signalR.frontendApi;
-using backend.Data;
-using backend.game;
+﻿using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -193,8 +189,8 @@ namespace backend.services
             _activeGame.Match.Player1.Matching = null;
             _activeGame.Match.Player2.Matching = null;
 
-            _activeGame.Match.Player1.IsInGame = true;
-            _activeGame.Match.Player2.IsInGame = true;
+            _activeGame.Match.Player1.IsInGame = false;
+            _activeGame.Match.Player2.IsInGame = false;
 
             _activeGame.Dispose();
             _activeGame = null;

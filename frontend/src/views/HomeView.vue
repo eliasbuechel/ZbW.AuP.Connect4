@@ -21,7 +21,6 @@
     :gameResult="gameResult"
     :identity="identity"
     @leave-game-result-view="leaveGameResultView"
-    class="grid-item-game-result"
   />
 </template>
 
@@ -108,6 +107,7 @@ export default defineComponent({
       signalRHub.on("ConfirmedGameStart", this.onConfirmedGameStart);
       signalRHub.on("SendHint", this.onSendHint);
       signalRHub.on("SendBestlist", this.onSendBestlist);
+      signalRHub.on("YouStoppedWatchingGame", this.onYouStoppedWatchingGame);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -213,6 +213,7 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
+      console.log("game ended!");
       this.gameResult = gameResult;
       this.game = undefined;
 
@@ -343,6 +344,9 @@ export default defineComponent({
     },
     onSendBestlist(bestlist: GameResult[]): void {
       this.bestlist = bestlist;
+    },
+    onYouStoppedWatchingGame(): void {
+      this.game = undefined;
     },
     addToBestlist(gameResult: GameResult): void {
       if (this.bestlist == null) return;

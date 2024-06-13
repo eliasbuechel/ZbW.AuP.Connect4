@@ -3,38 +3,31 @@
     <div class="grid-item-page-info container">
       <h2>Connect Four</h2>
     </div>
-    <button v-if="!isGameParticipant" class="button-light grid-item-leave-game-view-button" @click="stopWatchingGame">
+    <button v-if="!youAreInGame" class="button-light grid-item-leave-game-view-button" @click="stopWatchingGame">
       Back home
     </button>
     <div class="grid-item-player1 player-info player-info-left">
       <label>{{ namePlayerLeft }}</label>
-      <!-- <label>{{ moveTimePlayerLeft }}</label> -->
-      <div class="playing-state">{{ gameStatePlayerLeft }}</div>
-      <button v-if="game != null && inGamePlayerLeft!.id === identity.id" class="button-light" @click="quitGame">
-        Quit game
-      </button>
+      <div class="playing-state">{{ statePlayerLeft }}</div>
+      <button v-if="youAreInGame" class="button-light" @click="quitGame">Quit game</button>
     </div>
     <div class="grid-item-player2 player-info player-info-right">
-      <label> {{ namePlayerRight }}</label>
-      <!-- <label>{{ moveTimePlayerRight }}</label> -->
-      <div class="playing-state">{{ gameStatePlayerRight }}</div>
-      <button v-if="game != null && inGamePlayerRight!.id === identity.id" class="button-light" @click="quitGame">
-        Quit game
-      </button>
+      <label> {{ playerRight.username }}</label>
+      <div class="playing-state">{{ statePlyerRight }}</div>
     </div>
     <button
-      v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
+      v-if="youAreInGame && !playerLeft?.hasConfirmedGameStart"
       class="button-light grid-item-connect4-board confirm-game-start-button"
       @click="confirmGameStart"
     >
       Confirm game start
     </button>
     <Connect4Board
-      v-if="game != null && inGamePlayerLeft?.hasConfirmedGameStart && inGamePlayerRight?.hasConfirmedGameStart"
+      v-if="game != null && playerLeft?.hasConfirmedGameStart && playerRight?.hasConfirmedGameStart"
       :identity="identity"
       :connect4Board="game.connect4Board"
-      :playerLeft="inGamePlayerLeft!"
-      :playerRight="inGamePlayerRight!"
+      :playerLeft="playerLeft!"
+      :playerRight="playerRight!"
       :activePlayerId="game.activePlayerId"
       @place-stone="reemitPlaceStone"
       @quit-game="reemitQuitGame"
@@ -55,8 +48,7 @@ export default defineComponent({
   props: {
     game: {
       required: true,
-      type: Object as PropType<Game | undefined>,
-      default: undefined,
+      type: Object as PropType<Game>,
     },
     identity: {
       required: true,
@@ -68,16 +60,13 @@ export default defineComponent({
   },
   methods: {
     reemitPlaceStone(column: number): void {
-      if (this.game == null) return;
-      if (this.game.activePlayerId !== this.identity.id) return;
+      if (!this.yourTurn) return;
       this.$emit("place-stone", column);
     },
     confirmGameStart(): void {
       this.$emit("confirm-game-start");
     },
     reemitQuitGame(): void {
-      if (this.game === undefined) return;
-      // if (this.gameResult !== undefined) return;
       this.$emit("quit-game");
     },
     quitGame(): void {
@@ -89,65 +78,41 @@ export default defineComponent({
     },
   },
   computed: {
-    inGamePlayerLeft(): InGamePlayer | undefined {
-      if (this.game != null)
-        return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
-
-      return undefined;
+    playerLeft(): InGamePlayer {
+      return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
     },
-    inGamePlayerRight(): InGamePlayer | undefined {
-      if (this.game != null)
-        return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
-
-      return undefined;
+    playerRight(): InGamePlayer {
+      return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
     },
     namePlayerLeft(): string {
-      if (this.inGamePlayerLeft != null) {
-        if (this.inGamePlayerLeft.id == this.identity.id) return "you";
-        return this.inGamePlayerLeft.username;
-      }
-
-      return "";
+      return this.playerLeft.id === this.identity.id ? "you" : this.playerLeft.username;
     },
-    namePlayerRight(): string {
-      if (this.inGamePlayerRight != null) {
-        if (this.inGamePlayerRight.id == this.identity.id) return "you";
-        return this.inGamePlayerRight.username;
-      }
-
-      return "";
-    },
-    gameStatePlayerLeft(): string {
-      if (this.game == null) return "";
-      if (this.inGamePlayerLeft == null) return "";
-      if (!this.inGamePlayerLeft.hasConfirmedGameStart)
-        return this.inGamePlayerLeft.id === this.identity.id
-          ? "confirm to start the game"
-          : "confirming game start ...";
-      if (!this.inGamePlayerRight?.hasConfirmedGameStart) return "";
-      if (this.game.activePlayerId === this.inGamePlayerLeft.id) {
-        if (this.inGamePlayerLeft.id == this.identity.id) return "your turn!";
+    statePlayerLeft(): string {
+      if (!this.playerLeft.hasConfirmedGameStart)
+        return this.playerLeft.id === this.identity.id ? "confirm to start the game" : "confirming game start ...";
+      if (!this.playerRight.hasConfirmedGameStart) return "";
+      if (this.game.activePlayerId === this.playerLeft.id) {
+        if (this.playerLeft.id == this.identity.id) return "your turn!";
         return "playing...";
       }
       return "";
     },
-    gameStatePlayerRight(): string {
-      if (this.game == null) return "";
-      if (this.inGamePlayerRight == null) return "";
-      if (!this.inGamePlayerRight.hasConfirmedGameStart)
-        return this.inGamePlayerRight.id === this.identity.id
-          ? "confirm to start the game"
-          : "confirming game start ...";
-      if (!this.inGamePlayerLeft?.hasConfirmedGameStart) return "";
-      if (this.game.activePlayerId === this.inGamePlayerRight.id) {
-        if (this.inGamePlayerRight.id == this.identity.id) return "your turn!";
+    statePlyerRight(): string {
+      if (this.playerRight == null) return "";
+      if (!this.playerRight.hasConfirmedGameStart)
+        return this.playerRight.id === this.identity.id ? "confirm to start the game" : "confirming game start ...";
+      if (!this.playerLeft.hasConfirmedGameStart) return "";
+      if (this.game.activePlayerId === this.playerRight.id) {
+        if (this.playerRight.id == this.identity.id) return "your turn!";
         return "playing...";
       }
       return "";
     },
-    isGameParticipant(): boolean {
-      if (this.game == null) return false;
-      return this.identity.id === this.game.match.player1.id || this.identity.id === this.game.match.player2.id;
+    youAreInGame(): boolean {
+      return this.playerLeft.id === this.identity.id;
+    },
+    yourTurn(): boolean {
+      return this.game.activePlayerId === this.identity.id;
     },
   },
 });
