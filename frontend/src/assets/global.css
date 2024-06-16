@@ -298,6 +298,7 @@ button:active:enabled {
   justify-content: center;
   align-items: center;
   border: 3.5px solid var(--color-green);
+  color: var(--color-green);
 }
 
 .button-accept:hover:enabled,

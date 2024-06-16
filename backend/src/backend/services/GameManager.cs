@@ -140,8 +140,6 @@ namespace backend.services
         }
         private void GameStarted(Game game)
         {
-            game.Match.Player1.IsInGame = true;
-            game.Match.Player2.IsInGame = true;
             OnGameStarted?.Invoke(game);
         }
         private void GameEnded(GameResult gameResult)

@@ -41,60 +41,60 @@ namespace backend.communication.signalR.frontendApi
         }
         public void GetHint()
         {
-            _frontendApi.GetHint(Identification);
+            _frontendApi.GetHint(Identification, Context.ConnectionId);
         }
 
         public void RequestMatch(string requestingPlayerId)
         {
-            _frontendApi.RequestMatch(Identification, requestingPlayerId);
+            _frontendApi.RequestMatch(Identification, requestingPlayerId, Context.ConnectionId);
         }
         public void AcceptMatch(string acceptingPlayerId)
         {
-            _frontendApi.AcceptMatch(Identification, acceptingPlayerId);
+            _frontendApi.AcceptMatch(Identification, acceptingPlayerId, Context.ConnectionId);
         }
         public void RejectMatch(string rejectingPlayerId)
         {
-            _frontendApi.RejectMatch(Identification, rejectingPlayerId);
+            _frontendApi.RejectMatch(Identification, rejectingPlayerId, Context.ConnectionId);
         }
         public void ConfirmGameStart()
         {
-            _frontendApi.ConfirmGameStart(Identification);
+            _frontendApi.ConfirmGameStart(Identification, Context.ConnectionId);
         }
         public void PlayMove(int column)
         {
-            _frontendApi.PlayMove(Identification, column);
+            _frontendApi.PlayMove(Identification, column, Context.ConnectionId);
         }
         public void QuitGame()
         {
-            _frontendApi.QuitGame(Identification);
+            _frontendApi.QuitGame(Identification, Context.ConnectionId);
         }
         public void WatchGame()
         {
-            _frontendApi.WatchGame(Identification);
+            _frontendApi.WatchGame(Identification, Context.ConnectionId);
         }
         public void StopWatchingGame()
         {
-            _frontendApi.StopWatchingGame(Identification);
+            _frontendApi.StopWatchingGame(Identification, Context.ConnectionId);
         }
         public void RequestSinglePlayerMatch()
         {
-            _frontendApi.RequestSinglePlayerMatch(Identification);
+            _frontendApi.RequestSinglePlayerMatch(Identification, Context.ConnectionId);
         }
         public void RequestOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.RequestOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+            _frontendApi.RequestOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId, Context.ConnectionId);
         }
         public void AcceptOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.AcceptOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+            _frontendApi.AcceptOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId, Context.ConnectionId);
         }
         public void RejectOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.RejectOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+            _frontendApi.RejectOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId, Context.ConnectionId);
         }
         public void ConnectToOpponentRoboterPlayer(string hubUrl)
         {
-            _frontendApi.ConnectToOpponentRoboterPlayer(Identification, hubUrl);
+            _frontendApi.ConnectToOpponentRoboterPlayer(Identification, hubUrl, Context.ConnectionId);
         }
         public override Task OnConnectedAsync()
         {

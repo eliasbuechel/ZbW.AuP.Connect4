@@ -108,13 +108,15 @@ export default defineComponent({
       signalRHub.on("SendHint", this.onSendHint);
       signalRHub.on("SendBestlist", this.onSendBestlist);
       signalRHub.on("YouStoppedWatchingGame", this.onYouStoppedWatchingGame);
+      signalRHub.on("NotAbleToConnectToOpponentRoboterPlayer", this.onNotAbleToConnectToOpponentRoboterPlayer);
+      signalRHub.on("RequestErrorOccured", this.onRequestErrorOccured);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
       signalRHub.off("PlayerConnected", this.onPlayerConnected);
       signalRHub.off("PlayerDisconnected", this.onPlayerDisconnected);
-      signalRHub.on("OpponentRoboterPlayerConnected", this.onOpponentRoboterPlayerConnected);
-      signalRHub.on("OpponentRoboterPlayerDisconnected", this.onOpponentRoboterPlayerDisconnected);
+      signalRHub.off("OpponentRoboterPlayerConnected", this.onOpponentRoboterPlayerConnected);
+      signalRHub.off("OpponentRoboterPlayerDisconnected", this.onOpponentRoboterPlayerDisconnected);
       signalRHub.off("PlayerRequestedMatch", this.onPlayerRequestedMatch);
       signalRHub.off("PlayerRejectedMatch", this.onPlayerRejectedMatch);
       signalRHub.off("Matched", this.onMatched);
@@ -123,7 +125,7 @@ export default defineComponent({
       signalRHub.off("GameStarted", this.onGameStarted);
       signalRHub.off("GameEnded", this.onGameEnded);
       signalRHub.off("SendUserData", this.updateUserIdentity);
-      signalRHub.off("SendOnlinePlayers", this.onUdateConnectedPlayers);
+      signalRHub.off("SendConnectedPlayers", this.onUdateConnectedPlayers);
       signalRHub.off("SendGamePlan", this.onUpdateGamePlan);
       signalRHub.off("SendGame", this.updateGame);
       signalRHub.off("YouRequestedMatch", this.onYouRequestedMatch);
@@ -131,6 +133,9 @@ export default defineComponent({
       signalRHub.off("ConfirmedGameStart", this.onConfirmedGameStart);
       signalRHub.off("SendHint", this.onSendHint);
       signalRHub.off("SendBestlist", this.onSendBestlist);
+      signalRHub.off("YouStoppedWatchingGame", this.onYouStoppedWatchingGame);
+      signalRHub.off("NotAbleToConnectToOpponentRoboterPlayer", this.onNotAbleToConnectToOpponentRoboterPlayer);
+      signalRHub.off("RequestError", this.onRequestErrorOccured);
     },
     leaveGameResultView(): void {
       this.gameResult = undefined;
@@ -213,7 +218,6 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
-      console.log("game ended!");
       this.gameResult = gameResult;
       this.game = undefined;
 
@@ -245,11 +249,9 @@ export default defineComponent({
           : this.game!.match.player1.id;
     },
     onUdateConnectedPlayers(connectedPlayers: ConnectedPlayers): void {
-      console.log("Update connected players: ", connectedPlayers);
       this.connectedPlayers = connectedPlayers;
     },
     onPlayerConnected(onlinePlayer: OnlinePlayer): void {
-      console.log("player connected: ", onlinePlayer);
       this.connectedPlayers.webPlayers = new Array<OnlinePlayer>(...this.connectedPlayers.webPlayers, onlinePlayer);
     },
     onPlayerDisconnected(playerId: string): void {
@@ -348,10 +350,16 @@ export default defineComponent({
     onYouStoppedWatchingGame(): void {
       this.game = undefined;
     },
+    onNotAbleToConnectToOpponentRoboterPlayer(errorMessage: string): void {
+      eventBus.emit("NotAbleToConnectToOpponentRoboterPlayer", errorMessage);
+    },
     addToBestlist(gameResult: GameResult): void {
       if (this.bestlist == null) return;
 
       this.bestlist = new Array<GameResult>(gameResult, ...this.bestlist);
+    },
+    onRequestErrorOccured(): void {
+      location.reload();
     },
     onSignalRConnected(): void {
       this.subscribe();

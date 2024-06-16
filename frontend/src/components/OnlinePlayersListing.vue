@@ -96,7 +96,7 @@ export default defineComponent({
     },
     hasPendingRequest: {
       required: true,
-      type: Object as PropType<boolean>,
+      type: Boolean,
     },
   },
   methods: {

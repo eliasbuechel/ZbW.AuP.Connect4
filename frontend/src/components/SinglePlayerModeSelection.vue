@@ -11,13 +11,13 @@
 
 <script lang="ts">
 import signalRHub from "@/services/signalRHub";
-import { PropType, defineComponent } from "vue";
+import { defineComponent } from "vue";
 
 export default defineComponent({
   props: {
     hasPendingRequest: {
       required: true,
-      type: Object as PropType<boolean>,
+      type: Boolean,
     },
   },
   name: "SinglePlayerModeSelection",

@@ -235,9 +235,17 @@ namespace backend.game
             OnYouStoppedWatchingGame(webPlayer);
         }
 
-        private void OnConnectToOpponentRoboterPlayer(string hubUrl)
+        private void OnConnectToOpponentRoboterPlayer(string hubUrl, string connectionId)
         {
-            _opponentRoboterClientApiManager.Create(hubUrl);
+            try
+            {
+                _opponentRoboterClientApiManager.Create(hubUrl);
+            }
+            catch (UriFormatException e)
+            {
+                string errorMessage = "Not able to connect! " + e.Message;
+                OnNotAbleToConnectToOpponentRoboterPlayer(connectionId, errorMessage);
+            }
         }
         private void RequestOpponentRoboterPlayerMatch(string requestingOpponentRoboterPlayerId)
         {
@@ -353,6 +361,10 @@ namespace backend.game
         private void OnYouStoppedWatchingGame(WebPlayer webPlayer)
         {
             _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(webPlayer, async c => await _frontendApi.YouStoppedWatchingGame(c));
+        }
+        private async void OnNotAbleToConnectToOpponentRoboterPlayer(string connectionId, string errorMessage)
+        {
+            await _frontendApi.NotAbleToConnectToOpponentRoboterPlayer(connectionId, errorMessage);
         }
 
 

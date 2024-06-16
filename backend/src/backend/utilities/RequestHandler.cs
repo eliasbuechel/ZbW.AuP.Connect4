@@ -10,12 +10,21 @@ namespace backend.utilities
             _workerThread.Start();
         }
 
+        public event Action<string>? OnRequestError;
+
         private async void ProcessRequests()
         {
             while (_running)
             {
                 if (_queue.TryDequeue(out var request))
-                    await request.Invoke();
+                    try
+                    {
+                        await request.Methode.Invoke();
+                    }
+                    catch (RequestError)
+                    {
+                        OnRequestError?.Invoke(request.ConnectionId);
+                    }
                 else
                     Thread.Sleep(100); // Avoid busy-waiting
             }
@@ -25,13 +34,25 @@ namespace backend.utilities
             _running = false;
             _workerThread.Join();
         }
-        public void Enqueue(Func<Task> method)
+        public void Enqueue(Func<Task> method, string connectionId)
         {
-            _queue.Enqueue(method);
+            _queue.Enqueue(new Request(method, connectionId));
         }
 
         private bool _running = true;
         private readonly Thread _workerThread;
-        private readonly ConcurrentQueue<Func<Task>> _queue = new ConcurrentQueue<Func<Task>>();
+        private readonly ConcurrentQueue<Request> _queue = new ConcurrentQueue<Request>();
+    }
+
+    internal class Request
+    {
+        public Request(Func<Task> methode, string connectionId)
+        {
+            Methode = methode;
+            ConnectionId = connectionId;
+        }
+
+        public Func<Task> Methode { get; }
+        public string ConnectionId { get; }
     }
 }

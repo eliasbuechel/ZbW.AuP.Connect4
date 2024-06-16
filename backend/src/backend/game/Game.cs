@@ -1,6 +1,7 @@
 ﻿using backend.game.entities;
 using backend.services;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace backend.game
 {
@@ -14,14 +15,19 @@ namespace backend.game
             _connect4Board.OnStonePlaced += OnStonePlaced;
             _connect4Board.OnBoardReset += OnBoardReset;
 
-            //if (match.Player1 is OpponentRoboterPlayer)
-            //    _startingPlayer = match.Player1;
-            //else if (match.Player2 is OpponentRoboterPlayer)
-            //    _startingPlayer = match.Player1;
-            //else
+
+            if (match.Player1 is WebPlayer || match.Player2 is WebPlayer)
+            {
+                Random random = new Random();
+                _startingPlayer = random.Next(0, 2) == 0 ? match.Player1 : match.Player2;
+            }
+            else
                 _startingPlayer = match.Player1;
 
             _activePlayer = _startingPlayer;
+
+            _match.Player1.IsInGame = true;
+            _match.Player2.IsInGame = true;
         }
 
         public event Action<GameResult>? OnGameEnded;
