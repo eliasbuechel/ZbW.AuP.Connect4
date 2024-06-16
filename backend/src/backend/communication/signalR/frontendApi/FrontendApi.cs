@@ -1,10 +1,7 @@
 ﻿using backend.communication.DOTs;
 using backend.Data;
-using backend.game;
 using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
-using Org.BouncyCastle.Tls;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.communication.signalR.frontendApi
 {
@@ -75,150 +72,186 @@ namespace backend.communication.signalR.frontendApi
         }
         public void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetConnectedPlayers?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetGamePlan(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetGamePlan?.Invoke(connectionId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetGame?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetBestlist(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetBestlist?.Invoke(connectionId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetHint(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetHint?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
 
         public void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(requestingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRequestMatch?.Invoke(requestingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(requestingPlayerIdentity, methode, connectionId);
         }
         public void AcceptMatch(PlayerIdentity acceptingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(acceptingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnAcceptMatch?.Invoke(acceptingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(acceptingPlayerIdentity, methode, connectionId);
         }
         public void RejectMatch(PlayerIdentity rejectingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(rejectingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRejectMatch?.Invoke(rejectingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(rejectingPlayerIdentity, methode, connectionId);
         }
         public void ConfirmGameStart(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnConfirmedGameStart?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void PlayMove(PlayerIdentity playerIdentity, int column, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnPlayMove?.Invoke(playerIdentity, column);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void QuitGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnQuitGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
 
         public void WatchGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnWatchGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void StopWatchingGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnStopWatchingGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
 
         public void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(requestingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRequestSinglePlayerMatch?.Invoke(requestingPlayerIdentity);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(requestingPlayerIdentity, methode, connectionId);
         }
         public void RequestOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string requestingOpponentRoboterPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRequestOppoenntRoboterPlyerMatch?.Invoke(requestingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void AcceptOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string acceptingOpponentRoboterPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnAcceptOppoenntRoboterPlyerMatch?.Invoke(acceptingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void RejectOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string rejectingOpponentRoboterPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRejectOppoenntRoboterPlyerMatch?.Invoke(rejectingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void ConnectToOpponentRoboterPlayer(PlayerIdentity initiatorPlayerIdentity, string hubUrl, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(initiatorPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnConnectToOpponentRoboterPlayer?.Invoke(hubUrl, connectionId);
                 return Task.CompletedTask;
-            }, connectionId);
+            };
+
+            Request(initiatorPlayerIdentity, methode, connectionId);
         }
 
 
