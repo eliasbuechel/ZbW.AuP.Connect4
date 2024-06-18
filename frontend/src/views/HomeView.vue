@@ -11,7 +11,6 @@
     v-else-if="isInGame && identity != null && game != null"
     :game="game"
     :identity="identity"
-    :playedMove="playedMove"
     @place-stone="placeStone"
     @quit-game="quitGame"
     @confirm-game-start="confirmGameStart"
@@ -50,7 +49,7 @@
     game?: Game;
     gameResult?: GameResult;
     isSubscribed: boolean;
-    playedMove?: PlayedMove;
+    playedMove?: PlayedMove[];
   }
 
   export default defineComponent({
@@ -211,8 +210,7 @@
 
           if (this.identity == null) return;
           if (!(match.player1.id !== this.identity.id && match.player2.id !== this.identity.id)) {
-            const opponent: PlayerIdentity =
-              match.player1.id === this.identity.id ? match.player2 : match.player1;
+            const opponent: PlayerIdentity = match.player1.id === this.identity.id ? match.player2 : match.player1;
 
             this.connectedPlayers.webPlayers
               .filter((p) => p.id === opponent.id)

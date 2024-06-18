@@ -32,6 +32,8 @@ namespace backend.game
         public Match Match => _match;
         public Player ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _connect4Board.FieldAsIds;
+        public DateTime MoveStartTime => _moveStartingTime;
+
 
         public void PlayMove(Player player, int column)
         {
@@ -46,10 +48,14 @@ namespace backend.game
                 Debug.Assert(false);
                 return;
             }
+
             TimeSpan duration = DateTime.Now - _moveStartingTime;
             PlayedMove playedMove = new PlayedMove(column, duration);
+            _activePlayer.TotalPlayTime += duration;
+            
             _playedMoves.Add(playedMove);
-            _moveStartingTime = DateTime.Now; _activePlayerPlacedStone = true;
+            _moveStartingTime = DateTime.Now;
+            _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(Player player)
         {
