@@ -194,14 +194,9 @@ namespace backend.services
             _activeGame = null;
 
             Match? match;
-            if (!_gamePlan.TryDequeue(out match))
-            {
-                Debug.Assert(false);
-                return;
-            }
+            _gamePlan.TryDequeue(out match);
 
             GameEnded(gameResult);
-
             TryStartGame();
         }
         private void TryStartGame()

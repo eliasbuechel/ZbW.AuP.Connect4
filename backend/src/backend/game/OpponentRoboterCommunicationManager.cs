@@ -151,10 +151,10 @@ namespace backend.game
         {
             if (gameResult.WinnerId != null && gameResult.Line == null)
             {
-                Player player1 = _playerConnectionService.GetPlayer(gameResult.Match.Player1.Id);
-                Player player2 = _playerConnectionService.GetPlayer(gameResult.Match.Player2.Id);
+                Player? player1 = _playerConnectionService.GetPlayerOrDefault(gameResult.Match.Player1.Id);
+                Player? player2 = _playerConnectionService.GetPlayerOrDefault(gameResult.Match.Player2.Id);
 
-                if (player2.Id == gameResult.WinnerId && player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
+                if (player1 != null && gameResult.Match.Player2.Id == gameResult.WinnerId && player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
                 {
                     if (opponentRboboterPlayer1.IsHubPlayer)
                         _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer1, c => _opponentRoboterHubApi.Send_QuitGame(c));
@@ -165,7 +165,7 @@ namespace backend.game
                     }
                 }
 
-                if (player1.Id == gameResult.WinnerId && player2 is OpponentRoboterPlayer opponentRboboterPlayer2)
+                if (player2 != null && gameResult.Match.Player1.Id == gameResult.WinnerId && player2 is OpponentRoboterPlayer opponentRboboterPlayer2)
                 {
                     if (opponentRboboterPlayer2.IsHubPlayer)
                         _playerConnectionService.OpponentRoboterPlayerConnectionManager.ForeachConnectionOfPlayer(opponentRboboterPlayer2, c => _opponentRoboterHubApi.Send_QuitGame(c));

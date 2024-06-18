@@ -218,10 +218,12 @@ export default defineComponent({
       this.gamePlan = this.gamePlan.filter((m) => m.id !== matchId);
     },
     onGameEnded(gameResult: GameResult): void {
-      this.gameResult = gameResult;
-      this.game = undefined;
-
       if (this.identity == null) return;
+
+      if (this.game != null) {
+        this.gameResult = gameResult;
+        this.game = undefined;
+      }
 
       this.gamePlan = this.gamePlan.filter((x, i) => i != 0);
 

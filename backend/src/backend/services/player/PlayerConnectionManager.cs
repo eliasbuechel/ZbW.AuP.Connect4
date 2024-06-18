@@ -1,5 +1,6 @@
 ﻿using backend.game;
 using backend.Infrastructure;
+using Org.BouncyCastle.Asn1.Mozilla;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -86,6 +87,7 @@ namespace backend.services.player
             if (connection.ConnectionIds.Count > 0)
                 return;
 
+            connection.TimeoutCounter++;
             Thread thread = new Thread(async () =>
             {
                 await Task.Delay(5000);
@@ -93,6 +95,10 @@ namespace backend.services.player
                 PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identitfication)).FirstOrDefault();
 
                 if (connection == null)
+                    return;
+
+                connection.TimeoutCounter--;
+                if (connection.TimeoutCounter > 0)
                     return;
 
                 if (connection.ConnectionIds.Count > 0)
@@ -153,6 +159,7 @@ namespace backend.services.player
             public TPlayer Player { get; }
             public TIdentitfication Identification { get; }
             public List<string> ConnectionIds { get; }
+            public int TimeoutCounter { get; set; }
 
             public override bool Equals(object? obj)
             {

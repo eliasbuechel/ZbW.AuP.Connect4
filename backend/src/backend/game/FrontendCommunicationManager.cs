@@ -6,6 +6,7 @@ using backend.game.entities;
 using backend.Infrastructure;
 using backend.services;
 using backend.services.player;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using System.Diagnostics;
 
 namespace backend.game
@@ -337,8 +338,10 @@ namespace backend.game
         private void OnGameEnded(GameResult gameResult)
         {
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(x => x.IsWatchingGame, async c => await _frontendApi.GameEnded(c, gameResultDTO));
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(x => x.Id == gameResult.Match.Player1.Id || x.Id == gameResult.Match.Player2.Id, async c => await _frontendApi.GameEnded(c, gameResultDTO));
+
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.GameEnded(c, gameResultDTO));
+            //_playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(x => x.IsWatchingGame, async c => await _frontendApi.GameEnded(c, gameResultDTO));
+            //_playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(x => x.Id == gameResult.Match.Player1.Id || x.Id == gameResult.Match.Player2.Id, async c => await _frontendApi.GameEnded(c, gameResultDTO));
 
             if (!_gameManager.GamePlan.Any())
                 foreach (var p in _playerConnectionService.WebPlayerConnectionManager.ConnectedPlayers)

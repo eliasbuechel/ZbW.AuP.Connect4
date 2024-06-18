@@ -5,7 +5,7 @@
       <div class="adding-opponent-roboter-player-container">
         <div class="input-field input-field-light">
           <label for="addingHubUrl">Hub url</label>
-          <input type="text" id="addingHubUrl" v-model="addingHubUrl" @focusout="validateAddingHubUrl" required />
+          <input type="text" id="addingHubUrl" v-model="addingHubUrl" @change="validateAddingHubUrl" required />
           <span v-if="errors.addingHubUrl" class="error">{{ errors.addingHubUrl }}</span>
         </div>
         <button class="button-accept" @click="connect" :disabled="errors.addingHubUrl !== ''">+</button>
