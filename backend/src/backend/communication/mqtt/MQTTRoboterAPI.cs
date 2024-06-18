@@ -30,6 +30,13 @@ namespace backend.communication.mqtt
 
         public void PlaceStone(Player player, Field field)
         {
+            StartRequestTimeout(() =>
+            {
+                string originalTopicValue = "-1";
+                TopicColumnChanged(originalTopicValue);
+                _mqttTopicClient.PublishAsync(TOPIC_COLUMN, originalTopicValue).Wait();
+            });
+
             Debug.Assert(_placingPlayer == null && _placingField == null);
 
             _placingPlayer = player;
@@ -38,6 +45,13 @@ namespace backend.communication.mqtt
         }
         public void ResetConnect4Board()
         {
+            StartRequestTimeout(() =>
+            {
+                string originalTopicValue = false.ToString();
+                TopicResetChanged(originalTopicValue);
+                _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue).Wait();
+            });
+
             _resettingBoard = true;
             if (_mqttTopicClient.IsConnected)
             {
@@ -121,13 +135,35 @@ namespace backend.communication.mqtt
             throw new NotImplementedException();
         }
 
+        private void StartRequestTimeout(Action onTimeout)
+        {
+            Guid requestId = Guid.NewGuid();
+            lock (_lock)
+            {
+                _currentRequestId = requestId;
+            }
+
+            Thread thread = new Thread(() =>
+            {
+                Thread.Sleep(5000);
+                lock(_lock)
+                {
+                    if (_currentRequestId == requestId)
+                        onTimeout();
+                }
+            });
+            thread.Start();
+        }
+
         private const string TOPIC_COLUMN = "column";
         private const string TOPIC_RESET = "reset";
         private const string TOPIC_MANUAL_COLUMN = "manualColumn";
 
+        private readonly object _lock = new object();
         private bool _resettingBoard;
         private Field? _placingField;
         private Player? _placingPlayer;
         private readonly MQTTNetTopicClient _mqttTopicClient;
+        private Guid _currentRequestId = Guid.Empty;
     }
 }

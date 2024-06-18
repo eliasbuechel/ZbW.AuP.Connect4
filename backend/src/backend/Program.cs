@@ -6,12 +6,12 @@ namespace backend
     {
         public static void Main(string[] args)
         {
-            RoboterMQTTMock roboterMQTTMock = new RoboterMQTTMock();
+            //RoboterMQTTMock roboterMQTTMock = new RoboterMQTTMock();
 
             IHost webAppHost = CreateHostBuilder(args).Build();
             webAppHost.Run();
 
-            roboterMQTTMock.Dispose();
+            //roboterMQTTMock.Dispose();
         }
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
