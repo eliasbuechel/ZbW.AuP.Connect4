@@ -72,7 +72,7 @@ namespace backend.game
         }
         public int GetBestMove(Player player)
         {
-            const int LOOK_AHEAD_MOVES = 8;
+            const int LOOK_AHEAD_MOVES = 12;
             const int INVALID_BEST_MOVE = -1;
 
             Player opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;

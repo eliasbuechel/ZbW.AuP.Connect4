@@ -13,9 +13,11 @@ namespace backend.communication.DOTs
                 HintsLeft = webPlayer.HintsLeft;
                 CurrentHint = webPlayer.CurrentHint;
             }
-
-            HintsLeft = 0;
-            CurrentHint = null;
+            else
+            {
+                HintsLeft = 0;
+                CurrentHint = null;
+            }
         }
 
         public bool HasConfirmedGameStart { get; }

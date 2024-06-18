@@ -178,13 +178,13 @@ namespace backend.services
         }
         private async void GameHasEnded(GameResult gameResult)
         {
+            await _gameResultsService.Add(gameResult);
+
             if (_activeGame == null)
             {
                 Debug.Assert(false);
                 return;
             }
-
-            await _gameResultsService.Add(gameResult);
 
             _activeGame.OnGameEnded -= GameHasEnded;
             _activeGame.OnGameStarted -= GameStarted;
