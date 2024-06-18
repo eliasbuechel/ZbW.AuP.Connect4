@@ -1,5 +1,4 @@
-﻿using backend.game;
-using backend.services.player;
+﻿using System.Diagnostics;
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
@@ -15,7 +14,9 @@ namespace backend.communication.signalR.opponentRoboterApi
         public void Create(string hubUrl)
         {
             OpponentRoboterClientApi opponentRoboterClientApi = _createOpponentRoboterClientApi(hubUrl);
+
             OnCreated?.Invoke(opponentRoboterClientApi);
+            opponentRoboterClientApi.OnDisconnected += OnDisconnected;
             _opponentRoboterClientApiDictionary.Add(hubUrl, opponentRoboterClientApi);
         }
         public OpponentRoboterClientApi Get(string identification)
@@ -26,6 +27,18 @@ namespace backend.communication.signalR.opponentRoboterApi
         {
             foreach (OpponentRoboterClientApi opponentRoboterClientApi in _opponentRoboterClientApiDictionary.Values)
                 action(opponentRoboterClientApi);
+        }
+
+        private void OnDisconnected(string callerUrl, string connectionId)
+        {
+            OpponentRoboterClientApi? opponentRoboterClientApi;
+            if (!_opponentRoboterClientApiDictionary.TryGetValue(callerUrl, out opponentRoboterClientApi))
+            {
+                Debug.Assert(false);
+                return;
+            }
+            opponentRoboterClientApi.OnDisconnected -= OnDisconnected;
+            _opponentRoboterClientApiDictionary.Remove(callerUrl);
         }
 
         private readonly Func<string, OpponentRoboterClientApi> _createOpponentRoboterClientApi;

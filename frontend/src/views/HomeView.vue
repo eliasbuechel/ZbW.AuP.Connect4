@@ -110,6 +110,7 @@ export default defineComponent({
       signalRHub.on("YouStoppedWatchingGame", this.onYouStoppedWatchingGame);
       signalRHub.on("NotAbleToConnectToOpponentRoboterPlayer", this.onNotAbleToConnectToOpponentRoboterPlayer);
       signalRHub.on("RequestErrorOccured", this.onRequestErrorOccured);
+      signalRHub.on("RedirectToLogin", this.onRedirectToLogin);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -136,6 +137,7 @@ export default defineComponent({
       signalRHub.off("YouStoppedWatchingGame", this.onYouStoppedWatchingGame);
       signalRHub.off("NotAbleToConnectToOpponentRoboterPlayer", this.onNotAbleToConnectToOpponentRoboterPlayer);
       signalRHub.off("RequestError", this.onRequestErrorOccured);
+      signalRHub.off("RedirectToLogin", this.onRedirectToLogin);
     },
     leaveGameResultView(): void {
       this.gameResult = undefined;
@@ -190,11 +192,21 @@ export default defineComponent({
       this.gamePlan = new Array<Match>(...this.gamePlan, match);
 
       if (this.identity === undefined) return;
+
       this.connectedPlayers.webPlayers.forEach((p) => {
         if (
           (p.id === match.player1.id && this.identity?.id === match.player2.id) ||
           (p.id === match.player2.id && this.identity?.id === match.player1.id)
         ) {
+          p.matched = true;
+          p.requestedMatch = false;
+          p.youRequestedMatch = false;
+          return;
+        }
+      });
+
+      this.connectedPlayers.opponentRoboterPlayers.forEach((p) => {
+        if (p.id === match.player1.id || p.id === match.player2.id) {
           p.matched = true;
           p.requestedMatch = false;
           p.youRequestedMatch = false;
@@ -362,6 +374,9 @@ export default defineComponent({
     },
     onRequestErrorOccured(): void {
       location.reload();
+    },
+    onRedirectToLogin(): void {
+      this.$router.push({ name: "Login" });
     },
     onSignalRConnected(): void {
       this.subscribe();

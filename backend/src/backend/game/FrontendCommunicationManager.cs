@@ -313,6 +313,8 @@ namespace backend.game
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(opponentWebPlayer, async c => await _frontendApi.PlayerRequestedMatch(c, requester.Id));
             if (requester is WebPlayer requesterWebPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(requesterWebPlayer, async c => await _frontendApi.YouRequestedMatch(c, opponent.Id));
+            if (opponent is OpponentRoboterPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.YouRequestedMatch(c, opponent.Id));
             if (requester is OpponentRoboterPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.PlayerRequestedMatch(c, requester.Id));
         }
@@ -322,6 +324,8 @@ namespace backend.game
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(opponentWebPlayer, async c => await _frontendApi.PlayerRejectedMatch(c, rejecter.Id));
             if (rejecter is WebPlayer rejecterWebPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(rejecterWebPlayer, async c => await _frontendApi.YouRejectedMatch(c, opponent.Id));
+            if (opponent is OpponentRoboterPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.YouRejectedMatch(c, opponent.Id));
             if (rejecter is OpponentRoboterPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.PlayerRejectedMatch(c, rejecter.Id));
         }
@@ -340,8 +344,6 @@ namespace backend.game
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
 
             _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.GameEnded(c, gameResultDTO));
-            //_playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(x => x.IsWatchingGame, async c => await _frontendApi.GameEnded(c, gameResultDTO));
-            //_playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(x => x.Id == gameResult.Match.Player1.Id || x.Id == gameResult.Match.Player2.Id, async c => await _frontendApi.GameEnded(c, gameResultDTO));
 
             if (!_gameManager.GamePlan.Any())
                 foreach (var p in _playerConnectionService.WebPlayerConnectionManager.ConnectedPlayers)

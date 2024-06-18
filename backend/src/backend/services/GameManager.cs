@@ -73,6 +73,12 @@ namespace backend.services
             if (_activeGame == null)
                 return;
 
+            if (column < 0 || column > 6)
+            {
+                Debug.Assert(false);
+                return;
+            }
+
             _activeGame.PlayMove(player, column);
         }
         public int GetBestMove(Player player)
