@@ -355,6 +355,8 @@
       onSendBestlist(bestlist: GameResult[]): void {
         this.bestlist = bestlist;
       },
+
+      // TODO: never used?
       addToBestlist(gameResult: GameResult): void {
         if (this.bestlist == null) return;
 

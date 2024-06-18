@@ -13,6 +13,7 @@ namespace backend.Data.entities
             PlayedMoves = gameResult.PlayedMoves.Select(x => new DbPlayedMove(x)).ToList();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new DbGameResultMatch(gameResult.Match);
+            HasWinnerRow = gameResult.HasWinnerRow;
         }
 
         public string? WinnerId { get; set; } = null;
@@ -20,5 +21,6 @@ namespace backend.Data.entities
         public virtual IList<DbPlayedMove> PlayedMoves { get; set; } = new List<DbPlayedMove>();
         public string StartingPlayerId { get; set; } = string.Empty;
         public virtual DbGameResultMatch Match { get; set; } = new DbGameResultMatch();
+        public bool HasWinnerRow { get; set; } = false;
     }
 }

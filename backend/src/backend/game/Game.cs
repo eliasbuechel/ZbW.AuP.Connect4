@@ -60,7 +60,8 @@ namespace backend.game
         public void PlayerQuit(Player player)
         {
             Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            bool hasWinnerRow = false;
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
             OnGameEndet(gameResult);
         }
         public void Initialize()
@@ -318,12 +319,14 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
-            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            bool hasWinnerRow = true;
+            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            bool hasWinnerRow = false;
+            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
             OnGameEndet(gameResult);
         }
         private void OnGameEndet(GameResult gameResult)

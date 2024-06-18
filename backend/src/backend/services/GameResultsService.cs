@@ -2,6 +2,7 @@
 using backend.Data.entities;
 using backend.game.entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace backend.services
 {
@@ -17,14 +18,19 @@ namespace backend.services
             get
             {
                 using BackendDbContext context = _dbContextFactory.GetDbContext();
-                IEnumerable<GameResult> gameResults = context.GameResults
+                var gameResultsQuery = context.GameResults
                     .Include(x => x.Line)
                     .Include(x => x.Match)
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Include(x => x.PlayedMoves)
+                    .AsEnumerable();
+
+                IEnumerable<GameResult> gameResults = gameResultsQuery
+                    .Where(x => x.HasWinnerRow == true)
                     .Select(x => new GameResult(x))
                     .ToArray();
+
                 return gameResults;
             }
         }
@@ -39,6 +45,7 @@ namespace backend.services
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Include(x => x.PlayedMoves)
+                    .Include(x => x.HasWinnerRow)
                     .Select(x => new GameResult(x))
                     .ToArray();
                 return gameResults;
@@ -55,6 +62,7 @@ namespace backend.services
             dbGameResult.Line = gameResult.Line == null ? new List<DbField>() : gameResult.Line.Select(x => new DbField(x)).ToList();
             dbGameResult.PlayedMoves = gameResult.PlayedMoves.Select(x => new DbPlayedMove(x)).ToList();
             dbGameResult.StartingPlayerId = gameResult.StartingPlayerId;
+            dbGameResult.HasWinnerRow = gameResult.HasWinnerRow;
 
             DbGameResultMatch dbMatch = new DbGameResultMatch();
             DbPlayerInfo player1 = context.Players.FirstOrDefault(x => x.Id == gameResult.Match.Player1.Id) ?? new DbPlayerInfo(gameResult.Match.Player1);

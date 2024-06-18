@@ -5,7 +5,7 @@
       Move time: {{ formattedMoveTimeSeconds }}</label
     >
     <label class="move-time" v-if="isPlayerInGame && isPlayerActive && player.id === identity.id"
-      >Move total time: {{ player!.TotalPlayTime }}
+      >Move total time: {{}}
     </label>
     <div class="playing-state">{{ gameState }}</div>
     <button

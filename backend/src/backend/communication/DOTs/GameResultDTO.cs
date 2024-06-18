@@ -11,6 +11,7 @@ namespace backend.communication.DOTs
             PlayedMoves = gameResult.PlayedMoves.Select(x => new PlayedMoveDTO(x)).ToArray();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatchDTO(gameResult.Match);
+            HasWinnerRow = gameResult.HasWinnerRow;
         }
 
         public string? WinnerId { get; }
@@ -18,5 +19,6 @@ namespace backend.communication.DOTs
         public PlayedMoveDTO[] PlayedMoves { get; }
         public string StartingPlayerId { get; }
         public GameResultMatchDTO Match { get; }
+        public bool HasWinnerRow { get; }
     }
 }

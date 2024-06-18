@@ -3,6 +3,13 @@
     <div class="listing-container">
       <h2>Bestlist</h2>
       <input class="bestlist-search" v-model="searchTerm" placeholder="Search..." @blur="clearSearch" />
+
+      <div class="header-bar">
+        <div>Winner</div>
+        <div>Loser</div>
+        <div>Winner Time</div>
+      </div>
+
       <ul>
         <li v-for="gameResult in filteredBestlist" :key="gameResult.id" class="game-result-entrie">
           <span
@@ -14,6 +21,7 @@
             :class="{ loser: !checkIfGameHasWinningRow(gameResult), draw: checkIfGameHasWinningRow(gameResult) }"
             >{{ ShowLoser(gameResult).username }}</span
           >
+          <span>{{ showWinnerTime(gameResult) }}</span>
           <button class="button-light" @click="showReplay(gameResult)">Replay</button>
         </li>
       </ul>
@@ -59,6 +67,20 @@
       checkIfGameHasWinningRow(gameResult: GameResult): boolean {
         return gameResult.winnerId === null;
       },
+      showWinnerTime(gameResult: GameResult): number {
+        let totalDuration = 0;
+
+        if (gameResult.winnerId === gameResult.startingPlayerId) {
+          let evenIndexMoves = gameResult.playedMoves.filter((move, index) => index % 2 === 0);
+          totalDuration = evenIndexMoves.reduce((total, move) => total + move.duration, 0);
+        }
+
+        let oddIndexMoves = gameResult.playedMoves.filter((move, index) => index % 2 !== 0);
+        totalDuration = oddIndexMoves.reduce((total, move) => total + move.duration, 0);
+
+        totalDuration = totalDuration / 1000;
+        return Math.round(totalDuration * 100) / 100;
+      },
       clearSearch() {
         // Timeout to prevent clearing the search term before the click event on the replay button is triggered
         setTimeout(() => {
@@ -68,12 +90,19 @@
     },
     computed: {
       filteredBestlist(): GameResult[] {
-        if (this.searchTerm === "") return this.bestlist;
-        return this.bestlist.filter(
-          (gameResult) =>
-            gameResult.match.player1.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-            gameResult.match.player2.username.toLowerCase().includes(this.searchTerm.toLowerCase())
-        );
+        let bestlist = this.bestlist;
+
+        bestlist.sort((a, b) => this.showWinnerTime(a) - this.showWinnerTime(b));
+
+        if (this.searchTerm !== "") {
+          bestlist = bestlist.filter(
+            (gameResult) =>
+              gameResult.match.player1.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+              gameResult.match.player2.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+              this.showWinnerTime(gameResult).toString().includes(this.searchTerm)
+          );
+        }
+        return bestlist;
       },
     },
   });
@@ -101,5 +130,13 @@
   }
   .game-result-entrie > span {
     margin-right: 0.5rem;
+  }
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background-color: var(--color-orange);
+    color: var(--color-light);
+    font-weight: bold;
   }
 </style>
