@@ -2,6 +2,7 @@
   <div class="grid-container">
     <div class="grid-item-page-info container">
       <h2>Connect Four</h2>
+      <span v-if="isGameStarted">{{ gameTime }}</span>
     </div>
     <button
       v-if="!isGameParticipant"
@@ -16,6 +17,8 @@
       :game="game"
       :player="inGamePlayerLeft!"
       :identity="identity"
+      :playedMove="playedMove"
+      :moveTimeSeconds="moveTimeSeconds"
       @quit-game="quitGame"
     />
     <PlayerInfo
@@ -23,6 +26,8 @@
       :game="game"
       :player="inGamePlayerRight!"
       :identity="identity"
+      :playedMove="playedMove"
+      :moveTimeSeconds="moveTimeSeconds"
       @quit-game="quitGame"
     />
     <button
@@ -33,9 +38,7 @@
       Confirm game start
     </button>
     <Connect4Board
-      v-if="
-        game != null && inGamePlayerLeft?.hasConfirmedGameStart && inGamePlayerRight?.hasConfirmedGameStart
-      "
+      v-if="game != null && inGamePlayerLeft?.hasConfirmedGameStart && inGamePlayerRight?.hasConfirmedGameStart"
       :identity="identity"
       :connect4Board="game.connect4Board"
       :playerLeft="inGamePlayerLeft!"
@@ -69,22 +72,45 @@
         required: true,
         type: Object as PropType<PlayerIdentity>,
       },
-      playedMoves: {
-        required: true,
-        type: Object as PropType<PlayedMove | undefined>,
-      },
+    },
+    data(): {
+      gameTimerId?: number;
+      moveTimerId?: number;
+      gameMinutes: number;
+      gameSeconds: number;
+      moveTimeSeconds: number;
+      playedMove?: PlayedMove;
+    } {
+      return {
+        gameTimerId: undefined,
+        moveTimerId: undefined,
+        gameMinutes: 0,
+        gameSeconds: 0,
+        moveTimeSeconds: 0,
+        playedMove: undefined,
+      };
     },
     components: {
       Connect4Board,
       PlayerInfo,
     },
+    unmounted(): void {
+      if (this.moveTimerId) {
+        clearInterval(this.moveTimerId);
+        clearInterval(this.gameTimerId);
+      }
+    },
     methods: {
       reemitPlaceStone(column: number): void {
         if (this.game == null) return;
         if (this.game.activePlayerId !== this.identity.id) return;
+        this.startMoveTimer();
         this.$emit("place-stone", column);
       },
       confirmGameStart(): void {
+        this.startGameTimer();
+        this.startMove();
+        this.startMoveTimer();
         this.$emit("confirm-game-start");
       },
       reemitQuitGame(): void {
@@ -97,6 +123,27 @@
       stopWatchingGame(): void {
         signalRHub.invoke("StopWatchingGame");
         this.$emit("stop-watching-game");
+      },
+      startGameTimer(): void {
+        this.gameTimerId = setInterval(() => {
+          this.gameSeconds++;
+          if (this.gameSeconds === 60) {
+            this.gameSeconds = 0;
+            this.gameMinutes++;
+          }
+        }, 1000);
+      },
+      startMove(): void {
+        this.game!.MoveStartTime = new Date().getTime();
+        this.startMoveTimer();
+      },
+      startMoveTimer(): void {
+        this.moveTimerId = setInterval(() => {
+          const now = new Date().getTime();
+
+          const moveSeconds = (now - this.game!.MoveStartTime) / 1000;
+          this.moveTimeSeconds = parseFloat(moveSeconds.toFixed(1));
+        }, 100);
       },
     },
     computed: {
@@ -162,8 +209,18 @@
       },
       isGameParticipant(): boolean {
         if (this.game == null) return false;
+        return this.identity.id === this.game.match.player1.id || this.identity.id === this.game.match.player2.id;
+      },
+      gameTime(): string {
+        let minutes = this.gameMinutes.toString().padStart(2, "0");
+        let seconds = this.gameSeconds.toString().padStart(2, "0");
+        return `${minutes}:${seconds}`;
+      },
+      isGameStarted() {
         return (
-          this.identity.id === this.game.match.player1.id || this.identity.id === this.game.match.player2.id
+          this.game != null &&
+          this.game.match.player1.hasConfirmedGameStart &&
+          this.game.match.player2.hasConfirmedGameStart
         );
       },
     },

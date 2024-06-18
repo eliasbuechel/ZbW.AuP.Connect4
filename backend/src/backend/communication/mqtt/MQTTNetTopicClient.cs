@@ -35,8 +35,8 @@ namespace backend.communication.mqtt
         internal MQTTNetTopicClient(string brokerUri)
         {
             _brokerUri = brokerUri;
-            _username = "";
-            _password = "";
+            _username = "ardu";
+            _password = "Pw12ArduR4D4!";
 
             IMqttClientOptions options = new MqttClientOptionsBuilder()
                 .WithWebSocketServer(_brokerUri)
