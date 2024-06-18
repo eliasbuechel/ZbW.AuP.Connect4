@@ -3,6 +3,7 @@
     <img id="logo-login" src="@/assets/images/Logo.png" alt="r4d4-logo" />
     <div class="login-container">
       <form @submit.prevent="login">
+        <h2>Login</h2>
         <div class="input-field">
           <label for="email">Email</label>
           <input type="email" id="email" v-model="credentials.email" @focusout="validateEmail" required />
@@ -69,7 +70,6 @@ export default defineComponent({
       this.errors.password = "";
       // missing validation logic for password
     },
-
     redirectToRegister() {
       this.$router.push({ name: "Register" });
     },

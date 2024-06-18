@@ -4,17 +4,14 @@ using backend.game;
 using backend.game.entities;
 using backend.Infrastructure;
 using backend.services;
-using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using backend.game.entities;
 using backend.services.player;
 using backend.communication.signalR.frontendApi;
 using backend.communication.signalR.opponentRoboterApi;
 using backend.utilities;
-using Google.Protobuf.WellKnownTypes;
 
 namespace backend
 {

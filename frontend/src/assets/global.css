@@ -63,6 +63,13 @@ body {
   border-radius: 1em;
 }
 
+.login-container > form > h2 {
+  color: var(--color-dark);
+}
+
+.login-container > form > button {
+  margin-top: 1rem;
+}
 .input-field {
   display: flex;
   flex-direction: column;

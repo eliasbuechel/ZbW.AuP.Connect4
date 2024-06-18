@@ -3,6 +3,7 @@
     <img id="logo-register" src="@/assets/images/Logo.png" alt="r4d4-logo" />
     <div class="login-container">
       <form @submit.prevent="register">
+        <h2>Register</h2>
         <div class="input-field">
           <label for="email">Email</label>
           <input type="email" id="email" v-model="credentials.email" @focusout="validateEmail" required />
