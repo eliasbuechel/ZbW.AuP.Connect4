@@ -1,19 +1,26 @@
-﻿using backend.game;
+﻿using backend.communication.mqtt;
+using backend.game;
 using backend.game.entities;
+using backend.Infrastructure;
+using backend.utilities;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace backend.services
 {
-    internal class GameManager
+    internal class GameManager : DisposingObject
     {
         public GameManager(
             Func<Match, Game> getConnect4Game,
-            GameResultsService gameResultsService
+            GameResultsService gameResultsService,
+            IRoboterAPI roboterAPI
             )
         {
             _getConnect4Game = getConnect4Game;
             _gameResultsService = gameResultsService;
+            _roboterAPI = roboterAPI;
+
+            _roboterAPI.OnManualMove += PlayManualMove;
         }
 
         public event Action<Player, Player>? OnRequestedMatch;
@@ -71,7 +78,7 @@ namespace backend.services
         public void PlayMove(Player player, int column)
         {
             if (_activeGame == null)
-                return;
+                throw new RequestErrorException();
 
             if (column < 0 || column > 6)
             {
@@ -165,6 +172,10 @@ namespace backend.services
             OnSendHint?.Invoke(player, column);
         }
 
+        private void PlayManualMove(int column)
+        {
+            _activeGame?.PlayManualMove(column);
+        }
         private void StartNewGame(Match match)
         {
             Debug.Assert(_activeGame == null);
@@ -217,8 +228,14 @@ namespace backend.services
             StartNewGame(match);
         }
 
+        protected override void OnDispose()
+        {
+            _roboterAPI.OnManualMove -= PlayManualMove;
+        }
+
         private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
+        private readonly IRoboterAPI _roboterAPI;
         private readonly Func<Match, Game> _getConnect4Game;
         private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
     }

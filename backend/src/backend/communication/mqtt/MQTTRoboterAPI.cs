@@ -1,6 +1,5 @@
 ﻿using backend.game;
 using backend.game.entities;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace backend.communication.mqtt
@@ -132,7 +131,24 @@ namespace backend.communication.mqtt
         }
         private Task TopicManualColumnChanged(string value)
         {
-            throw new NotImplementedException();
+            int column;
+            try
+            {
+                column = Convert.ToInt32(value);
+            }
+            catch
+            {
+                Debug.Assert(false);
+                return Task.CompletedTask;
+            }
+
+            if (column >= 0 && column <= 6)
+            {
+                _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1").Wait();
+                OnManualMove?.Invoke(column);
+            }
+
+            return Task.CompletedTask;
         }
 
         private void StartRequestTimeout(Action onTimeout)
@@ -145,7 +161,7 @@ namespace backend.communication.mqtt
 
             Thread thread = new Thread(() =>
             {
-                Thread.Sleep(5000);
+                Thread.Sleep(3000);
                 lock(_lock)
                 {
                     if (_currentRequestId == requestId)

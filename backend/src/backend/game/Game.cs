@@ -119,6 +119,11 @@ namespace backend.game
 
             return bestMove;
         }
+        public void PlayManualMove(int column)
+        {
+            if (_gameEnded) return;
+            PlayMove(_activePlayer, column);
+        }
         public void Dispose()
         {
             if (_disposed)
