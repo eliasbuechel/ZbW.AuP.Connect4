@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   backend:
-    build: 
+    build:
       context: ./backend/src/backend
       dockerfile: Dockerfile
     container_name: r4d4-backend
@@ -13,9 +13,11 @@ services:
     command: ["dotnet", "backend.dll", "--urls", "http://0.0.0.0:8082"]
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+    labels:
+      - "critical"
 
   frontend:
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: r4d4-frontend
@@ -25,6 +27,8 @@ services:
       - "8080:8080"
     restart: always
     command: ["nginx", "-g", "daemon off;"]
+    labels:
+      - "critical"
 
 networks:
   mydockernet:
