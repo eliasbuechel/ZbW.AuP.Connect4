@@ -348,6 +348,8 @@ namespace backend.game
             if (!_gameManager.GamePlan.Any())
                 foreach (var p in _playerConnectionService.WebPlayerConnectionManager.ConnectedPlayers)
                     p.IsWatchingGame = false;
+
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(c => GetBestlist(c));
         }
         private void OnConfirmedGameStart(Player player)
         {

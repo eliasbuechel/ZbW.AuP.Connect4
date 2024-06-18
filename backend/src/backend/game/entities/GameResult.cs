@@ -16,7 +16,7 @@ namespace backend.game.entities
         {
             WinnerId = gameResult.WinnerId;
             Line = gameResult.Line.Count == 0 ? null : gameResult.Line.Select(x => new Field(x)).ToArray();
-            PlayedMoves = gameResult.PlayedMoves.Select(x => new PlayedMove(x)).ToList();
+            PlayedMoves = gameResult.PlayedMoves.OrderBy(x => x.MoveOrderIndex).Select(x => new PlayedMove(x)).ToList();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatch(gameResult.Match);
         }

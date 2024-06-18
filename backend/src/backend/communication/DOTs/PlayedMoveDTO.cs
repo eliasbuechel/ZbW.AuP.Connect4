@@ -2,9 +2,9 @@
 
 namespace backend.communication.DOTs
 {
-    internal class PlayedMoveDTO : EntityDTO
+    internal class PlayedMoveDTO
     {
-        public PlayedMoveDTO(PlayedMove playedMove) : base(playedMove)
+        public PlayedMoveDTO(PlayedMove playedMove)
         {
             Column = playedMove.Column;
             Duration = playedMove.Duration.TotalMilliseconds;
