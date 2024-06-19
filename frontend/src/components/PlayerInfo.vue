@@ -1,15 +1,18 @@
 <template>
   <div class="player-info">
     <label>{{ playerName }}</label>
-    <label class="move-time" v-if="isPlayerInGame && isPlayerActive && player.id === identity.id">
-      Move time: {{ formattedMoveTimeSeconds }}</label
+    <label
+      class="move-time"
+      v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
     >
-    <label class="move-time" v-if="isPlayerInGame && isPlayerActive && player.id === identity.id"
-      >Move total time: {{}}
+      Move time: {{ formattedPlayedMoveTime }}</label
+    >
+    <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
+      >Move total time: {{ formattedTotalPlayedMoveTime }}
     </label>
     <div class="playing-state">{{ gameState }}</div>
     <button
-      v-if="isPlayerInGame && isPlayerActive && player.id === identity.id"
+      v-if="isPlayerInGame && isPlayerActive && gameHasStarted && player.id === identity.id"
       class="button-light"
       @click="quitGame"
     >
@@ -23,7 +26,6 @@
   import { InGamePlayer } from "@/types/InGamePlayer";
   import { Game } from "@/types/Game";
   import { PlayerIdentity } from "@/types/PlayerIdentity";
-  import { PlayedMove } from "@/types/PlayedMove";
 
   export default defineComponent({
     props: {
@@ -40,18 +42,17 @@
         required: true,
         type: Object as PropType<PlayerIdentity>,
       },
-      moveTimeSeconds: {
+      playedMoveTime: {
         type: Number,
         default: 0,
       },
-      playedMove: {
-        type: Object as PropType<PlayedMove>,
-        default: undefined,
+      totalPlayedMoveTime: {
+        type: Number,
+        default: 0,
       },
     },
     methods: {
       quitGame(): void {
-        console.log("quitGame method called");
         this.$emit("quit-game");
       },
     },
@@ -82,8 +83,16 @@
         if (this.game == null) return false;
         return this.game.activePlayerId === this.player.id;
       },
-      formattedMoveTimeSeconds(): string {
-        return this.moveTimeSeconds.toFixed(1) + "s";
+      gameHasStarted(): boolean {
+        if (this.game == null) return false;
+        return this.game.match.player1.hasConfirmedGameStart && this.game.match.player2.hasConfirmedGameStart;
+      },
+      formattedPlayedMoveTime(): string {
+        return this.playedMoveTime.toFixed(1) + "s";
+      },
+      formattedTotalPlayedMoveTime(): string {
+        console.log(this.totalPlayedMoveTime);
+        return this.totalPlayedMoveTime.toFixed(1) + "s";
       },
     },
   });

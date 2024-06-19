@@ -17,18 +17,18 @@
       :game="game"
       :player="inGamePlayerLeft!"
       :identity="identity"
-      :playedMove="playedMove"
-      :moveTimeSeconds="moveTimeSeconds"
-      @quit-game="quitGame"
+      :playedMoveTime="playedMoveTime"
+      :totalPlayedMoveTime="totalPlayedMoveTime"
+      @quit-game="reemitQuitGame"
     />
     <PlayerInfo
       class="grid-item-player2 player-info player-info-right"
       :game="game"
       :player="inGamePlayerRight!"
       :identity="identity"
-      :playedMove="playedMove"
-      :moveTimeSeconds="moveTimeSeconds"
-      @quit-game="quitGame"
+      :playedMoveTime="playedMoveTime"
+      :totalPlayedMoveTime="totalPlayedMoveTime"
+      @quit-game="reemitQuitGame"
     />
     <button
       v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
@@ -59,7 +59,6 @@
   import { InGamePlayer } from "@/types/InGamePlayer";
   import signalRHub from "@/services/signalRHub";
   import PlayerInfo from "./PlayerInfo.vue";
-  import { PlayedMove } from "@/types/PlayedMove";
 
   export default defineComponent({
     props: {
@@ -75,19 +74,21 @@
     },
     data(): {
       gameTimerId?: number;
+      totalMoveTimerId?: number;
       moveTimerId?: number;
       gameMinutes: number;
       gameSeconds: number;
-      moveTimeSeconds: number;
-      playedMove?: PlayedMove;
+      playedMoveTime: number;
+      totalPlayedMoveTime: number;
     } {
       return {
         gameTimerId: undefined,
+        totalMoveTimerId: undefined,
         moveTimerId: undefined,
         gameMinutes: 0,
         gameSeconds: 0,
-        moveTimeSeconds: 0,
-        playedMove: undefined,
+        playedMoveTime: 0,
+        totalPlayedMoveTime: 0,
       };
     },
     components: {
@@ -95,8 +96,10 @@
       PlayerInfo,
     },
     unmounted(): void {
-      if (this.moveTimerId) {
-        clearInterval(this.moveTimerId);
+      if (this.totalMoveTimerId) {
+        clearInterval(this.totalMoveTimerId);
+      }
+      if (this.gameTimerId) {
         clearInterval(this.gameTimerId);
       }
     },
@@ -104,20 +107,17 @@
       reemitPlaceStone(column: number): void {
         if (this.game == null) return;
         if (this.game.activePlayerId !== this.identity.id) return;
-        this.startMoveTimer();
+
         this.$emit("place-stone", column);
+        this.stopMoveTimer();
       },
       confirmGameStart(): void {
         this.startGameTimer();
-        this.startMove();
         this.startMoveTimer();
         this.$emit("confirm-game-start");
       },
       reemitQuitGame(): void {
         if (this.game === undefined) return;
-        this.$emit("quit-game");
-      },
-      quitGame(): void {
         this.$emit("quit-game");
       },
       stopWatchingGame(): void {
@@ -133,17 +133,27 @@
           }
         }, 1000);
       },
-      startMove(): void {
-        this.game!.MoveStartTime = new Date().getTime();
-        this.startMoveTimer();
-      },
+
       startMoveTimer(): void {
         this.moveTimerId = setInterval(() => {
           const now = new Date().getTime();
-
-          const moveSeconds = (now - this.game!.MoveStartTime) / 1000;
-          this.moveTimeSeconds = parseFloat(moveSeconds.toFixed(1));
+          this.playedMoveTime = (now - this.game!.MoveStartTime) / 1000;
         }, 100);
+      },
+      stopMoveTimer(): void {
+        if (this.moveTimerId) {
+          clearInterval(this.moveTimerId);
+          this.moveTimerId = undefined;
+
+          this.addPlayedMoveTime();
+          this.game!.MoveStartTime = new Date().getTime();
+        }
+        this.startMoveTimer();
+      },
+      addPlayedMoveTime(): void {
+        this.totalPlayedMoveTime += parseFloat(this.playedMoveTime.toString());
+        console.log(this.totalPlayedMoveTime);
+        this.playedMoveTime = 0;
       },
     },
     computed: {
@@ -216,7 +226,7 @@
         let seconds = this.gameSeconds.toString().padStart(2, "0");
         return `${minutes}:${seconds}`;
       },
-      isGameStarted() {
+      isGameStarted(): boolean {
         return (
           this.game != null &&
           this.game.match.player1.hasConfirmedGameStart &&

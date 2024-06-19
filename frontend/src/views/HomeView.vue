@@ -39,7 +39,6 @@
   import { Field } from "@/types/Field";
   import GameResultView from "@/components/GameResultView.vue";
   import { ConnectedPlayers } from "@/types/ConnectedPlayers";
-  import { PlayedMove } from "@/types/PlayedMove";
 
   interface HomeState {
     identity?: PlayerIdentity;
@@ -49,7 +48,6 @@
     game?: Game;
     gameResult?: GameResult;
     isSubscribed: boolean;
-    playedMove?: PlayedMove[];
   }
 
   export default defineComponent({
@@ -66,7 +64,6 @@
         game: undefined,
         gameResult: undefined,
         isSubscribed: false,
-        playedMove: undefined,
       };
     },
     components: {
@@ -354,13 +351,6 @@
       },
       onSendBestlist(bestlist: GameResult[]): void {
         this.bestlist = bestlist;
-      },
-
-      // TODO: never used?
-      addToBestlist(gameResult: GameResult): void {
-        if (this.bestlist == null) return;
-
-        this.bestlist = new Array<GameResult>(gameResult, ...this.bestlist);
       },
       onSignalRConnected(): void {
         this.subscribe();
