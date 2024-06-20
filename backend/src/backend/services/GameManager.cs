@@ -21,8 +21,9 @@ namespace backend.services
             _roboterAPI = roboterAPI;
 
             _roboterAPI.OnManualMove += PlayManualMove;
-            _roboterAPI.OnPlacingStone += OnPlacingStone;
+            _roboterAPI.OnPlacingStone += PlacingStone;
         }
+
 
         public event Action<Player, Player>? OnRequestedMatch;
         public event Action<Player, Player>? OnRejectedMatch;
@@ -93,6 +94,10 @@ namespace backend.services
             }
 
             _activeGame.PlayMove(player, column);
+        }
+        private void PlacingStone(Player player, Field field)
+        {
+            OnPlacingStone?.Invoke(player, field);
         }
         public int GetBestMove(Player player)
         {

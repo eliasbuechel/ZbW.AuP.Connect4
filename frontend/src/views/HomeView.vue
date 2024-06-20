@@ -261,6 +261,7 @@ export default defineComponent({
       this.switchActivePlayer();
     },
     onPlacingStone(playerId: string, field: Field): void {
+      console.log(field);
       if (this.game == null) return;
       this.game.placingField = field;
     },

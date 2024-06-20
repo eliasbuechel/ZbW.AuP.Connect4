@@ -422,8 +422,9 @@ button:active:enabled {
   border: 2px solid var(--color-light);
 }
 
-.placingCell {
-  background-color: red;
+.column > .placingCell {
+  border-color: var(--color-orange);
+  background-color: var(--color-orange-transparent);
 }
 
 .playableColumn:hover > .nextPlacingCell {

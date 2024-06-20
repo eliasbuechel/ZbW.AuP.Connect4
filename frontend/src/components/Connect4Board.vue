@@ -12,7 +12,11 @@
       <div
         v-for="(column, colIdx) in connect4Board"
         :key="colIdx"
-        :class="{ column: true, playableColumn: isYourTurn && !columnIsFull(colIdx), hint: isHint(colIdx) }"
+        :class="{
+          column: true,
+          playableColumn: isYourTurn && placingField == null && !columnIsFull(colIdx),
+          hint: isHint(colIdx),
+        }"
         @click="placeStone(colIdx)"
       >
         <div
@@ -23,7 +27,7 @@
             colorPlayerLeft: cell === playerLeft.id,
             colorPlayerRight: cell === playerRight.id,
             nextPlacingCell: isNextPlacableCell(colIdx, rowIdx),
-            placingCell: isPlacingCell(colIdx, rowIdx),
+            placingCell: isPlacingCell(colIdx, rowIdx) && isYourTurn,
           }"
         ></div>
       </div>
@@ -70,6 +74,7 @@ export default defineComponent({
     placeStone(column: number): void {
       if (!this.isYourTurn) return;
       if (this.columnIsFull(column)) return;
+      if (this.placingField != null) return;
       this.$emit("place-stone", column);
     },
     getHint(): void {
