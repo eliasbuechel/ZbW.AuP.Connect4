@@ -21,7 +21,7 @@ namespace backend.game
                 _startingPlayer = random.Next(0, 2) == 0 ? match.Player1 : match.Player2;
             }
             else
-                _startingPlayer = match.Player1;
+                _startingPlayer = match.Player2;
 
             _activePlayer = _startingPlayer;
 
