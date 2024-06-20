@@ -5,7 +5,7 @@ namespace backend.game
 {
     internal class GameBoard
     {
-        public GameBoard(IRoboterAPI roboterAPI)
+        public GameBoard(RoboterAPI roboterAPI)
         {
             _field = new Player?[COLUMNS][];
 
@@ -45,8 +45,10 @@ namespace backend.game
                 return fieldAsIds;
             }
         }
-        public int Columns => COLUMNS;
-        public int Rows => ROWS;
+        public static int Columns => COLUMNS;
+        public static int Rows => ROWS;
+        public Field? PlacingField { get; private set; }
+
         public Player?[] this[int index]
         {
             get { return _field[index]; }
@@ -57,7 +59,7 @@ namespace backend.game
             if (column < 0 || column >= COLUMNS)
                 return false;
 
-            var col = _field[column];
+            Player?[] col = _field[column];
             if (col[col.Length - 1] != null)
                 return false;
 
@@ -67,7 +69,8 @@ namespace backend.game
                     continue;
 
                 col[i] = player;
-                Field field = new Field(column, i);
+                Field field = new(column, i);
+                PlacingField = field;
                 _roboterAPI.PlaceStone(player, field);
                 return true;
             }
@@ -86,6 +89,7 @@ namespace backend.game
         private void OnStonePlacedOnRoboter(Player player, Field field)
         {
             OnStonePlaced?.Invoke(player, field);
+            PlacingField = null;
         }
         private void OnRoboterBoardReset()
         {
@@ -93,7 +97,7 @@ namespace backend.game
         }
 
         private readonly Player?[][] _field;
-        private readonly IRoboterAPI _roboterAPI;
+        private readonly RoboterAPI _roboterAPI;
         private const int ROWS = 6;
         private const int COLUMNS = 7;
     }

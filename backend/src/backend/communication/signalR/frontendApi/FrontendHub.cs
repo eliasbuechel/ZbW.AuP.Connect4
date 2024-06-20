@@ -8,14 +8,8 @@ using System.Security.Claims;
 namespace backend.communication.signalR.frontendApi
 {
     [Authorize]
-    internal class FrontendHub : Hub
+    internal class FrontendHub(FrontendApi frontendApi, UserManager<PlayerIdentity> userManager) : Hub
     {
-        public FrontendHub(FrontendApi frontendApi, UserManager<PlayerIdentity> userManager)
-        {
-            _frontendApi = frontendApi;
-            _userManager = userManager;
-        }
-
         public void GetUserData()
         {
             try
@@ -273,8 +267,8 @@ namespace backend.communication.signalR.frontendApi
             Clients.Caller.SendAsync("RedirectToLogin");
         }
 
-        private readonly FrontendApi _frontendApi;
-        private readonly UserManager<PlayerIdentity> _userManager;
+        private readonly FrontendApi _frontendApi = frontendApi;
+        private readonly UserManager<PlayerIdentity> _userManager = userManager;
     }
 
     internal class InvalidIdentitficationException : Exception { }

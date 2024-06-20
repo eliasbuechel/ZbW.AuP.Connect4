@@ -23,6 +23,7 @@
             colorPlayerLeft: cell === playerLeft.id,
             colorPlayerRight: cell === playerRight.id,
             nextPlacingCell: isNextPlacableCell(colIdx, rowIdx),
+            placingCell: isPlacingCell(colIdx, rowIdx),
           }"
         ></div>
       </div>
@@ -32,6 +33,7 @@
 
 <script lang="ts">
 import signalRHub from "@/services/signalRHub";
+import { Field } from "@/types/Field";
 import { InGamePlayer } from "@/types/InGamePlayer";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { PropType, defineComponent } from "vue";
@@ -59,6 +61,10 @@ export default defineComponent({
       required: true,
       type: Object as PropType<string>,
     },
+    placingField: {
+      required: true,
+      type: Object as PropType<Field | undefined>,
+    },
   },
   methods: {
     placeStone(column: number): void {
@@ -81,6 +87,10 @@ export default defineComponent({
       if (this.connect4Board[colIdx][rowIdx] != "") return false;
       if (rowIdx <= 0) return true;
       return this.connect4Board[colIdx][rowIdx - 1] != "";
+    },
+    isPlacingCell(colIdx: number, rowIdx: number): boolean {
+      if (this.placingField == null) return false;
+      return this.placingField.column === colIdx && this.placingField.row === rowIdx;
     },
   },
   computed: {

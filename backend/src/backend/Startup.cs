@@ -52,7 +52,7 @@ namespace backend
 
                 return new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
             });
-            services.AddSingleton<IRoboterAPI, MQTTRoboterAPI>();
+            services.AddSingleton<RoboterAPI, MQTTRoboterAPI>();
 
             services.AddDbContext<BackendDbContext>(options =>
             {
@@ -62,7 +62,7 @@ namespace backend
             services.AddSingleton<BackendDbContextFacory>(s =>
             {
                 var connectionString = DotNetEnv.Env.GetString("CONNECTIONSTRING");
-                DbContextOptionsBuilder options = new DbContextOptionsBuilder();
+                DbContextOptionsBuilder options = new();
                 options.UseMySQL(connectionString);
                 return new BackendDbContextFacory(options.Options);
             });
@@ -72,12 +72,14 @@ namespace backend
 
             services.AddTransient<EmailSettings>( services =>
             {
-                EmailSettings settings = new EmailSettings();
-                settings.Host = DotNetEnv.Env.GetString("SMTP_HOST");
-                settings.Port = DotNetEnv.Env.GetInt("SMTP_PORT");
-                settings.Username = DotNetEnv.Env.GetString("SMTP_USERNAME");
-                settings.Password = DotNetEnv.Env.GetString("SMTP_PASSWORD");
-                settings.FromAddress = DotNetEnv.Env.GetString("SMTP_FROM_ADDRESS");
+                EmailSettings settings = new()
+                {
+                    Host = DotNetEnv.Env.GetString("SMTP_HOST"),
+                    Port = DotNetEnv.Env.GetInt("SMTP_PORT"),
+                    Username = DotNetEnv.Env.GetString("SMTP_USERNAME"),
+                    Password = DotNetEnv.Env.GetString("SMTP_PASSWORD"),
+                    FromAddress = DotNetEnv.Env.GetString("SMTP_FROM_ADDRESS")
+                };
                 return settings;
             });
 

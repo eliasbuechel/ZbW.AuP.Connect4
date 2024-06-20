@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using backend.Infrastructure;
+using MQTTnet;
 using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
@@ -8,7 +9,7 @@ using System.Text;
 
 namespace backend.communication.mqtt
 {
-    internal class MQTTNetTopicClient : IDisposable
+    internal class MQTTNetTopicClient : DisposingObject
     {
         public MQTTNetTopicClient(string brokerUri, string username, string password)
         {
@@ -68,16 +69,6 @@ namespace backend.communication.mqtt
         {
             await _managedClient.StopAsync();
         }
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _managedClient.Dispose();
-        }
 
         public async Task PublishAsync(string topic, string message)
         {
@@ -110,9 +101,7 @@ namespace backend.communication.mqtt
         }
         public async Task UnsubscribeFromAsync(string topic, Func<string, Task> callback)
         {
-            ICollection<Func<string, Task>>? callbacks;
-
-            if (!_topicCallbackMappings.TryGetValue(topic, out callbacks))
+            if (!_topicCallbackMappings.TryGetValue(topic, out ICollection<Func<string, Task>>? callbacks))
             {
                 Debug.Assert(false);
                 return;
@@ -183,15 +172,19 @@ namespace backend.communication.mqtt
             Console.WriteLine($"MQTT-CLIENT: {message}");
         }
 
+        protected override void OnDispose()
+        {
+            _managedClient.Dispose();
+        }
+
         private bool _connected;
-        private bool _disposed;
         private readonly string _brokerUri;
         private readonly string _username;
         private readonly string _password;
         private readonly Guid _clientId = Guid.NewGuid();
-        private IManagedMqttClient _managedClient;
+        private readonly IManagedMqttClient _managedClient;
         private readonly ManagedMqttClientOptions _managedOptions;
-        private readonly Dictionary<string, ICollection<Func<string, Task>>> _topicCallbackMappings = new Dictionary<string, ICollection<Func<string, Task>>>();
-        private readonly Dictionary<string, string?> _topicValueMappings = new Dictionary<string, string?>();
+        private readonly Dictionary<string, ICollection<Func<string, Task>>> _topicCallbackMappings = [];
+        private readonly Dictionary<string, string?> _topicValueMappings = [];
     }
 }

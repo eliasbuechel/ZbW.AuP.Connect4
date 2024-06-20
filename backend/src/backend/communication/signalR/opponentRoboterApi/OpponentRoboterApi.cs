@@ -11,7 +11,7 @@ namespace backend.communication.signalR.opponentRoboterApi
     internal delegate void PlayMove(string connectionId, int column);
     internal delegate void QuitGame(string connectionId);
 
-    internal abstract class OpponentRoboterApi
+    internal abstract class OpponentRoboterApi(RequestHandlerManager<string> requestHandlerManager)
     {
         public event Connected? OnConnected;
         public event Disconnected? OnDisconnected;
@@ -21,11 +21,6 @@ namespace backend.communication.signalR.opponentRoboterApi
         public event ConfirmGameStart? OnConfirmGameStart;
         public event PlayMove? OnPlayMove;
         public event QuitGame? OnQuitGame;
-
-        public OpponentRoboterApi(RequestHandlerManager<string> requestHandlerManager)
-        {
-            _requestHandlerManager = requestHandlerManager;
-        }
 
         // receving
         public void Connected(string callerUrl, string connectionId)
@@ -93,6 +88,6 @@ namespace backend.communication.signalR.opponentRoboterApi
             }, connectionId);
         }
 
-        private readonly RequestHandlerManager<string> _requestHandlerManager;
+        private readonly RequestHandlerManager<string> _requestHandlerManager = requestHandlerManager;
     }
 }

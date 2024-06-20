@@ -1,4 +1,5 @@
-﻿using backend.game.entities;
+﻿using backend.communication.DOTs;
+using backend.game.entities;
 using System.Diagnostics;
 
 namespace backend.game
@@ -16,7 +17,7 @@ namespace backend.game
 
             if (match.Player1 is WebPlayer || match.Player2 is WebPlayer)
             {
-                Random random = new Random();
+                Random random = new();
                 _startingPlayer = random.Next(0, 2) == 0 ? match.Player1 : match.Player2;
             }
             else
@@ -38,6 +39,8 @@ namespace backend.game
         public string[][] FieldAsIds => _gameBoard.FieldAsIds;
         public bool GameEnded => _gameEnded;
 
+        public Field? PlacingField => _gameBoard.PlacingField;
+
         public void PlayMove(Player player, int column)
         {
             if (_activePlayer != player)
@@ -52,21 +55,21 @@ namespace backend.game
                 return;
             }
             TimeSpan duration = DateTime.Now - _moveStartingTime;
-            PlayedMove playedMove = new PlayedMove(column, duration);
+            PlayedMove playedMove = new(column, duration);
             _playedMoves.Add(playedMove);
             _moveStartingTime = DateTime.Now; _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(Player player)
         {
             Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
         public void Initialize()
         {
             _gameBoard.Reset();
         }
-        public void ConnfirmGameStart(Player player)
+        public static void ConnfirmGameStart(Player player)
         {
             player.HasConfirmedGameStart = true;
         }
@@ -84,9 +87,7 @@ namespace backend.game
 
             foreach (int col in _columnOrder)
             {
-                int row;
-
-                if (!GetNextFreeRow(col, out row))
+                if (!GetNextFreeRow(col, out int row))
                     continue;
 
                 Debug.Assert(row >= 0);
@@ -207,7 +208,7 @@ namespace backend.game
             }
 
             col = lastPlacedStone.Column + 1;
-            while (col < _gameBoard.Columns && count < 4)
+            while (col < GameBoard.Columns && count < 4)
             {
                 if (_gameBoard[col][lastPlacedStone.Row] != player)
                     break;
@@ -245,7 +246,7 @@ namespace backend.game
 
             col = lastPlacedStone.Column + 1;
             row = lastPlacedStone.Row + 1;
-            while (col < _gameBoard.Columns && row < _gameBoard.Rows && count < 4)
+            while (col < GameBoard.Columns && row < GameBoard.Rows && count < 4)
             {
                 if (_gameBoard[col][row] != player)
                     break;
@@ -272,7 +273,7 @@ namespace backend.game
 
             int col = lastPlacedStone.Column - 1;
             int row = lastPlacedStone.Row + 1;
-            while (col >= 0 && row < _gameBoard.Rows && count < 4)
+            while (col >= 0 && row < GameBoard.Rows && count < 4)
             {
                 if (_gameBoard[col][row] != player)
                     break;
@@ -284,7 +285,7 @@ namespace backend.game
 
             col = lastPlacedStone.Column + 1;
             row = lastPlacedStone.Row - 1;
-            while (col < _gameBoard.Columns && row >= 0 && count < 4)
+            while (col < GameBoard.Columns && row >= 0 && count < 4)
             {
                 if (_gameBoard[col][row] != player)
                     break;
@@ -305,7 +306,7 @@ namespace backend.game
         private bool CheckForNoMoveLeft()
         {
             bool allCollumnsFull = true;
-            for (int i = 0; i  < _gameBoard.Columns; i++)
+            for (int i = 0; i  < GameBoard.Columns; i++)
             {
                 Player?[] column = _gameBoard[i];
 
@@ -321,12 +322,12 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
-            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
         private void OnGameEndet(GameResult gameResult)
@@ -349,9 +350,7 @@ namespace backend.game
 
                 foreach (int col in _columnOrder)
                 {
-                    int row;
-
-                    if (!GetNextFreeRow(col, out row))
+                    if (!GetNextFreeRow(col, out int row))
                         continue;
 
                     Debug.Assert(row >= 0);
@@ -383,9 +382,7 @@ namespace backend.game
 
                 foreach (int col in _columnOrder)
                 {
-                    int row;
-
-                    if (!GetNextFreeRow(col, out row))
+                    if (!GetNextFreeRow(col, out int row))
                         continue;
 
                     Debug.Assert(row >= 0);
@@ -417,7 +414,7 @@ namespace backend.game
         private bool GetNextFreeRow(int col, out int row)
         {
             int j = 0;
-            while (j < _gameBoard.Rows)
+            while (j < GameBoard.Rows)
             {
                 if (_gameBoard[col][j] == null)
                 {
@@ -435,9 +432,9 @@ namespace backend.game
         {
             int boardValue = 0;
 
-            for (int i = 0; i < _gameBoard.Columns; i++)
+            for (int i = 0; i < GameBoard.Columns; i++)
             {
-                for (int j = 0; j < _gameBoard.Rows; j++)
+                for (int j = 0; j < GameBoard.Rows; j++)
                 {
                     if (_gameBoard[i][j] == maxPlayer)
                         boardValue += _propabilityMatrix[i][j];
@@ -452,8 +449,8 @@ namespace backend.game
         }
         private bool NoMoveLeft()
         {
-            for (int i = 0; i < _gameBoard.Columns; i++)
-                if (_gameBoard[i][_gameBoard.Rows - 1] == null)
+            for (int i = 0; i < GameBoard.Columns; i++)
+                if (_gameBoard[i][GameBoard.Rows - 1] == null)
                     return false;
 
             return true;
@@ -487,7 +484,7 @@ namespace backend.game
                 count++;
             }
             i = col + 1;
-            while(i < _gameBoard.Columns)
+            while(i < GameBoard.Columns)
             {
                 if (_gameBoard[i][row] != player)
                     break;
@@ -513,7 +510,7 @@ namespace backend.game
             }
             i = col + 1;
             j = row + 1;
-            while (i < _gameBoard.Columns && j < _gameBoard.Rows)
+            while (i < GameBoard.Columns && j < GameBoard.Rows)
             {
                 if (_gameBoard[i][j] != player)
                     break;
@@ -529,7 +526,7 @@ namespace backend.game
             count = 1;
             i = col - 1;
             j = row + 1;
-            while (i >= 0 && j < _gameBoard.Rows)
+            while (i >= 0 && j < GameBoard.Rows)
             {
                 if (_gameBoard[i][j] != player)
                     break;
@@ -540,7 +537,7 @@ namespace backend.game
             }
             i = col + 1;
             j = row - 1;
-            while (i < _gameBoard.Columns && j >= 0)
+            while (i < GameBoard.Columns && j >= 0)
             {
                 if (_gameBoard[i][j] != player)
                     break;
@@ -563,8 +560,8 @@ namespace backend.game
         private readonly Player _startingPlayer;
         private readonly Match _match;
         private readonly GameBoard _gameBoard;
-        private readonly ICollection<PlayedMove> _playedMoves = new List<PlayedMove>();
-        private readonly int[] _columnOrder = { 3, 2, 4, 1, 5, 0, 6 };
+        private readonly List<PlayedMove> _playedMoves = [];
+        private readonly int[] _columnOrder = [3, 2, 4, 1, 5, 0, 6];
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],
                                                        [4, 6, 8, 8, 6, 4],
                                                        [5, 8, 11, 11, 8, 5],

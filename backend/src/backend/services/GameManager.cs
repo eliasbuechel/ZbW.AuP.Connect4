@@ -13,7 +13,7 @@ namespace backend.services
         public GameManager(
             Func<Match, Game> getConnect4Game,
             GameResultsService gameResultsService,
-            IRoboterAPI roboterAPI
+            RoboterAPI roboterAPI
             )
         {
             _getConnect4Game = getConnect4Game;
@@ -21,6 +21,7 @@ namespace backend.services
             _roboterAPI = roboterAPI;
 
             _roboterAPI.OnManualMove += PlayManualMove;
+            _roboterAPI.OnPlacingStone += OnPlacingStone;
         }
 
         public event Action<Player, Player>? OnRequestedMatch;
@@ -31,6 +32,7 @@ namespace backend.services
         public event Action<Player, Field>? OnMovePlayed;
         public event Action<Player, int>? OnSendHint;
         public event Action<GameResult>? OnGameEnded;
+        public event Action<Player, Field>? OnPlacingStone;
 
         public Game? Game => _activeGame;
         public IEnumerable<Match> GamePlan => _gamePlan.ToArray();
@@ -45,6 +47,10 @@ namespace backend.services
 
         public bool RequestMatch(Player requester, Player opponent)
         {
+            if (requester.MatchingRequests.Contains(opponent))
+                return false;
+
+            opponent.MatchingRequests.Add(requester);
             RequestedMatch(requester, opponent);
             return true;
         }
@@ -54,7 +60,7 @@ namespace backend.services
             accepter.Matching = opponent;
             opponent.Matching = accepter;
 
-            Match match = new Match(accepter, opponent);
+            Match match = new(accepter, opponent);
             Matched(match);
             _gamePlan.Enqueue(match);
             TryStartGame();
@@ -72,7 +78,7 @@ namespace backend.services
                 return;
             }
 
-            _activeGame.ConnfirmGameStart(player);
+            Game.ConnfirmGameStart(player);
             ConfirmedGameStart(player);
         }
         public void PlayMove(Player player, int column)
@@ -123,16 +129,20 @@ namespace backend.services
                 if (foundMatch == null)
                     break;
 
-                List<Match> gamePlan = new List<Match>(_gamePlan);
+                List<Match> gamePlan = new(_gamePlan);
                 gamePlan.Remove(foundMatch);
                 _gamePlan = new ConcurrentQueue<Match>(gamePlan);
             }
         }
 
+        protected override void OnDispose()
+        {
+            _roboterAPI.OnManualMove -= PlayManualMove;
+            _roboterAPI.OnPlacingStone -= OnPlacingStone;
+        }
 
         private void RequestedMatch(Player requester, Player opponent)
         {
-            opponent.MatchingRequests.Add(requester);
             OnRequestedMatch?.Invoke(requester, opponent);
         }
         private void RejectedMatch(Player rejecter, Player opponent)
@@ -210,8 +220,7 @@ namespace backend.services
             _activeGame.Dispose();
             _activeGame = null;
 
-            Match? match;
-            _gamePlan.TryDequeue(out match);
+            _gamePlan.TryDequeue(out Match? match);
 
             GameEnded(gameResult);
             TryStartGame();
@@ -221,22 +230,16 @@ namespace backend.services
             if (_activeGame != null)
                 return;
 
-            Match? match;
-            if (!_gamePlan.TryPeek(out match))
+            if (!_gamePlan.TryPeek(out Match? match))
                 return;
 
             StartNewGame(match);
         }
 
-        protected override void OnDispose()
-        {
-            _roboterAPI.OnManualMove -= PlayManualMove;
-        }
-
         private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
-        private readonly IRoboterAPI _roboterAPI;
+        private readonly RoboterAPI _roboterAPI;
         private readonly Func<Match, Game> _getConnect4Game;
-        private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
+        private ConcurrentQueue<Match> _gamePlan = new();
     }
 }

@@ -5,13 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.services
 {
-    internal class GameResultsService
+    internal class GameResultsService(BackendDbContextFacory dbContextFactory)
     {
-        public GameResultsService(BackendDbContextFacory dbContextFactory)
-        {
-            _dbContextFactory = dbContextFactory;
-        }
-
         public IEnumerable<GameResult> Bestlist
         {
             get
@@ -50,7 +45,7 @@ namespace backend.services
         public async Task Add(GameResult gameResult)
         {
             using BackendDbContext context = _dbContextFactory.GetDbContext();
-            DbGameResult dbGameResult = new DbGameResult()
+            DbGameResult dbGameResult = new()
             {
                 Id = gameResult.Id,
                 WinnerId = gameResult.WinnerId,
@@ -64,9 +59,9 @@ namespace backend.services
             await context.SaveChangesAsync();
         }
 
-        private IList<DbPlayedMove> GetOrAdd(ICollection<PlayedMove> playedMoves, BackendDbContext context)
+        private List<DbPlayedMove> GetOrAdd(ICollection<PlayedMove> playedMoves, BackendDbContext context)
         {
-            IList<DbPlayedMove> dbPlayedMoves = new List<DbPlayedMove>();
+            List<DbPlayedMove> dbPlayedMoves = [];
 
             for (int i = 0; i < playedMoves.Count; i++)
             {
@@ -84,9 +79,9 @@ namespace backend.services
             return dbPlayedMoves;
         }
 
-        private IList<DbField> GetOrAdd(ICollection<Field>? line, BackendDbContext context)
+        private List<DbField> GetOrAdd(ICollection<Field>? line, BackendDbContext context)
         {
-            IList<DbField> dbLine = new List<DbField>();
+            List<DbField> dbLine = [];
 
             if (line == null)
                 return dbLine;
@@ -97,12 +92,11 @@ namespace backend.services
             return dbLine;
         }
 
-        private DbField GetOrAdd(Field field, BackendDbContext context)
+        private static DbField GetOrAdd(Field field, BackendDbContext context)
         {
             DbField? dbField = context.Fields.Where(x => x.Column == field.Column && x.Row == field.Row).FirstOrDefault();
 
-            if (dbField == null)
-                dbField = new DbField()
+            dbField ??= new DbField()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Column = field.Column,
@@ -112,12 +106,11 @@ namespace backend.services
             return dbField;
         }
 
-        private DbPlayerInfo GetOrAdd(PlayerInfo player, BackendDbContext context)
+        private static DbPlayerInfo GetOrAdd(PlayerInfo player, BackendDbContext context)
         {
             DbPlayerInfo? dbPlayer = context.Players.FirstOrDefault(x => x.Id == player.Id);
 
-            if (dbPlayer == null)
-                dbPlayer = new DbPlayerInfo
+            dbPlayer ??= new DbPlayerInfo
                 {
                     Id = player.Id,
                     Username = player.Username
@@ -125,15 +118,14 @@ namespace backend.services
 
             return dbPlayer;
         }
-        private DbGameResultMatch GetOrAdd(GameResultMatch match, BackendDbContext context)
+        private static DbGameResultMatch GetOrAdd(GameResultMatch match, BackendDbContext context)
         {
             DbPlayerInfo dbPlayer1 = GetOrAdd(match.Player1, context);
             DbPlayerInfo dbPlayer2 = GetOrAdd(match.Player2, context);
 
             DbGameResultMatch? dbGameResultMatch = context.Matches.Where(x => (x.Player1 == dbPlayer1 && x.Player2 == dbPlayer2) || (x.Player1 == dbPlayer2 && x.Player2 == dbPlayer1)).FirstOrDefault();
 
-            if (dbGameResultMatch == null)
-                dbGameResultMatch = new DbGameResultMatch()
+            dbGameResultMatch ??= new DbGameResultMatch()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Player1 = dbPlayer1,
@@ -144,6 +136,6 @@ namespace backend.services
         }
 
 
-        private readonly BackendDbContextFacory _dbContextFactory;
+        private readonly BackendDbContextFacory _dbContextFactory = dbContextFactory;
     }
 }

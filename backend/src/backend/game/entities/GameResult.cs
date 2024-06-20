@@ -6,7 +6,7 @@ namespace backend.game.entities
     {
         public GameResult(Player? winner, ICollection<Field>? line, ICollection<PlayedMove> playedMoves, Player startingPlayer, Match match)
         {
-            WinnerId = winner == null ? null : winner.Id;
+            WinnerId = winner?.Id;
             Line = line;
             PlayedMoves = playedMoves;
             StartingPlayerId = startingPlayer.Id;

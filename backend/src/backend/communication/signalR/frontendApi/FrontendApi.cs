@@ -1,5 +1,6 @@
 ﻿using backend.communication.DOTs;
 using backend.Data;
+using backend.game;
 using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
 
@@ -28,14 +29,11 @@ namespace backend.communication.signalR.frontendApi
     internal delegate void AcceptOppoenntRoboterPlyerMatch(string acceptingOpponentRoboterPlayerId);
     internal delegate void RejectOppoenntRoboterPlyerMatch(string rejectingOpponentRoboterPlayerId);
 
-    internal class FrontendApi : SignalRApi<FrontendHub, PlayerIdentity>
+    internal class FrontendApi(
+        IHubContext<FrontendHub> hubClient,
+        RequestHandlerManager<PlayerIdentity> requestHandlerManager
+            ) : SignalRApi<FrontendHub, PlayerIdentity>(hubClient, requestHandlerManager)
     {
-        public FrontendApi(
-            IHubContext<FrontendHub> hubClient,
-            RequestHandlerManager<PlayerIdentity> requestHandlerManager
-            ) : base(hubClient, requestHandlerManager)
-        { }
-
         public event GetUserData? OnGetUserData;
         public event GetConnectedPlayers? OnGetConnectedPlayers;
         public event GetGamePlan? OnGetGamePlan;
@@ -62,194 +60,194 @@ namespace backend.communication.signalR.frontendApi
         // reciving
         public void GetUserData(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnGetUserData?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnGetConnectedPlayers?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void GetGamePlan(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnGetGamePlan?.Invoke(connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void GetGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnGetGame?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void GetBestlist(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnGetBestlist?.Invoke(connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void GetHint(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnGetHint?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
 
         public void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnRequestMatch?.Invoke(requestingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(requestingPlayerIdentity, methode, connectionId);
         }
         public void AcceptMatch(PlayerIdentity acceptingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnAcceptMatch?.Invoke(acceptingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(acceptingPlayerIdentity, methode, connectionId);
         }
         public void RejectMatch(PlayerIdentity rejectingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnRejectMatch?.Invoke(rejectingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(rejectingPlayerIdentity, methode, connectionId);
         }
         public void ConfirmGameStart(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnConfirmedGameStart?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void PlayMove(PlayerIdentity playerIdentity, int column, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnPlayMove?.Invoke(playerIdentity, column);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void QuitGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnQuitGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
 
         public void WatchGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnWatchGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void StopWatchingGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnStopWatchingGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
 
         public void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnRequestSinglePlayerMatch?.Invoke(requestingPlayerIdentity);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(requestingPlayerIdentity, methode, connectionId);
         }
         public void RequestOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string requestingOpponentRoboterPlayerId, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnRequestOppoenntRoboterPlyerMatch?.Invoke(requestingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void AcceptOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string acceptingOpponentRoboterPlayerId, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnAcceptOppoenntRoboterPlyerMatch?.Invoke(acceptingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void RejectOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string rejectingOpponentRoboterPlayerId, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnRejectOppoenntRoboterPlyerMatch?.Invoke(rejectingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(playerIdentity, methode, connectionId);
         }
         public void ConnectToOpponentRoboterPlayer(PlayerIdentity initiatorPlayerIdentity, string hubUrl, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnConnectToOpponentRoboterPlayer?.Invoke(hubUrl, connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(initiatorPlayerIdentity, methode, connectionId);
         }
@@ -334,6 +332,10 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(MovePlayed), playerId, field);
         }
+        public async Task PlacingStone(string connectionId, string playerId, FieldDTO field)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlacingStone), playerId, field);
+        }
         public async Task YouStoppedWatchingGame(string connectionId)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouStoppedWatchingGame));
@@ -348,5 +350,6 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(RequestError));
         }
+
     }
 }

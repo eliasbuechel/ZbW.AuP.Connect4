@@ -2,13 +2,8 @@
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
-    internal class OpponentRoboterClientApiManager
+    internal class OpponentRoboterClientApiManager(Func<string, OpponentRoboterClientApi> createOpponentRoboterClientApi)
     {
-        public OpponentRoboterClientApiManager(Func<string, OpponentRoboterClientApi> createOpponentRoboterClientApi)
-        {
-            _createOpponentRoboterClientApi = createOpponentRoboterClientApi;
-        }
-
         public event Action<OpponentRoboterClientApi>? OnCreated;
 
         public void Create(string hubUrl)
@@ -31,8 +26,7 @@ namespace backend.communication.signalR.opponentRoboterApi
 
         private void OnDisconnected(string callerUrl, string connectionId)
         {
-            OpponentRoboterClientApi? opponentRoboterClientApi;
-            if (!_opponentRoboterClientApiDictionary.TryGetValue(callerUrl, out opponentRoboterClientApi))
+            if (!_opponentRoboterClientApiDictionary.TryGetValue(callerUrl, out OpponentRoboterClientApi? opponentRoboterClientApi))
             {
                 Debug.Assert(false);
                 return;
@@ -41,7 +35,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             _opponentRoboterClientApiDictionary.Remove(callerUrl);
         }
 
-        private readonly Func<string, OpponentRoboterClientApi> _createOpponentRoboterClientApi;
-        private readonly Dictionary<string, OpponentRoboterClientApi> _opponentRoboterClientApiDictionary = new Dictionary<string, OpponentRoboterClientApi>();
+        private readonly Func<string, OpponentRoboterClientApi> _createOpponentRoboterClientApi = createOpponentRoboterClientApi;
+        private readonly Dictionary<string, OpponentRoboterClientApi> _opponentRoboterClientApiDictionary = [];
     }
 }

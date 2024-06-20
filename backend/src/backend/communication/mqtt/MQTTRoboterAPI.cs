@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace backend.communication.mqtt
 {
-    internal class MQTTRoboterAPI : IRoboterAPI
+    internal class MQTTRoboterAPI : RoboterAPI
     {
         public MQTTRoboterAPI(MQTTNetTopicClient mqttTopicClient)
         {
@@ -23,26 +23,7 @@ namespace backend.communication.mqtt
             _mqttTopicClient.DisconnectAsync().Wait();
         }
 
-        public event Action<Player, Field>? OnStonePlaced;
-        public event Action? OnBoardReset;
-        public event Action<int>? OnManualMove;
-
-        public void PlaceStone(Player player, Field field)
-        {
-            StartRequestTimeout(() =>
-            {
-                string originalTopicValue = "-1";
-                TopicColumnChanged(originalTopicValue);
-                _mqttTopicClient.PublishAsync(TOPIC_COLUMN, originalTopicValue).Wait();
-            });
-
-            Debug.Assert(_placingPlayer == null && _placingField == null);
-
-            _placingPlayer = player;
-            _placingField = field;
-            _mqttTopicClient.PublishAsync(TOPIC_COLUMN, field.Column.ToString()).Wait();
-        }
-        public void ResetConnect4Board()
+        public override void ResetConnect4Board()
         {
             StartRequestTimeout(() =>
             {
@@ -59,6 +40,22 @@ namespace backend.communication.mqtt
             }
 
             _mqttTopicClient.OnConnected += RequestConnect4BoardReset;
+        }
+
+        protected override void PlaceStoneOnApi(Player player, Field field)
+        {
+            StartRequestTimeout(() =>
+            {
+                string originalTopicValue = "-1";
+                TopicColumnChanged(originalTopicValue);
+                _mqttTopicClient.PublishAsync(TOPIC_COLUMN, originalTopicValue).Wait();
+            });
+
+            Debug.Assert(_placingPlayer == null && _placingField == null);
+
+            _placingPlayer = player;
+            _placingField = field;
+            _mqttTopicClient.PublishAsync(TOPIC_COLUMN, field.Column.ToString()).Wait();
         }
 
         private void RequestConnect4BoardReset()
@@ -97,7 +94,7 @@ namespace backend.communication.mqtt
                 _placingField = null;
                 _placingPlayer = null;
 
-                OnStonePlaced?.Invoke(placingPlayer, placingField);
+                StonePlaced(placingPlayer, placingField);
                 return Task.CompletedTask;
             }
 
@@ -125,7 +122,7 @@ namespace backend.communication.mqtt
                 return Task.CompletedTask;
             }
 
-            OnBoardReset?.Invoke();
+            BoardReset();
             _resettingBoard = false;
             return Task.CompletedTask;
         }
@@ -145,7 +142,7 @@ namespace backend.communication.mqtt
             if (column >= 0 && column <= 6)
             {
                 _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1").Wait();
-                OnManualMove?.Invoke(column);
+                ManualMove(column);
             }
 
             return Task.CompletedTask;
@@ -159,9 +156,9 @@ namespace backend.communication.mqtt
                 _currentRequestId = requestId;
             }
 
-            Thread thread = new Thread(() =>
+            Thread thread = new(() =>
             {
-                Thread.Sleep(3000);
+                Thread.Sleep(500);
                 lock(_lock)
                 {
                     if (_currentRequestId == requestId)
@@ -175,7 +172,7 @@ namespace backend.communication.mqtt
         private const string TOPIC_RESET = "reset";
         private const string TOPIC_MANUAL_COLUMN = "manualColumn";
 
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private bool _resettingBoard;
         private Field? _placingField;
         private Player? _placingPlayer;
