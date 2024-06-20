@@ -4,7 +4,7 @@
     {
         public string Id { get; } = playerId;
         public string Username { get; } = username;
-        public bool HasConfirmedGameStart { get; set; }
+        public virtual bool HasConfirmedGameStart { get; set; }
         public bool IsInGame { get; set; }
 
         public readonly ICollection<Player> MatchingRequests = new List<Player>();
