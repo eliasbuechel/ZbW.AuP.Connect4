@@ -6,6 +6,7 @@ using backend.game.entities;
 using backend.Infrastructure;
 using backend.services;
 using backend.services.player;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using System.Diagnostics;
 
 namespace backend.game
@@ -232,11 +233,20 @@ namespace backend.game
         {
             WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             webPlayer.IsWatchingGame = false;
+            OnYouStoppedWatchingGame(webPlayer);
         }
 
-        private void OnConnectToOpponentRoboterPlayer(string hubUrl)
+        private void OnConnectToOpponentRoboterPlayer(string hubUrl, string connectionId)
         {
-            _opponentRoboterClientApiManager.Create(hubUrl);
+            try
+            {
+                _opponentRoboterClientApiManager.Create(hubUrl);
+            }
+            catch (UriFormatException e)
+            {
+                string errorMessage = "Not able to connect! " + e.Message;
+                OnNotAbleToConnectToOpponentRoboterPlayer(connectionId, errorMessage);
+            }
         }
         private void RequestOpponentRoboterPlayerMatch(string requestingOpponentRoboterPlayerId)
         {
@@ -301,6 +311,10 @@ namespace backend.game
         {
             if (opponent is WebPlayer opponentWebPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(opponentWebPlayer, async c => await _frontendApi.PlayerRequestedMatch(c, requester.Id));
+            if (requester is WebPlayer requesterWebPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(requesterWebPlayer, async c => await _frontendApi.YouRequestedMatch(c, opponent.Id));
+            if (opponent is OpponentRoboterPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.YouRequestedMatch(c, opponent.Id));
             if (requester is OpponentRoboterPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.PlayerRequestedMatch(c, requester.Id));
         }
@@ -308,6 +322,10 @@ namespace backend.game
         {
             if (opponent is WebPlayer opponentWebPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(opponentWebPlayer, async c => await _frontendApi.PlayerRejectedMatch(c, rejecter.Id));
+            if (rejecter is WebPlayer rejecterWebPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(rejecterWebPlayer, async c => await _frontendApi.YouRejectedMatch(c, opponent.Id));
+            if (opponent is OpponentRoboterPlayer)
+                _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.YouRejectedMatch(c, opponent.Id));
             if (rejecter is OpponentRoboterPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.PlayerRejectedMatch(c, rejecter.Id));
         }
@@ -324,7 +342,14 @@ namespace backend.game
         private void OnGameEnded(GameResult gameResult)
         {
             GameResultDTO gameResultDTO = new GameResultDTO(gameResult);
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(_sendGameInformationCondition, async c => await _frontendApi.GameEnded(c, gameResultDTO));
+
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async c => await _frontendApi.GameEnded(c, gameResultDTO));
+
+            if (!_gameManager.GamePlan.Any())
+                foreach (var p in _playerConnectionService.WebPlayerConnectionManager.ConnectedPlayers)
+                    p.IsWatchingGame = false;
+
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(c => GetBestlist(c));
         }
         private void OnConfirmedGameStart(Player player)
         {
@@ -339,6 +364,14 @@ namespace backend.game
         {
             if (player is WebPlayer webPlayer)
                 _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(webPlayer, async c => await _frontendApi.SendHint(c, column));
+        }
+        private void OnYouStoppedWatchingGame(WebPlayer webPlayer)
+        {
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectionOfPlayer(webPlayer, async c => await _frontendApi.YouStoppedWatchingGame(c));
+        }
+        private async void OnNotAbleToConnectToOpponentRoboterPlayer(string connectionId, string errorMessage)
+        {
+            await _frontendApi.NotAbleToConnectToOpponentRoboterPlayer(connectionId, errorMessage);
         }
 
 

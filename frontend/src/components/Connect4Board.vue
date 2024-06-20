@@ -6,7 +6,7 @@
       @click="getHint"
       :disabled="activePlayer.currentHint != null || activePlayer.hintsLeft <= 0"
     >
-      Hints {{ activePlayer.hintsLeft }}/3
+      Hints {{ activePlayer.hintsLeft }}/2
     </button>
     <div class="board">
       <div

@@ -2,3 +2,44 @@ version: '3.8'
 services:
   backend:
     env_file: /var/r4d4/.env.production
+
+  mysql-master:
+    image: mysql:8.3.0
+    container_name: mysql-master
+    hostname: mysql-master
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-master-volume:/var/lib/mysql
+    command:
+      - --server-id=1
+      - --log-bin='mysql-bin-1.log'
+    networks:
+      - mydockernet
+    labels:
+      - "critical"
+
+  mysql-slave:
+    image: mysql:8.3.0
+    container_name: mysql-slave
+    hostname: mysql-slave
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-slave-volume:/var/lib/mysql
+    command:
+      - --server-id=2
+    networks:
+      - mydockernet
+    labels:
+      - "critical"
+
+volumes:
+  mysql-master-volume:
+  mysql-slave-volume:

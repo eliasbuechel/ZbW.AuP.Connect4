@@ -23,7 +23,7 @@ namespace backend.communication.signalR.frontendApi
     internal delegate void StopWatchingGame(PlayerIdentity playerIdentity);
 
     internal delegate void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity);
-    internal delegate void ConnectToOpponentRoboterPlayer(string hubUrl);
+    internal delegate void ConnectToOpponentRoboterPlayer(string hubUrl, string connectionId);
     internal delegate void RequestMatchFromOpponentRoboterPlayer(string requestingOpponentRoboterPlayerId);
     internal delegate void AcceptOppoenntRoboterPlyerMatch(string acceptingOpponentRoboterPlayerId);
     internal delegate void RejectOppoenntRoboterPlyerMatch(string rejectingOpponentRoboterPlayerId);
@@ -62,231 +62,291 @@ namespace backend.communication.signalR.frontendApi
         // reciving
         public void GetUserData(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetUserData?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetConnectedPlayers?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetGamePlan(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetGamePlan?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetGame?.Invoke(playerIdentity, connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
         public void GetBestlist(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetBestlist?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void GetHint(PlayerIdentity playerIdentity)
+        public void GetHint(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnGetHint?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
 
-        public void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId)
+        public void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(requestingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRequestMatch?.Invoke(requestingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(requestingPlayerIdentity, methode, connectionId);
         }
-        public void AcceptMatch(PlayerIdentity acceptingPlayerIdentity, string opponentPlayerId)
+        public void AcceptMatch(PlayerIdentity acceptingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(acceptingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnAcceptMatch?.Invoke(acceptingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(acceptingPlayerIdentity, methode, connectionId);
         }
-        public void RejectMatch(PlayerIdentity rejectingPlayerIdentity, string opponentPlayerId)
+        public void RejectMatch(PlayerIdentity rejectingPlayerIdentity, string opponentPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(rejectingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRejectMatch?.Invoke(rejectingPlayerIdentity, opponentPlayerId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(rejectingPlayerIdentity, methode, connectionId);
         }
-        public void ConfirmGameStart(PlayerIdentity playerIdentity)
+        public void ConfirmGameStart(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnConfirmedGameStart?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void PlayMove(PlayerIdentity playerIdentity, int column)
+        public void PlayMove(PlayerIdentity playerIdentity, int column, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnPlayMove?.Invoke(playerIdentity, column);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void QuitGame(PlayerIdentity playerIdentity)
+        public void QuitGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnQuitGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
 
-        public void WatchGame(PlayerIdentity playerIdentity)
+        public void WatchGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnWatchGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void StopWatchingGame(PlayerIdentity playerIdentity)
+        public void StopWatchingGame(PlayerIdentity playerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnStopWatchingGame?.Invoke(playerIdentity);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
 
-        public void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity)
+        public void RequestSinglePlayerMatch(PlayerIdentity requestingPlayerIdentity, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(requestingPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRequestSinglePlayerMatch?.Invoke(requestingPlayerIdentity);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(requestingPlayerIdentity, methode, connectionId);
         }
-        public void RequestOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string requestingOpponentRoboterPlayerId)
+        public void RequestOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string requestingOpponentRoboterPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRequestOppoenntRoboterPlyerMatch?.Invoke(requestingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void AcceptOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string acceptingOpponentRoboterPlayerId)
+        public void AcceptOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string acceptingOpponentRoboterPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnAcceptOppoenntRoboterPlyerMatch?.Invoke(acceptingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void RejectOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string rejectingOpponentRoboterPlayerId)
+        public void RejectOppoenntRoboterPlyerMatch(PlayerIdentity playerIdentity, string rejectingOpponentRoboterPlayerId, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(playerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnRejectOppoenntRoboterPlyerMatch?.Invoke(rejectingOpponentRoboterPlayerId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(playerIdentity, methode, connectionId);
         }
-        public void ConnectToOpponentRoboterPlayer(PlayerIdentity initiatorPlayerIdentity, string hubUrl)
+        public void ConnectToOpponentRoboterPlayer(PlayerIdentity initiatorPlayerIdentity, string hubUrl, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(initiatorPlayerIdentity).Enqueue(() =>
+            Func<Task> methode = () =>
             {
-                OnConnectToOpponentRoboterPlayer?.Invoke(hubUrl);
+                OnConnectToOpponentRoboterPlayer?.Invoke(hubUrl, connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(initiatorPlayerIdentity, methode, connectionId);
         }
 
 
         // sending
-        public async Task SendUserData(string connection, PlayerInfoDTO userData)
+        public async Task SendUserData(string connectionId, PlayerInfoDTO userData)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(SendUserData), userData);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendUserData), userData);
         }
-        public async Task SendConnectedPlayers(string connection, ConnectedPlayersDTO connectedPlayers)
+        public async Task SendConnectedPlayers(string connectionId, ConnectedPlayersDTO connectedPlayers)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(SendConnectedPlayers), connectedPlayers);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendConnectedPlayers), connectedPlayers);
         }
-        public async Task SendGamePlan(string connection, IEnumerable<MatchDTO> gamePlan)
+        public async Task SendGamePlan(string connectionId, IEnumerable<MatchDTO> gamePlan)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(SendGamePlan), gamePlan);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendGamePlan), gamePlan);
         }
-        public async Task SendGame(string connection, GameDTO game)
+        public async Task SendGame(string connectionId, GameDTO game)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(SendGame), game);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendGame), game);
         }
-        public async Task SendBestList(string connection, IEnumerable<GameResultDTO> bestlist)
+        public async Task SendBestList(string connectionId, IEnumerable<GameResultDTO> bestlist)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(SendBestList), bestlist);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendBestList), bestlist);
         }
-        public async Task SendHint(string connection, int column)
+        public async Task SendHint(string connectionId, int column)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(SendHint), column);
-        }
-
-        public async Task PlayerConnected(string connection, ConnectedPlayerDTO onlinePlayer)
-        {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(PlayerConnected), onlinePlayer);
-        }
-        public async Task PlayerDisconnected(string connection, string playerId)
-        {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(PlayerDisconnected), playerId);
-        }
-        public async Task OpponentRoboterPlayerConnected(string connection, ConnectedPlayerDTO opponentRoboterPlayer)
-        {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(OpponentRoboterPlayerConnected), opponentRoboterPlayer);
-        }
-        public async Task OpponentRoboterPlayerDisconnected(string connection, string playerId)
-        {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(OpponentRoboterPlayerDisconnected), playerId);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendHint), column);
         }
 
-        public async Task PlayerRequestedMatch(string connection, string playerId)
+        public async Task PlayerConnected(string connectionId, ConnectedPlayerDTO onlinePlayer)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(PlayerRequestedMatch), playerId);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlayerConnected), onlinePlayer);
         }
-        public async Task PlayerRejectedMatch(string connection, string playerId)
+        public async Task PlayerDisconnected(string connectionId, string playerId)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(PlayerRejectedMatch), playerId);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlayerDisconnected), playerId);
         }
-        public async Task Matched(string connection, MatchDTO match)
+        public async Task OpponentRoboterPlayerConnected(string connectionId, ConnectedPlayerDTO opponentRoboterPlayer)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(Matched), match);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(OpponentRoboterPlayerConnected), opponentRoboterPlayer);
         }
-        public async Task GameStarted(string connection, GameDTO connect4Game)
+        public async Task OpponentRoboterPlayerDisconnected(string connectionId, string playerId)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(GameStarted), connect4Game);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(OpponentRoboterPlayerDisconnected), playerId);
         }
-        public async Task GameEnded(string connection, GameResultDTO gameResult)
+
+        public async Task PlayerRequestedMatch(string connectionId, string playerId)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(GameEnded), gameResult);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlayerRequestedMatch), playerId);
         }
-        public async Task ConfirmedGameStart(string connection, string playerId)
+        public async Task YouRequestedMatch(string connectionId, string playerId)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(ConfirmedGameStart), playerId);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouRequestedMatch), playerId);
         }
-        public async Task MovePlayed(string connection, string playerId, FieldDTO field)
+        public async Task PlayerRejectedMatch(string connectionId, string playerId)
         {
-            await _hubConetext.Clients.Client(connection).SendAsync(nameof(MovePlayed), playerId, field);
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlayerRejectedMatch), playerId);
+        }
+        public async Task YouRejectedMatch(string connectionId, string playerId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouRejectedMatch), playerId);
+        }
+        public async Task Matched(string connectionId, MatchDTO match)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(Matched), match);
+        }
+        public async Task GameStarted(string connectionId, GameDTO connect4Game)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(GameStarted), connect4Game);
+        }
+        public async Task GameEnded(string connectionId, GameResultDTO gameResult)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(GameEnded), gameResult);
+        }
+        public async Task ConfirmedGameStart(string connectionId, string playerId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(ConfirmedGameStart), playerId);
+        }
+        public async Task MovePlayed(string connectionId, string playerId, FieldDTO field)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(MovePlayed), playerId, field);
+        }
+        public async Task YouStoppedWatchingGame(string connectionId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouStoppedWatchingGame));
+        }
+
+        public async Task NotAbleToConnectToOpponentRoboterPlayer(string connectionId, string errorMessage)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(NotAbleToConnectToOpponentRoboterPlayer), errorMessage);
+        }
+
+        protected override async void RequestError(string connectionId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(RequestError));
         }
     }
 }

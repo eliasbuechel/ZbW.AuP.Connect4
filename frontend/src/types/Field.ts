@@ -1,6 +1,4 @@
-import { Entity } from "./Entity";
-
-export interface Field extends Entity {
+export interface Field {
   column: number;
   row: number;
 }

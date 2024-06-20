@@ -4,14 +4,8 @@ namespace backend.Data.entities
 {
     internal class DbPlayedMove : DbEntity
     {
-        public DbPlayedMove() { }
-        public DbPlayedMove(PlayedMove playedMove) : base(playedMove)
-        {
-            Column = playedMove.Column;
-            Duration = playedMove.Duration;
-        }
-
         public int Column { get; set; }
+        public int MoveOrderIndex { get; set; }
         public TimeSpan Duration { get; set; }
     }
 }

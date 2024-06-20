@@ -5,10 +5,10 @@
       <div class="adding-opponent-roboter-player-container">
         <div class="input-field input-field-light">
           <label for="addingHubUrl">Hub url</label>
-          <input type="text" id="addingHubUrl" v-model="addingHubUrl" @focusout="validateAddingHubUrl" required />
+          <input type="text" id="addingHubUrl" v-model="addingHubUrl" @change="validateAddingHubUrl" required />
           <span v-if="errors.addingHubUrl" class="error">{{ errors.addingHubUrl }}</span>
         </div>
-        <button class="button-accept" @click="connect" :disabled="errors.addingHubUrl == null">+</button>
+        <button class="button-accept" @click="connect" :disabled="errors.addingHubUrl !== ''">+</button>
       </div>
       <ul>
         <li v-for="player in connectedOpponentRoboterPlayers" :key="player.id" class="matchable-player">
@@ -91,6 +91,7 @@ import { PropType, defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
+import eventBus from "@/services/eventBus";
 
 export default defineComponent({
   name: "OpponentRoboterPlayerListing",
@@ -108,9 +109,15 @@ export default defineComponent({
     return {
       addingHubUrl: "",
       errors: {
-        addingHubUrl: "",
+        addingHubUrl: " ",
       },
     };
+  },
+  mounted() {
+    eventBus.on(
+      "NotAbleToConnectToOpponentRoboterPlayer",
+      (errorMessage: string) => (this.errors.addingHubUrl = errorMessage)
+    );
   },
   methods: {
     connect() {
@@ -169,13 +176,13 @@ export default defineComponent({
   gap: 0.5rem;
 }
 
-.adding-opponent-roboter-player-container > button {
-  margin-left: auto;
-}
-
 .adding-opponent-roboter-player-container > div {
-  flex-direction: row;
-  gap: 1rem;
+  flex-direction: column;
+  width: 100%;
+}
+.adding-opponent-roboter-player-container > div > input,
+.adding-opponent-roboter-player-container > div > span {
+  width: 100%;
 }
 </style>
 @/types/DataTransferObjects

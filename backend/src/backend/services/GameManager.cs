@@ -1,23 +1,26 @@
-﻿using backend.communication.DOTs;
-using backend.communication.signalR.frontendApi;
-using backend.Data;
+﻿using backend.communication.mqtt;
 using backend.game;
 using backend.game.entities;
 using backend.Infrastructure;
+using backend.utilities;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace backend.services
 {
-    internal class GameManager
+    internal class GameManager : DisposingObject
     {
         public GameManager(
             Func<Match, Game> getConnect4Game,
-            GameResultsService gameResultsService
+            GameResultsService gameResultsService,
+            IRoboterAPI roboterAPI
             )
         {
             _getConnect4Game = getConnect4Game;
             _gameResultsService = gameResultsService;
+            _roboterAPI = roboterAPI;
+
+            _roboterAPI.OnManualMove += PlayManualMove;
         }
 
         public event Action<Player, Player>? OnRequestedMatch;
@@ -75,7 +78,13 @@ namespace backend.services
         public void PlayMove(Player player, int column)
         {
             if (_activeGame == null)
+                throw new RequestErrorException();
+
+            if (column < 0 || column > 6)
+            {
+                Debug.Assert(false);
                 return;
+            }
 
             _activeGame.PlayMove(player, column);
         }
@@ -144,8 +153,6 @@ namespace backend.services
         }
         private void GameStarted(Game game)
         {
-            game.Match.Player1.IsInGame = true;
-            game.Match.Player2.IsInGame = true;
             OnGameStarted?.Invoke(game);
         }
         private void GameEnded(GameResult gameResult)
@@ -165,6 +172,10 @@ namespace backend.services
             OnSendHint?.Invoke(player, column);
         }
 
+        private void PlayManualMove(int column)
+        {
+            _activeGame?.PlayManualMove(column);
+        }
         private void StartNewGame(Match match)
         {
             Debug.Assert(_activeGame == null);
@@ -178,13 +189,13 @@ namespace backend.services
         }
         private async void GameHasEnded(GameResult gameResult)
         {
+            await _gameResultsService.Add(gameResult);
+
             if (_activeGame == null)
             {
                 Debug.Assert(false);
                 return;
             }
-
-            await _gameResultsService.Add(gameResult);
 
             _activeGame.OnGameEnded -= GameHasEnded;
             _activeGame.OnGameStarted -= GameStarted;
@@ -193,21 +204,16 @@ namespace backend.services
             _activeGame.Match.Player1.Matching = null;
             _activeGame.Match.Player2.Matching = null;
 
-            _activeGame.Match.Player1.IsInGame = true;
-            _activeGame.Match.Player2.IsInGame = true;
+            _activeGame.Match.Player1.IsInGame = false;
+            _activeGame.Match.Player2.IsInGame = false;
 
             _activeGame.Dispose();
             _activeGame = null;
 
             Match? match;
-            if (!_gamePlan.TryDequeue(out match))
-            {
-                Debug.Assert(false);
-                return;
-            }
+            _gamePlan.TryDequeue(out match);
 
             GameEnded(gameResult);
-
             TryStartGame();
         }
         private void TryStartGame()
@@ -222,8 +228,14 @@ namespace backend.services
             StartNewGame(match);
         }
 
+        protected override void OnDispose()
+        {
+            _roboterAPI.OnManualMove -= PlayManualMove;
+        }
+
         private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
+        private readonly IRoboterAPI _roboterAPI;
         private readonly Func<Match, Game> _getConnect4Game;
         private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
     }

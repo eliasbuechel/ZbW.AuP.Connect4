@@ -34,7 +34,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnConnected?.Invoke(callerUrl, connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void Disconnected(string callerUrl, string connectionId)
         {
@@ -42,7 +42,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnDisconnected?.Invoke(callerUrl, connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void RequestMatch(string connectionId)
         {
@@ -50,7 +50,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnRequestMatch?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void AcceptMatch(string connectionId)
         {
@@ -58,7 +58,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnAcceptMatch?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void RejectMatch(string connectionId)
         {
@@ -66,7 +66,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnRejectMatch?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void ConfirmGameStart(string connectionId)
         {
@@ -74,7 +74,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnConfirmGameStart?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void PlayMove(string connectionId, int column)
         {
@@ -82,7 +82,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnPlayMove?.Invoke(connectionId, column);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
         public void QuitGame(string connectionId)
         {
@@ -90,7 +90,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 OnQuitGame?.Invoke(connectionId);
                 return Task.CompletedTask;
-            });
+            }, connectionId);
         }
 
         private readonly RequestHandlerManager<string> _requestHandlerManager;

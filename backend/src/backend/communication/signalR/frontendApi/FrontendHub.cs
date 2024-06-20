@@ -1,12 +1,9 @@
 ﻿using backend.Data;
-using backend.services;
-using backend.utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.communication.signalR.frontendApi
 {
@@ -21,89 +18,238 @@ namespace backend.communication.signalR.frontendApi
 
         public void GetUserData()
         {
-            _frontendApi.GetUserData(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.GetUserData(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void GetConnectedPlayers()
         {
-            _frontendApi.GetConnectedPlayers(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.GetConnectedPlayers(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void GetGamePlan()
         {
-            _frontendApi.GetGamePlan(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.GetGamePlan(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void GetGame()
         {
-            _frontendApi.GetGame(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.GetGame(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void GetBestlist()
         {
-            _frontendApi.GetBestlist(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.GetBestlist(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void GetHint()
         {
-            _frontendApi.GetHint(Identification);
+            try
+            {
+                _frontendApi.GetHint(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
 
         public void RequestMatch(string requestingPlayerId)
         {
-            _frontendApi.RequestMatch(Identification, requestingPlayerId);
+            try
+            {
+                _frontendApi.RequestMatch(Identification, requestingPlayerId, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void AcceptMatch(string acceptingPlayerId)
         {
-            _frontendApi.AcceptMatch(Identification, acceptingPlayerId);
+            try
+            {
+                _frontendApi.AcceptMatch(Identification, acceptingPlayerId, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void RejectMatch(string rejectingPlayerId)
         {
-            _frontendApi.RejectMatch(Identification, rejectingPlayerId);
+            try
+            {
+                _frontendApi.RejectMatch(Identification, rejectingPlayerId, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void ConfirmGameStart()
         {
-            _frontendApi.ConfirmGameStart(Identification);
+            try
+            {
+                _frontendApi.ConfirmGameStart(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void PlayMove(int column)
         {
-            _frontendApi.PlayMove(Identification, column);
+            try
+            {
+                _frontendApi.PlayMove(Identification, column, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void QuitGame()
         {
-            _frontendApi.QuitGame(Identification);
+            try
+            {
+                _frontendApi.QuitGame(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void WatchGame()
         {
-            _frontendApi.WatchGame(Identification);
+            try
+            {
+                _frontendApi.WatchGame(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void StopWatchingGame()
         {
-            _frontendApi.StopWatchingGame(Identification);
+            try
+            {
+                _frontendApi.StopWatchingGame(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void RequestSinglePlayerMatch()
         {
-            _frontendApi.RequestSinglePlayerMatch(Identification);
+            try
+            {
+                _frontendApi.RequestSinglePlayerMatch(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void RequestOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.RequestOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+            try
+            {
+                _frontendApi.RequestOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void AcceptOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.AcceptOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+            try
+            {
+                _frontendApi.AcceptOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void RejectOppoenntRoboterPlyerMatch(string opponentRoboterPlayerId)
         {
-            _frontendApi.RejectOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId);
+            try
+            {
+                _frontendApi.RejectOppoenntRoboterPlyerMatch(Identification, opponentRoboterPlayerId, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public void ConnectToOpponentRoboterPlayer(string hubUrl)
         {
-            _frontendApi.ConnectToOpponentRoboterPlayer(Identification, hubUrl);
+            try
+            {
+                _frontendApi.ConnectToOpponentRoboterPlayer(Identification, hubUrl, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
         }
         public override Task OnConnectedAsync()
         {
-            _frontendApi.Connected(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.Connected(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
+
             return Task.CompletedTask;
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            _frontendApi.Disconnected(Identification, Context.ConnectionId);
+            try
+            {
+                _frontendApi.Disconnected(Identification, Context.ConnectionId);
+            }
+            catch (InvalidIdentitficationException)
+            {
+                RedirectToLogin();
+            }
+
             return Task.CompletedTask;
         }
 
@@ -117,14 +263,19 @@ namespace backend.communication.signalR.frontendApi
                 string? userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
                 Debug.Assert(userId != null);
 
-                PlayerIdentity? identity = _userManager.FindByIdAsync(userId).Result;
-                Debug.Assert(identity != null);
-
+                PlayerIdentity identity = _userManager.FindByIdAsync(userId).Result ?? throw new InvalidIdentitficationException();
                 return identity;
             }
+        }
+
+        private void RedirectToLogin()
+        {
+            Clients.Caller.SendAsync("RedirectToLogin");
         }
 
         private readonly FrontendApi _frontendApi;
         private readonly UserManager<PlayerIdentity> _userManager;
     }
+
+    internal class InvalidIdentitficationException : Exception { }
 }

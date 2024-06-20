@@ -1,9 +1,8 @@
-﻿using backend.services;
-using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net;
 using System.Net.Mail;
 
-namespace backend.Services
+namespace backend.services
 {
     internal class EmailSender : IEmailSender
     {

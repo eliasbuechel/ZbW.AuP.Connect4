@@ -3,7 +3,7 @@
     <div class="listing-container">
       <h2>Single players</h2>
       <div class="game-mode-container">
-        <button class="button-light" @click="requestSinglePlayerMatch">Hard</button>
+        <button class="button-light" @click="requestSinglePlayerMatch" :disabled="hasPendingRequest">Hard</button>
       </div>
     </div>
   </div>
@@ -14,6 +14,12 @@ import signalRHub from "@/services/signalRHub";
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  props: {
+    hasPendingRequest: {
+      required: true,
+      type: Boolean,
+    },
+  },
   name: "SinglePlayerModeSelection",
   methods: {
     requestSinglePlayerMatch(): void {

@@ -63,6 +63,13 @@ body {
   border-radius: 1em;
 }
 
+.login-container > form > h2 {
+  color: var(--color-dark);
+}
+
+.login-container > form > button {
+  margin-top: 1rem;
+}
 .input-field {
   display: flex;
   flex-direction: column;
@@ -298,6 +305,7 @@ button:active:enabled {
   justify-content: center;
   align-items: center;
   border: 3.5px solid var(--color-green);
+  color: var(--color-green);
 }
 
 .button-accept:hover:enabled,
@@ -396,7 +404,7 @@ button:active:enabled {
   border-bottom: none;
   display: flex;
   flex-direction: column-reverse;
-  padding: 0 0.3rem;
+  padding: 0 min(max(0.2rem, 0.5vw), 0.5rem);
   border: 0.3rem solid transparent;
   border-radius: 2rem;
 }
@@ -410,7 +418,7 @@ button:active:enabled {
   width: min(8vw, 10vh);
   height: min(8vw, 10vh);
   border-radius: 25%;
-  margin: 0.3rem 0;
+  margin: min(max(0.2rem, 0.5vw), 0.5rem) 0;
   border: 2px solid var(--color-light);
 }
 
@@ -418,7 +426,7 @@ button:active:enabled {
   background-color: var(--color-orange-transparent);
 }
 
-.playableColumn:hover:enabled {
+.playableColumn:hover {
   cursor: grab;
 }
 /* 

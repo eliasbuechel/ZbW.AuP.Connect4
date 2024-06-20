@@ -1,5 +1,4 @@
-﻿using backend.game;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace backend.utilities
 {
@@ -9,6 +8,7 @@ namespace backend.utilities
         {
             return _handlers.GetOrAdd(requestIdentification, ri => new RequestHandler());
         }
+
         public void RemoveHandler(TRequestIdentification requestIdentification)
         {
             if (_handlers.TryRemove(requestIdentification, out var handler))

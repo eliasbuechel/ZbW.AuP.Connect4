@@ -46,8 +46,18 @@ namespace backend.services.player
                 if (player.Id == playerId)
                     return player;
 
-            Debug.Assert(false);
-            return null;
+            throw new ArgumentException();
+        }
+        public Player? GetPlayerOrDefault(string playerId)
+        {
+            try
+            {
+                return GetPlayer(playerId);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
         }
         public ConnectedPlayersDTO GetConnectedPlayersExcept(WebPlayer requestingWebPlayer, string connectionId)
         {

@@ -14,6 +14,7 @@ namespace backend.game
 
         private int _hintsLeft = MAX_HINTS;
         private int? _currentHint = null;
-        private const int MAX_HINTS = 3;
+
+        private const int MAX_HINTS = 2;
     }
 }

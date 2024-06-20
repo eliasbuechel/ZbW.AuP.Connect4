@@ -1,29 +1,43 @@
 <template>
-  <div class="game-result">
-    <div class="game-result-board">
-      <div class="game-result-move-navigation">
-        <button class="button-light" @click="showPreviousMove" :disabled="moveIndex === 0">&lt;</button>
-        <span> {{ moveIndex }} / {{ gameResult.playedMoves.length }} </span>
-        <button class="button-light" @click="showNextMove" :disabled="moveIndex === gameResult.playedMoves.length">
-          &gt;
-        </button>
+  <div class="game-container">
+    <div class="game-info-container">
+      <div class="player-info player-info-left">
+        <label>{{ namePlayerLeft }}</label>
       </div>
-      <div class="board">
-        <div v-for="(column, colIdx) in connect4Board" :key="colIdx" class="column">
-          <div v-for="(cell, rowIdx) in column" :key="rowIdx" :class="{
-          cell: true,
-          colorPlayerLeft: cell === playerLeftId,
-          colorPlayerRight: cell === playerRightId,
-          gameResultCell: true,
-        }">
-            <div v-if="lastMoveWidthLine && isInLine(colIdx, rowIdx)" class="inLine"></div>
+      <div class="player-info player-info-right">
+        <label> {{ playerRight.username }}</label>
+      </div>
+    </div>
+    <div class="game-result-container">
+      <div class="game-result-message">
+        <h3>{{ resultMessage }}</h3>
+        <button class="button-light" @click="leaveGameResultView">Back home</button>
+      </div>
+      <div class="game-result-board">
+        <div class="game-result-move-navigation">
+          <button class="button-light" @click="showPreviousMove" :disabled="moveIndex === 0">&lt;</button>
+          <span> {{ moveIndex }} / {{ gameResult.playedMoves.length }} </span>
+          <button class="button-light" @click="showNextMove" :disabled="moveIndex === gameResult.playedMoves.length">
+            &gt;
+          </button>
+        </div>
+        <div class="board">
+          <div v-for="(column, colIdx) in connect4Board" :key="colIdx" class="column">
+            <div
+              v-for="(cell, rowIdx) in column"
+              :key="rowIdx"
+              :class="{
+                cell: true,
+                colorPlayerLeft: cell === playerLeft.id,
+                colorPlayerRight: cell === playerRight.id,
+                gameResultCell: true,
+              }"
+            >
+              <div v-if="lastMoveWidthLine && isInLine(colIdx, rowIdx)" class="inLine"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="game-result-message">
-      <h3>{{ resultMessage }}</h3>
-      <button class="button-light" @click="leaveGameResultView">Back home</button>
     </div>
   </div>
 </template>
@@ -72,12 +86,12 @@ export default defineComponent({
         if (column[i] == "") {
           column[i] =
             this.moveIndex % 2 === 1
-              ? this.gameResult.startingPlayerId === this.playerLeftId
-                ? this.playerLeftId
-                : this.playerRightId
-              : this.gameResult.startingPlayerId === this.playerLeftId
-                ? this.playerRightId
-                : this.playerLeftId;
+              ? this.gameResult.startingPlayerId === this.playerLeft.id
+                ? this.playerLeft.id
+                : this.playerRight.id
+              : this.gameResult.startingPlayerId === this.playerLeft.id
+              ? this.playerRight.id
+              : this.playerLeft.id;
           break;
         }
       }
@@ -105,17 +119,6 @@ export default defineComponent({
     },
   },
   computed: {
-    resultMessage(): string {
-      if (this.gameResult.winnerId == null) return "Draw!";
-      if (this.gameResult.winnerId === this.identity.id) return "You won!";
-      return "You lost!";
-    },
-    playerLeftId(): string {
-      return this.playerLeft.id;
-    },
-    playerRightId(): string {
-      return this.playerRight.id;
-    },
     playerLeft(): PlayerIdentity {
       return this.gameResult.match.player1.id === this.identity.id
         ? this.gameResult.match.player1
@@ -126,18 +129,46 @@ export default defineComponent({
         ? this.gameResult.match.player2
         : this.gameResult.match.player1;
     },
+    namePlayerLeft(): string {
+      return this.playerLeft.id === this.identity.id ? "you" : this.playerLeft.username;
+    },
+    resultMessage(): string {
+      if (this.gameResult.winnerId == null) return "Draw!";
+      if (this.gameResult.winnerId === this.playerLeft.id) return this.namePlayerLeft + " won!";
+      return this.youArePartOfGame ? "You lost!" : this.playerRight.username + " won!";
+    },
     lastMoveWidthLine(): boolean {
       if (this.gameResult.line == null) return false;
       return this.gameResult.playedMoves.length === this.moveIndex;
+    },
+    youArePartOfGame(): boolean {
+      return this.playerLeft.id === this.identity.id;
     },
   },
 });
 </script>
 
 <style scoped>
-.game-result {
+.game-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+}
+
+.game-info-container {
+  display: flex;
+  justify-content: space-between;
+  height: 20vh;
+}
+
+.game-result-container {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  height: 80vh;
 }
 
 .game-result-message {
@@ -145,14 +176,19 @@ export default defineComponent({
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 30%;
+  min-width: 500px;
+}
+
+.game-result-message > h3 {
+  font-size: xx-large;
+  margin: 0 0 1.5rem 0;
 }
 
 .game-result-move-navigation {
-  margin-bottom: 2vh;
+  margin-bottom: 1.2rem;
 }
 
-.game-result-move-navigation>span {
+.game-result-move-navigation > span {
   margin: 2vw;
 }
 
@@ -161,7 +197,6 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 70%;
 }
 
 .gameResultCell {

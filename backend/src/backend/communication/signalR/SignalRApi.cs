@@ -19,22 +19,35 @@ namespace backend.communication.signalR
 
         public void Connected(TIdentification identification, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(identification).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnConnected?.Invoke(identification, connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(identification, methode, connectionId);
         }
         public void Disconnected(TIdentification identification, string connectionId)
         {
-            _requestHandlerManager.GetOrCreateHandler(identification).Enqueue(() =>
+            Func<Task> methode = () =>
             {
                 OnDisconnected?.Invoke(identification, connectionId);
                 return Task.CompletedTask;
-            });
+            };
+
+            Request(identification, methode, connectionId);
         }
 
+        protected void Request(TIdentification identification, Func<Task> methode, string connectionId)
+        {
+            RequestHandler requestHandler = _requestHandlerManager.GetOrCreateHandler(identification);
+            requestHandler.OnRequestError += RequestError;
+            requestHandler.Enqueue(methode, connectionId);
+        }
+        protected virtual void RequestError(string connectionId)
+        { }
+
         protected readonly IHubContext<THub> _hubConetext;
-        protected readonly RequestHandlerManager<TIdentification> _requestHandlerManager;
+        private readonly RequestHandlerManager<TIdentification> _requestHandlerManager;
     }
 }

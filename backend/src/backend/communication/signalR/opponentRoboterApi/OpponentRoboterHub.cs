@@ -10,7 +10,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             _opponentRoboterHubApi = opponentRoboterHubApi;
         }
 
-        public void RequestMatch()
+        public void RequestMatch(string clientUrl)
         {
             _opponentRoboterHubApi.RequestMatch(Context.ConnectionId);
         }

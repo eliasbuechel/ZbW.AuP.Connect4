@@ -2,9 +2,9 @@
 
 namespace backend.communication.DOTs
 {
-    internal class FieldDTO : EntityDTO
+    internal class FieldDTO
     {
-        public FieldDTO(Field field) : base(field)
+        public FieldDTO(Field field)
         {
             Column = field.Column;
             Row = field.Row;

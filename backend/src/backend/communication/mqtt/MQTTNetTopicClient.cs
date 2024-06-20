@@ -83,7 +83,7 @@ namespace backend.communication.mqtt
         {
             if (!IsConnected)
             {
-                Debug.Assert(false);
+                //Debug.Assert(false);
                 return;
             }
 

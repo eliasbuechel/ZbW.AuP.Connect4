@@ -4,8 +4,13 @@
     <UserInfo :identity="identity" />
   </div>
   <div class="main-board-container">
-    <SinglePlayerModeSelection class="content-card" />
-    <OnlinePlayersListing :onlinePlayers="connectedPlayers.webPlayers" :identity="identity" class="content-card" />
+    <SinglePlayerModeSelection class="content-card" :hasPendingRequest="hasPendingRequest" />
+    <OnlinePlayersListing
+      :onlinePlayers="connectedPlayers.webPlayers"
+      :identity="identity"
+      :hasPendingRequest="hasPendingRequest"
+      class="content-card"
+    />
     <OpponentRoboterPlayerListing
       :connectedOpponentRoboterPlayers="connectedPlayers.opponentRoboterPlayers"
       :identity="identity"
@@ -70,6 +75,15 @@ export default defineComponent({
   methods: {
     showReplay(gameResult: GameResult): void {
       this.$emit("show-replay", gameResult);
+    },
+  },
+  computed: {
+    hasPendingRequest(): boolean {
+      let doesHavePendingRequest: boolean = false;
+      this.connectedPlayers.webPlayers.forEach((p) => {
+        if (p.youRequestedMatch) doesHavePendingRequest = true;
+      });
+      return doesHavePendingRequest;
     },
   },
 });

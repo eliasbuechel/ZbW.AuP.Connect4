@@ -4,6 +4,7 @@ namespace backend.Data.entities
 {
     internal class DbGameResult : DbEntity
     {
+<<<<<<< HEAD
         public DbGameResult() { }
         public DbGameResult(GameResult gameResult)
         {
@@ -16,6 +17,8 @@ namespace backend.Data.entities
             HasWinnerRow = gameResult.HasWinnerRow;
         }
 
+=======
+>>>>>>> dev
         public string? WinnerId { get; set; } = null;
         public virtual IList<DbField> Line { get; set; } = new List<DbField>();
         public virtual IList<DbPlayedMove> PlayedMoves { get; set; } = new List<DbPlayedMove>();
