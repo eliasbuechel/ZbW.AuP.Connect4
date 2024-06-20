@@ -71,6 +71,7 @@ namespace backend.game
             AlgorythmPlayer algorythmPlayer = _playerConnectionService.AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentification(opponentRoboterPlayer);
 
             _gameManager.AcceptMatch(opponentRoboterPlayer, algorythmPlayer);
+            _gameManager.ConfirmGameStart(opponentRoboterPlayer);
         }
         public void OnRejectMatch(string connectionId)
         {
