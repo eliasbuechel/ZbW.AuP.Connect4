@@ -28,7 +28,7 @@ namespace backend
             {
                 options.AddPolicy("MyCorsPolicy", builder =>
                 {
-                    string cors = DotNetEnv.Env.GetString("CORS");
+                    string[] cors = [DotNetEnv.Env.GetString("CORS"), "https://game.rowbot4.xyz"];
                     builder.WithOrigins(cors)
                            .AllowAnyHeader()
                            .AllowAnyMethod()
