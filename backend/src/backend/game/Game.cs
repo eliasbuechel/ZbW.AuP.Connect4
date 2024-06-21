@@ -1,5 +1,5 @@
-﻿using backend.communication.DOTs;
-using backend.game.entities;
+﻿using backend.game.entities;
+using backend.utilities;
 using System.Diagnostics;
 
 namespace backend.game
@@ -44,16 +44,16 @@ namespace backend.game
         public void PlayMove(Player player, int column)
         {
             if (_activePlayer != player)
-                return;
+                throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. Not the players turn!");
 
             if (_activePlayerPlacedStone)
-                return;
+                throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. Already played move in his turn!");
 
-            if (!_gameBoard.PlaceStone(player, column))
-            {
-                Debug.Assert(false);
-                return;
-            }
+            if (column < 0 || column > GameBoard.Columns)
+                throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. Column is not in valid range");
+
+            _gameBoard.PlaceStone(player, column);
+
             TimeSpan duration = DateTime.Now - _moveStartingTime;
             PlayedMove playedMove = new(column, duration);
             _playedMoves.Add(playedMove);
@@ -61,6 +61,9 @@ namespace backend.game
         }
         public void PlayerQuit(Player player)
         {
+            if (!_match.Player1.Equals(player) && !_match.Player2.Equals(player))
+                throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. Quitting player is not part of the active game.");
+
             Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
@@ -69,13 +72,9 @@ namespace backend.game
         {
             _gameBoard.Reset();
         }
-        public static void ConnfirmGameStart(Player player)
-        {
-            player.HasConfirmedGameStart = true;
-        }
         public int GetBestMove(Player player)
         {
-            const int LOOK_AHEAD_MOVES = 12;
+            const int LOOK_AHEAD_MOVES = 10;
             const int INVALID_BEST_MOVE = -1;
 
             Player opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;

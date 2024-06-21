@@ -4,15 +4,11 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
-    internal class OpponentRoboterHubApi : OpponentRoboterApi
+    internal class OpponentRoboterHubApi(
+        IHubContext<OpponentRoboterHub> opponentRoboterHubContext,
+        RequestHandlerManager<string> requestHandlerManager
+            ) : OpponentRoboterApi(requestHandlerManager)
     {
-        public OpponentRoboterHubApi(
-            IHubContext<OpponentRoboterHub> opponentRoboterHubContext,
-            RequestHandlerManager<string> requestHandlerManager
-            ) : base(requestHandlerManager)
-        {
-            _opponentRoboterHubConetxt = opponentRoboterHubContext;
-        }
 
         // sending
         public async void Send_RequestMatch(string connectionId)
@@ -40,6 +36,6 @@ namespace backend.communication.signalR.opponentRoboterApi
             await _opponentRoboterHubConetxt.Clients.Client(connectionId).SendAsync(nameof(QuitGame));
         }
 
-        private readonly IHubContext<OpponentRoboterHub> _opponentRoboterHubConetxt;
+        private readonly IHubContext<OpponentRoboterHub> _opponentRoboterHubConetxt = opponentRoboterHubContext;
     }
 }

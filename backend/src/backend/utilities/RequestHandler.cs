@@ -21,7 +21,7 @@ namespace backend.utilities
                     {
                         await request.Methode.Invoke();
                     }
-                    catch (RequestErrorException)
+                    catch (InvalidPlayerRequestException)
                     {
                         OnRequestError?.Invoke(request.ConnectionId);
                     }

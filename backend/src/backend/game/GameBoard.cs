@@ -1,5 +1,6 @@
 ﻿using backend.communication.mqtt;
 using backend.game.entities;
+using backend.utilities;
 
 namespace backend.game
 {
@@ -54,14 +55,14 @@ namespace backend.game
             get { return _field[index]; }
         }
 
-        public bool PlaceStone(Player player, int column)
+        public void PlaceStone(Player player, int column)
         {
             if (column < 0 || column >= COLUMNS)
-                return false;
+                throw new InvalidPlayerRequestException($"Exception while playing move. {column} is not a valid column for a move.");
 
             Player?[] col = _field[column];
             if (col[col.Length - 1] != null)
-                return false;
+                throw new InvalidPlayerRequestException($"Exception while playing move. Cannot play move in full column {column}.");
 
             for (int i = 0; i < col.Length; i++)
             {
@@ -72,10 +73,10 @@ namespace backend.game
                 Field field = new(column, i);
                 PlacingField = field;
                 _roboterAPI.PlaceStone(player, field);
-                return true;
+                return;
             }
 
-            return false;
+            throw new InvalidPlayerRequestException("Exception while playing move. Something went wrong while placing stone.");
         }
         public void Reset()
         {

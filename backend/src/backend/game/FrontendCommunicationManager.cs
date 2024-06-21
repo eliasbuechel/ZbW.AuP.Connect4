@@ -127,7 +127,7 @@ namespace backend.game
         public void GetConnectedPlayers(PlayerIdentity playerIdentity, string connectionId)
         {
             WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
-            ConnectedPlayersDTO connectedPlayers = _playerConnectionService.GetConnectedPlayersExcept(webPlayer, connectionId);
+            ConnectedPlayersDTO connectedPlayers = _playerConnectionService.GetConnectedPlayersExcept(webPlayer);
 
             SendConnectedPlayers(connectionId, connectedPlayers);
         }

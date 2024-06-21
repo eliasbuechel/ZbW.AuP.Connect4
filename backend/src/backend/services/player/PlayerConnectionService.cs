@@ -46,7 +46,7 @@ namespace backend.services.player
                 if (player.Id == playerId)
                     return player;
 
-            throw new ArgumentException();
+            throw new ArgumentException($"The PlayerId {playerId} is not contained in the player connections.");
         }
         public Player? GetPlayerOrDefault(string playerId)
         {
@@ -59,7 +59,7 @@ namespace backend.services.player
                 return null;
             }
         }
-        public ConnectedPlayersDTO GetConnectedPlayersExcept(WebPlayer requestingWebPlayer, string connectionId)
+        public ConnectedPlayersDTO GetConnectedPlayersExcept(WebPlayer requestingWebPlayer)
         {
             IEnumerable<ConnectedPlayerDTO> connectedWebPlayers = WebPlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x => new ConnectedPlayerDTO(x, requestingWebPlayer));
             IEnumerable<ConnectedPlayerDTO> connectedOpponentRoboterPlayers = OpponentRoboterePlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x =>
@@ -71,8 +71,19 @@ namespace backend.services.player
                 return new ConnectedPlayerDTO(x, algorythmPlayer);
             });
 
-            ConnectedPlayersDTO connectedPlayers = new ConnectedPlayersDTO(connectedWebPlayers, connectedOpponentRoboterPlayers);
+            ConnectedPlayersDTO connectedPlayers = new(connectedWebPlayers, connectedOpponentRoboterPlayers);
             return connectedPlayers;
+        }
+        public void ForeachConnectedPlayer(Action<Player> action)
+        {
+            foreach (var player in WebPlayerConnectionManager.ConnectedPlayers)
+                action(player);
+
+            foreach (var player in OpponentRoboterPlayerConnectionManager.ConnectedPlayers)
+                action(player);
+
+            foreach (var player in AlgorythmPlayerConnectionManager.ConnectedPlayers)
+                action(player);
         }
 
         private void PlayerDisconnected(Player player)
@@ -85,5 +96,6 @@ namespace backend.services.player
             WebPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
             OpponentRoboterPlayerConnectionManager.OnPlayerDisconnected -= PlayerDisconnected;
         }
+
     }
 }

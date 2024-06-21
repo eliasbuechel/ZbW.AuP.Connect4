@@ -1,19 +1,8 @@
 ﻿namespace backend.game
 {
-    internal class OpponentRoboterPlayer : Player
+    internal class OpponentRoboterPlayer(string identification) : Player(Guid.NewGuid().ToString(), identification)
     {
-        public OpponentRoboterPlayer(string identification) : base(Guid.NewGuid().ToString(), identification)
-        {
-            Identification = identification;
-        }
-
-        public override bool HasConfirmedGameStart
-        {
-            get { return true; }
-            set { }
-        }
-
         public bool IsHubPlayer { get; set; }
-        public string Identification { get; }
+        public string Identification { get; } = identification;
     }
 }
