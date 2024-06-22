@@ -11,7 +11,6 @@
     >
       Back home
     </button>
-
     <PlayerInfo
       class="grid-item-player1 player-info player-info-left"
       :game="game"
@@ -97,12 +96,9 @@
       PlayerInfo,
     },
     unmounted(): void {
-      if (this.totalMoveTimerId) {
-        clearInterval(this.totalMoveTimerId);
-      }
-      if (this.gameTimerId) {
-        clearInterval(this.gameTimerId);
-      }
+      [this.totalMoveTimerId, this.moveTimerId, this.gameTimerId].forEach((timerId) => {
+        if (timerId) clearInterval(timerId);
+      });
     },
     methods: {
       reemitPlaceStone(column: number): void {
@@ -134,10 +130,10 @@
           }
         }, 1000);
       },
-
       startMoveTimer(): void {
         this.moveTimerId = setInterval(() => {
           const now = new Date().getTime();
+          console.log("startMovetimer", this.playedMoveTime);
           this.playedMoveTime = (now - this.game!.MoveStartTime) / 1000;
         }, 100);
       },
@@ -152,28 +148,13 @@
         this.startMoveTimer();
       },
       addPlayedMoveTime(): void {
-        this.totalPlayedMoveTime += parseFloat(this.playedMoveTime.toString());
-        console.log(this.totalPlayedMoveTime);
+        if (typeof this.playedMoveTime === "number" && !isNaN(this.playedMoveTime)) {
+          this.totalPlayedMoveTime += this.playedMoveTime;
+        } else {
+          console.error("playedMoveTime is not a valid number");
+        }
         this.playedMoveTime = 0;
       },
-      //     reemitPlaceStone(column: number): void {
-      //     if (!this.yourTurn) return;
-      //     this.$emit("place-stone", column);
-      //   },
-      //   confirmGameStart(): void {
-      //     this.$emit("confirm-game-start");
-      //   },
-      //   reemitQuitGame(): void {
-      //     this.$emit("quit-game");
-      //   },
-      //   quitGame(): void {
-      //     this.$emit("quit-game");
-      //   },
-      //   stopWatchingGame(): void {
-      //     signalRHub.invoke("StopWatchingGame");
-      //     this.$emit("stop-watching-game");
-      //   },
-      // },
     },
     computed: {
       inGamePlayerLeft(): InGamePlayer | undefined {
@@ -252,42 +233,6 @@
           this.game.match.player2.hasConfirmedGameStart
         );
       },
-      // playerLeft(): InGamePlayer {
-      //   return this.game.match.player1.id == this.identity.id ? this.game.match.player1 : this.game.match.player2;
-      // },
-      // playerRight(): InGamePlayer {
-      //   return this.game.match.player1.id == this.identity.id ? this.game.match.player2 : this.game.match.player1;
-      // },
-      // namePlayerLeft(): string {
-      //   return this.playerLeft.id === this.identity.id ? "you" : this.playerLeft.username;
-      // },
-      // statePlayerLeft(): string {
-      //   if (!this.playerLeft.hasConfirmedGameStart)
-      //     return this.playerLeft.id === this.identity.id ? "confirm to start the game" : "confirming game start ...";
-      //   if (!this.playerRight.hasConfirmedGameStart) return "";
-      //   if (this.game.activePlayerId === this.playerLeft.id) {
-      //     if (this.playerLeft.id == this.identity.id) return "your turn!";
-      //     return "playing...";
-      //   }
-      //   return "";
-      // },
-      // statePlyerRight(): string {
-      //   if (this.playerRight == null) return "";
-      //   if (!this.playerRight.hasConfirmedGameStart)
-      //     return this.playerRight.id === this.identity.id ? "confirm to start the game" : "confirming game start ...";
-      //   if (!this.playerLeft.hasConfirmedGameStart) return "";
-      //   if (this.game.activePlayerId === this.playerRight.id) {
-      //     if (this.playerRight.id == this.identity.id) return "your turn!";
-      //     return "playing...";
-      //   }
-      //   return "";
-      // },
-      // youAreInGame(): boolean {
-      //   return this.playerLeft.id === this.identity.id;
-      // },
-      // yourTurn(): boolean {
-      //   return this.game.activePlayerId === this.identity.id;
-      // },
     },
   });
 </script>

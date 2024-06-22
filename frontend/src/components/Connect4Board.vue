@@ -63,7 +63,7 @@
       },
       activePlayerId: {
         required: true,
-        type: Object as PropType<string>,
+        type: String,
       },
       placingField: {
         required: true,

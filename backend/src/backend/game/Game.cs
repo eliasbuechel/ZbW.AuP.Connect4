@@ -58,6 +58,7 @@ namespace backend.game
 
             TimeSpan duration = DateTime.Now - _moveStartingTime;
             PlayedMove playedMove = new(column, duration);
+            _activePlayer.TotalPlayTime += duration;
             _playedMoves.Add(playedMove);
             _moveStartingTime = DateTime.Now;
             _activePlayerPlacedStone = true;

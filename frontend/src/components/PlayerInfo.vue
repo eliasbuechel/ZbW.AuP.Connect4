@@ -91,7 +91,7 @@
         return this.playedMoveTime.toFixed(1) + "s";
       },
       formattedTotalPlayedMoveTime(): string {
-        console.log(this.totalPlayedMoveTime);
+        console.log("formattedTotalPlayedMoveTime", this.totalPlayedMoveTime);
         return this.totalPlayedMoveTime.toFixed(1) + "s";
       },
     },
