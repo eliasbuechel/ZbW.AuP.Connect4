@@ -325,22 +325,14 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
-<<<<<<< HEAD
             bool hasWinnerRow = true;
             GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
-=======
-            GameResult gameResult = new(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
->>>>>>> dev
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-<<<<<<< HEAD
             bool hasWinnerRow = false;
             GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
-=======
-            GameResult gameResult = new(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
->>>>>>> dev
             OnGameEndet(gameResult);
         }
         private void OnGameEndet(GameResult gameResult)

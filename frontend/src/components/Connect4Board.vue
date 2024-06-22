@@ -36,18 +36,11 @@
 </template>
 
 <script lang="ts">
-<<<<<<< HEAD
   import signalRHub from "@/services/signalRHub";
+  import { Field } from "@/types/Field";
   import { InGamePlayer } from "@/types/InGamePlayer";
   import { PlayerIdentity } from "@/types/PlayerIdentity";
   import { PropType, defineComponent } from "vue";
-=======
-import signalRHub from "@/services/signalRHub";
-import { Field } from "@/types/Field";
-import { InGamePlayer } from "@/types/InGamePlayer";
-import { PlayerIdentity } from "@/types/PlayerIdentity";
-import { PropType, defineComponent } from "vue";
->>>>>>> dev
 
   export default defineComponent({
     name: "Connect4Board",
@@ -70,13 +63,18 @@ import { PropType, defineComponent } from "vue";
       },
       activePlayerId: {
         required: true,
-        type: String as PropType<string>,
+        type: Object as PropType<string>,
+      },
+      placingField: {
+        required: true,
+        type: Object as PropType<Field | undefined>,
       },
     },
     methods: {
       placeStone(column: number): void {
         if (!this.isYourTurn) return;
         if (this.columnIsFull(column)) return;
+        if (this.placingField != null) return;
         this.$emit("place-stone", column);
       },
       getHint(): void {
@@ -95,6 +93,10 @@ import { PropType, defineComponent } from "vue";
         if (rowIdx <= 0) return true;
         return this.connect4Board[colIdx][rowIdx - 1] != "";
       },
+      isPlacingCell(colIdx: number, rowIdx: number): boolean {
+        if (this.placingField == null) return false;
+        return this.placingField.column === colIdx && this.placingField.row === rowIdx;
+      },
     },
     computed: {
       isYourTurn(): boolean {
@@ -104,60 +106,7 @@ import { PropType, defineComponent } from "vue";
         return this.playerLeft.id === this.activePlayerId ? this.playerLeft : this.playerRight;
       },
     },
-<<<<<<< HEAD
   });
-=======
-    playerRight: {
-      required: true,
-      type: Object as PropType<InGamePlayer>,
-    },
-    activePlayerId: {
-      required: true,
-      type: Object as PropType<string>,
-    },
-    placingField: {
-      required: true,
-      type: Object as PropType<Field | undefined>,
-    },
-  },
-  methods: {
-    placeStone(column: number): void {
-      if (!this.isYourTurn) return;
-      if (this.columnIsFull(column)) return;
-      if (this.placingField != null) return;
-      this.$emit("place-stone", column);
-    },
-    getHint(): void {
-      if (this.activePlayer.currentHint != null) return;
-      signalRHub.invoke("GetHint");
-    },
-    columnIsFull(colIdx: number): boolean {
-      return this.connect4Board[colIdx][this.connect4Board[colIdx].length - 1] != "";
-    },
-    isHint(colIdx: number): boolean {
-      if (this.activePlayer.currentHint == null) return false;
-      return this.activePlayer.currentHint == colIdx;
-    },
-    isNextPlacableCell(colIdx: number, rowIdx: number): boolean {
-      if (this.connect4Board[colIdx][rowIdx] != "") return false;
-      if (rowIdx <= 0) return true;
-      return this.connect4Board[colIdx][rowIdx - 1] != "";
-    },
-    isPlacingCell(colIdx: number, rowIdx: number): boolean {
-      if (this.placingField == null) return false;
-      return this.placingField.column === colIdx && this.placingField.row === rowIdx;
-    },
-  },
-  computed: {
-    isYourTurn(): boolean {
-      return this.activePlayerId === this.identity.id;
-    },
-    activePlayer(): InGamePlayer {
-      return this.playerLeft.id === this.activePlayerId ? this.playerLeft : this.playerRight;
-    },
-  },
-});
->>>>>>> dev
 </script>
 
 <style scoped>
