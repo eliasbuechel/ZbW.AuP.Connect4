@@ -115,7 +115,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             return Task.CompletedTask;
         }
 
-        public void Dispose()
+        public async void Dispose()
         {
             if (_disposed)
             {
@@ -135,7 +135,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             _playMoveHandler.Dispose();
             _quitGameHandler.Dispose();
 
-            _connection.DisposeAsync();
+            await _connection.DisposeAsync();
         }
 
         private bool _disposed;

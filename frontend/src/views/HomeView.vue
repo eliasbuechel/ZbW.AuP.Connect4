@@ -99,6 +99,7 @@
         signalRHub.on("Matched", this.onMatched);
         signalRHub.on("MatchingEnded", this.onMatchingEnded);
         signalRHub.on("MovePlayed", this.onMovePlayed);
+        signalRHub.on("PlacingStone", this.onPlacingStone);
         signalRHub.on("GameStarted", this.onGameStarted);
         signalRHub.on("GameEnded", this.onGameEnded);
         signalRHub.on("SendUserData", this.updateUserIdentity);
@@ -126,6 +127,7 @@
         signalRHub.off("Matched", this.onMatched);
         signalRHub.off("MatchingEnded", this.onMatchingEnded);
         signalRHub.off("MovePlayed", this.onMovePlayed);
+        signalRHub.on("PlacingStone", this.onPlacingStone);
         signalRHub.off("GameStarted", this.onGameStarted);
         signalRHub.off("GameEnded", this.onGameEnded);
         signalRHub.off("SendUserData", this.updateUserIdentity);
@@ -255,11 +257,18 @@
         if (this.game == null) return;
         if (this.identity == null) return;
 
+        this.game.placingField = undefined;
+
         this.game.match.player1.currentHint = undefined;
         this.game.match.player2.currentHint = undefined;
 
         this.game!.connect4Board[field.column][field.row] = playerId;
         this.switchActivePlayer();
+      },
+      onPlacingStone(playerId: string, field: Field): void {
+        console.log(field);
+        if (this.game == null) return;
+        this.game.placingField = field;
       },
       switchActivePlayer(): void {
         this.game!.activePlayerId =

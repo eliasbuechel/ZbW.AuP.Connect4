@@ -2,15 +2,9 @@
 
 namespace backend.communication.DOTs
 {
-    internal class GameResultMatchDTO
+    internal class GameResultMatchDTO(GameResultMatch match)
     {
-        public GameResultMatchDTO(GameResultMatch match)
-        {
-            Player1 = new PlayerInfoDTO(match.Player1);
-            Player2 = new PlayerInfoDTO(match.Player2);
-        }
-
-        public PlayerInfoDTO Player1 { get; }
-        public PlayerInfoDTO Player2 { get; }
+        public PlayerInfoDTO Player1 { get; } = new PlayerInfoDTO(match.Player1);
+        public PlayerInfoDTO Player2 { get; } = new PlayerInfoDTO(match.Player2);
     }
 }

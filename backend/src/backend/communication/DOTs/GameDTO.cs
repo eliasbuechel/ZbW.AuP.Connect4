@@ -2,19 +2,12 @@
 
 namespace backend.communication.DOTs
 {
-    internal class GameDTO
+    internal class GameDTO(Game connect4Game)
     {
-        public GameDTO(Game connect4Game)
-        {
-            Match = new MatchDTO(connect4Game.Match);
-            ActivePlayerId = connect4Game.ActivePlayer.Id;
-            Connect4Board = connect4Game.FieldAsIds;
-            MoveStartTime = new DateTimeOffset(connect4Game.MoveStartTime).ToUnixTimeMilliseconds();
-        }
-
-        public MatchDTO Match { get; }
-        public string ActivePlayerId { get; }
-        public string[][] Connect4Board { get; }
-        public long MoveStartTime { get; }
+        public MatchDTO Match { get; } = new MatchDTO(connect4Game.Match);
+        public string ActivePlayerId { get; } = connect4Game.ActivePlayer.Id;
+        public string[][] Connect4Board { get; } = connect4Game.FieldAsIds;
+        public FieldDTO? PlacingField { get; } = connect4Game.PlacingField == null ? null : new(connect4Game.PlacingField);
+        public long MoveStartTime { get; } = connect4Game.MoveStartTime;
     }
 }

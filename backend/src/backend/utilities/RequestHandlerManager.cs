@@ -17,6 +17,6 @@ namespace backend.utilities
             }
         }
 
-        private readonly ConcurrentDictionary<TRequestIdentification, RequestHandler> _handlers = new ConcurrentDictionary<TRequestIdentification, RequestHandler>();
+        private readonly ConcurrentDictionary<TRequestIdentification, RequestHandler> _handlers = new();
     }
 }

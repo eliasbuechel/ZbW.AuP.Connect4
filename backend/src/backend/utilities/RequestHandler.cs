@@ -21,7 +21,7 @@ namespace backend.utilities
                     {
                         await request.Methode.Invoke();
                     }
-                    catch (RequestErrorException)
+                    catch (InvalidPlayerRequestException)
                     {
                         OnRequestError?.Invoke(request.ConnectionId);
                     }
@@ -41,18 +41,6 @@ namespace backend.utilities
 
         private bool _running = true;
         private readonly Thread _workerThread;
-        private readonly ConcurrentQueue<Request> _queue = new ConcurrentQueue<Request>();
-    }
-
-    internal class Request
-    {
-        public Request(Func<Task> methode, string connectionId)
-        {
-            Methode = methode;
-            ConnectionId = connectionId;
-        }
-
-        public Func<Task> Methode { get; }
-        public string ConnectionId { get; }
+        private readonly ConcurrentQueue<Request> _queue = new();
     }
 }

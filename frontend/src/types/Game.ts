@@ -1,4 +1,5 @@
 import { Entity } from "./Entity";
+import { Field } from "./Field";
 import { Match } from "./Match";
 
 export interface Game extends Entity {
@@ -6,4 +7,5 @@ export interface Game extends Entity {
   activePlayerId: string;
   connect4Board: string[][];
   MoveStartTime: number;
+  placingField?: Field;
 }

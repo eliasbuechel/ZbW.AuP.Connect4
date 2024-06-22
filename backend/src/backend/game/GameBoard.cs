@@ -1,11 +1,12 @@
 ﻿using backend.communication.mqtt;
 using backend.game.entities;
+using backend.utilities;
 
 namespace backend.game
 {
     internal class GameBoard
     {
-        public GameBoard(IRoboterAPI roboterAPI)
+        public GameBoard(RoboterAPI roboterAPI)
         {
             _field = new Player?[COLUMNS][];
 
@@ -45,21 +46,23 @@ namespace backend.game
                 return fieldAsIds;
             }
         }
-        public int Columns => COLUMNS;
-        public int Rows => ROWS;
+        public static int Columns => COLUMNS;
+        public static int Rows => ROWS;
+        public Field? PlacingField { get; private set; }
+
         public Player?[] this[int index]
         {
             get { return _field[index]; }
         }
 
-        public bool PlaceStone(Player player, int column)
+        public void PlaceStone(Player player, int column)
         {
             if (column < 0 || column >= COLUMNS)
-                return false;
+                throw new InvalidPlayerRequestException($"Exception while playing move. {column} is not a valid column for a move.");
 
-            var col = _field[column];
+            Player?[] col = _field[column];
             if (col[col.Length - 1] != null)
-                return false;
+                throw new InvalidPlayerRequestException($"Exception while playing move. Cannot play move in full column {column}.");
 
             for (int i = 0; i < col.Length; i++)
             {
@@ -67,12 +70,13 @@ namespace backend.game
                     continue;
 
                 col[i] = player;
-                Field field = new Field(column, i);
+                Field field = new(column, i);
+                PlacingField = field;
                 _roboterAPI.PlaceStone(player, field);
-                return true;
+                return;
             }
 
-            return false;
+            throw new InvalidPlayerRequestException("Exception while playing move. Something went wrong while placing stone.");
         }
         public void Reset()
         {
@@ -86,6 +90,7 @@ namespace backend.game
         private void OnStonePlacedOnRoboter(Player player, Field field)
         {
             OnStonePlaced?.Invoke(player, field);
+            PlacingField = null;
         }
         private void OnRoboterBoardReset()
         {
@@ -93,7 +98,7 @@ namespace backend.game
         }
 
         private readonly Player?[][] _field;
-        private readonly IRoboterAPI _roboterAPI;
+        private readonly RoboterAPI _roboterAPI;
         private const int ROWS = 6;
         private const int COLUMNS = 7;
     }

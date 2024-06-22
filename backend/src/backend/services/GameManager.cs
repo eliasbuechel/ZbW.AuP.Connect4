@@ -2,9 +2,13 @@
 using backend.game;
 using backend.game.entities;
 using backend.Infrastructure;
+using backend.services.player;
 using backend.utilities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
 
 namespace backend.services
 {
@@ -13,15 +17,19 @@ namespace backend.services
         public GameManager(
             Func<Match, Game> getConnect4Game,
             GameResultsService gameResultsService,
-            IRoboterAPI roboterAPI
+            RoboterAPI roboterAPI,
+            PlayerConnectionService playerConnectionService
             )
         {
             _getConnect4Game = getConnect4Game;
             _gameResultsService = gameResultsService;
             _roboterAPI = roboterAPI;
+            _playerConnectionService = playerConnectionService;
 
             _roboterAPI.OnManualMove += PlayManualMove;
+            _roboterAPI.OnPlacingStone += PlacingStone;
         }
+
 
         public event Action<Player, Player>? OnRequestedMatch;
         public event Action<Player, Player>? OnRejectedMatch;
@@ -31,6 +39,7 @@ namespace backend.services
         public event Action<Player, Field>? OnMovePlayed;
         public event Action<Player, int>? OnSendHint;
         public event Action<GameResult>? OnGameEnded;
+        public event Action<Player, Field>? OnPlacingStone;
 
         public Game? Game => _activeGame;
         public IEnumerable<Match> GamePlan => _gamePlan.ToArray();
@@ -43,63 +52,90 @@ namespace backend.services
         }
 
 
-        public bool RequestMatch(Player requester, Player opponent)
+        public void RequestMatch(Player requester, Player opponent)
         {
+            if (requester.Matching != null)
+                throw new InvalidPlayerRequestException($"Matcing request exception. Requester {requester.Username} has already matched with {requester.Matching.Username}.");
+
+            if (opponent.Matching != null)
+                throw new InvalidPlayerRequestException($"Matcing request exception. Opponent {opponent.Username} has already matched with {opponent.Matching.Username}.");
+
+            _playerConnectionService.ForeachConnectedPlayer(p =>
+            {
+                if (p.Equals(requester))
+                    return;
+
+                if (p.MatchingRequests.Contains(requester))
+                    throw new InvalidPlayerRequestException($"Matcing request exception. {requester.Username} has already requested {p.Username}.");
+            });
+
+            opponent.MatchingRequests.Add(requester);
             RequestedMatch(requester, opponent);
-            return true;
         }
         public void AcceptMatch(Player accepter, Player opponent)
         {
-            accepter.MatchingRequests.Remove(opponent);
+            if (!accepter.MatchingRequests.Contains(opponent))
+                throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. There is no matching request to accept.");
+
+            if (accepter.Matching != null)
+                throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. Accepting player already has matched with {accepter.Matching.Username}.");
+
+
+            if (opponent.Matching != null)
+                throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. Opponent player already has matched with {opponent.Matching.Username}.");
+
+            Debug.Assert(accepter.MatchingRequests.Remove(opponent));
             accepter.Matching = opponent;
             opponent.Matching = accepter;
 
-            Match match = new Match(accepter, opponent);
+            Match match = new(accepter, opponent);
             Matched(match);
             _gamePlan.Enqueue(match);
+
             TryStartGame();
         }
         public void RejectMatch(Player rejecter, Player opponent)
         {
+            if (!rejecter.MatchingRequests.Contains(rejecter))
+                throw new InvalidPlayerRequestException($"Reject macht exception [rejecter:{rejecter.Username} opponent:{opponent.Username}]. There is no matching request to reject.");
+
             rejecter.MatchingRequests.Remove(opponent);
             RejectedMatch(rejecter, opponent);
         }
         public void ConfirmGameStart(Player player)
         {
-            if (_activeGame == null)
-            {
-                Debug.Assert(false);
-                return;
-            }
+            if (_activeGame == null && !(player is OpponentRoboterPlayer))
+                throw new InvalidPlayerRequestException($"Confirm game start exception [player:{player.Username}]. There is no active game for the accepting player.");
 
-            _activeGame.ConnfirmGameStart(player);
+            if (player.HasConfirmedGameStart)
+                throw new InvalidPlayerRequestException($"Confirm game start exception [player:{player.Username}]. Has already confirmed game start.");
+
+            player.HasConfirmedGameStart = true;
             ConfirmedGameStart(player);
         }
         public void PlayMove(Player player, int column)
         {
             if (_activeGame == null)
-                throw new RequestErrorException();
-
-            if (column < 0 || column > 6)
-            {
-                Debug.Assert(false);
-                return;
-            }
+                throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. No game is active.");
 
             _activeGame.PlayMove(player, column);
+        }
+        private void PlacingStone(Player player, Field field)
+        {
+            OnPlacingStone?.Invoke(player, field);
         }
         public int GetBestMove(Player player)
         {
             if (_activeGame == null)
-            {
-                return -1;
-            }
+                throw new InvalidPlayerRequestException($"Get best move exception [player:{player.Username}]. No game is active.");
 
             return _activeGame.GetBestMove(player);
         }
         public void QuitGame(Player player)
         {
-            Debug.Assert(_activeGame != null);
+            if (_activeGame == null)
+                throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. No game is active.");
+
             _activeGame.PlayerQuit(player);
         }
         public void PlayerDisconnected(Player player)
@@ -123,16 +159,20 @@ namespace backend.services
                 if (foundMatch == null)
                     break;
 
-                List<Match> gamePlan = new List<Match>(_gamePlan);
+                List<Match> gamePlan = new(_gamePlan);
                 gamePlan.Remove(foundMatch);
                 _gamePlan = new ConcurrentQueue<Match>(gamePlan);
             }
         }
 
+        protected override void OnDispose()
+        {
+            _roboterAPI.OnManualMove -= PlayManualMove;
+            _roboterAPI.OnPlacingStone -= OnPlacingStone;
+        }
 
         private void RequestedMatch(Player requester, Player opponent)
         {
-            opponent.MatchingRequests.Add(requester);
             OnRequestedMatch?.Invoke(requester, opponent);
         }
         private void RejectedMatch(Player rejecter, Player opponent)
@@ -210,8 +250,7 @@ namespace backend.services
             _activeGame.Dispose();
             _activeGame = null;
 
-            Match? match;
-            _gamePlan.TryDequeue(out match);
+            _gamePlan.TryDequeue(out Match? match);
 
             GameEnded(gameResult);
             TryStartGame();
@@ -221,22 +260,17 @@ namespace backend.services
             if (_activeGame != null)
                 return;
 
-            Match? match;
-            if (!_gamePlan.TryPeek(out match))
+            if (!_gamePlan.TryPeek(out Match? match))
                 return;
 
             StartNewGame(match);
         }
 
-        protected override void OnDispose()
-        {
-            _roboterAPI.OnManualMove -= PlayManualMove;
-        }
-
         private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
-        private readonly IRoboterAPI _roboterAPI;
+        private readonly RoboterAPI _roboterAPI;
+        private readonly PlayerConnectionService _playerConnectionService;
         private readonly Func<Match, Game> _getConnect4Game;
-        private ConcurrentQueue<Match> _gamePlan = new ConcurrentQueue<Match>();
+        private ConcurrentQueue<Match> _gamePlan = new();
     }
 }

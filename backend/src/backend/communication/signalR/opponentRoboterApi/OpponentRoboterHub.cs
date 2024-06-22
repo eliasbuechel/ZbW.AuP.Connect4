@@ -3,13 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
-    internal class OpponentRoboterHub : Hub
-    { 
-        public OpponentRoboterHub(OpponentRoboterHubApi opponentRoboterHubApi)
-        {
-            _opponentRoboterHubApi = opponentRoboterHubApi;
-        }
-
+    internal class OpponentRoboterHub(OpponentRoboterHubApi opponentRoboterHubApi) : Hub
+    {
         public void RequestMatch(string clientUrl)
         {
             _opponentRoboterHubApi.RequestMatch(Context.ConnectionId);
@@ -52,13 +47,12 @@ namespace backend.communication.signalR.opponentRoboterApi
             {
                 var callerUrl = Context.GetHttpContext()?.Request.GetDisplayUrl();
 
-                if (callerUrl == null)
-                    callerUrl = "Opponent URL not found!";
+                callerUrl ??= "Opponent URL not found!";
 
                 return callerUrl;
             }
         }
 
-        private readonly OpponentRoboterHubApi _opponentRoboterHubApi;
+        private readonly OpponentRoboterHubApi _opponentRoboterHubApi = opponentRoboterHubApi;
     }
 }

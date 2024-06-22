@@ -1,15 +1,9 @@
 ﻿namespace backend.game
 {
-    internal abstract class Player : IEquatable<Player>
+    internal abstract class Player(string playerId, string username) : IEquatable<Player>
     {
-        public Player(string playerId, string username)
-        {
-            Id = playerId;
-            Username = username;
-        }
-
-        public string Id { get; }
-        public string Username { get; }
+        public string Id { get; } = playerId;
+        public string Username { get; } = username;
         public bool HasConfirmedGameStart { get; set; }
         public bool IsInGame { get; set; }
         public TimeSpan TotalPlayTime { get; set; }
