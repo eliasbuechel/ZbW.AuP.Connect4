@@ -6,6 +6,7 @@
   --color-orange-transparent: #c5830088;
   --color-green: #61c200;
   --color-player-2: #0117ccdd;
+  --color-player-2-transparent: #0119cc5c;
   --color-red: #ac3931;
   --color-container-bg: #12263a;
   --color-dark: #01172c;
@@ -358,41 +359,6 @@ button:active:enabled {
   font-size: 0.8rem;
 }
 
-.player-info {
-  display: flex;
-  justify-content: flex-start;
-  flex-direction: column;
-  color: var(--color-light);
-  padding: 1rem;
-}
-
-.player-info > label {
-  font-size: larger;
-}
-
-.player-info > button {
-  margin: 0.5rem 0rem;
-}
-
-.player-info-left {
-  align-items: flex-start;
-}
-
-.player-info > label {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-}
-
-.player-info-left > label {
-  background-color: var(--color-orange);
-}
-.player-info-right > label {
-  background-color: var(--color-player-2);
-}
-.player-info-right {
-  align-items: flex-end;
-}
-
 .board {
   display: flex;
   justify-content: center;
@@ -425,23 +391,10 @@ button:active:enabled {
   transition: 0.1s ease-in-out;
 }
 
-/* .column > .placingCell {
-  border-color: var(--color-orange);
-  border-width: 5px;
-  background-color: var(--color-orange-transparent);
-  transition: 0.1s ease-in-out;
-} */
-
 .column > .placingCell {
   transition: 0.1s ease-in-out;
   animation: pulse 2s ease-in-out infinite;
 }
-/* .column > .placingCell.colorPlayerLeft {
-  background-color: var(--color-orange);
-}
-.column > .placingCell.colorPlayerLeft {
-  background-color: var(--color-player-2);
-} */
 
 @keyframes pulse {
   0%,

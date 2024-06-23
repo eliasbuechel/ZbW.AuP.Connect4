@@ -1,12 +1,14 @@
 <template>
   <div class="player-info">
-    <label>{{ playerName }}</label>
-    <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id">
-      Move time: {{ formattedGameTime }}</label
-    >
-    <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
-      >Move total time: {{ formattedTotalPlayedMoveTime }}
-    </label>
+    <div class="player-data">
+      <label class="player-name">{{ playerName }}</label>
+      <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id">
+        Move time: {{ formattedGameTime }}</label
+      >
+      <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
+        >Move total time: {{ formattedTotalPlayedMoveTime }}
+      </label>
+    </div>
     <div class="playing-state">{{ gameState }}</div>
     <button
       v-if="isPlayerInGame && isPlayerActive && gameHasStarted && player.id === identity.id"
@@ -84,9 +86,10 @@ export default defineComponent({
       if (this.game == null) return "";
       if (this.player == null) return "";
       if (!this.player.hasConfirmedGameStart)
-        return this.player.id === this.identity.id ? "confirm to start the game" : "confirming game start ...";
+        return this.player.id === this.identity.id ? "confirm to start the game" : "confirming game start...";
       if (this.game.activePlayerId === this.player.id) {
-        if (this.player.id == this.identity.id) return "your turn!";
+        if (this.game.placingField != null) return "placing on roboter...";
+        else if (this.player.id == this.identity.id) return "your turn!";
         return "playing...";
       }
       return "";
@@ -114,12 +117,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.button-light {
-  /* to be in front of the game board */
-  z-index: 1;
-}
+@import "@/assets/playerInfo.css";
 .move-time {
   background-color: transparent;
-  font-size: 1rem;
+  font-size: medium;
 }
 </style>

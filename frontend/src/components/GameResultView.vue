@@ -149,6 +149,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
+@import "@/assets/playerInfo.css";
+
 .game-container {
   display: flex;
   flex-direction: column;

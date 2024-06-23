@@ -19,8 +19,6 @@ export default createStore({
         });
         commit("setAuthenticated", response!.data.isAuthenticated);
       } catch (error: any) {
-        console.log(response);
-        console.log(error);
         commit("setAuthenticated", false);
       }
     },
