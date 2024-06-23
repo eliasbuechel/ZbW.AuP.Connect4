@@ -4,9 +4,9 @@ using backend.utilities;
 
 namespace backend.game
 {
-    internal class GameBoard
+    internal class Board
     {
-        public GameBoard(RoboterAPI roboterAPI)
+        public Board(RoboterAPI roboterAPI)
         {
             _field = new Player?[COLUMNS][];
 
@@ -17,7 +17,7 @@ namespace backend.game
             _roboterAPI.OnStonePlaced += OnStonePlacedOnRoboter;
             _roboterAPI.OnBoardReset += OnRoboterBoardReset;
         }
-        ~GameBoard()
+        ~Board()
         {
             _roboterAPI.OnStonePlaced -= OnStonePlacedOnRoboter;
             _roboterAPI.OnBoardReset -= OnRoboterBoardReset;

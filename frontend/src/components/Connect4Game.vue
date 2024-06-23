@@ -2,7 +2,7 @@
   <div class="grid-container">
     <div class="grid-item-page-info-container">
       <h2>Connect Four</h2>
-      <h3 v-if="isGameStarted">{{ gameTime }}</h3>
+      <h3 v-if="game.gameStartTime != null">{{ formattedGameTime }}</h3>
     </div>
     <button
       v-if="!isGameParticipant"
@@ -14,19 +14,15 @@
     <PlayerInfo
       class="grid-item-player1 player-info player-info-left"
       :game="game"
-      :player="inGamePlayerLeft!"
       :identity="identity"
-      :playedMoveTime="playedMoveTime"
-      :totalPlayedMoveTime="totalPlayedMoveTime"
+      :player="inGamePlayerLeft!"
       @quit-game="reemitQuitGame"
     />
     <PlayerInfo
       class="grid-item-player2 player-info player-info-right"
       :game="game"
-      :player="inGamePlayerRight!"
       :identity="identity"
-      :playedMoveTime="playedMoveTime"
-      :totalPlayedMoveTime="totalPlayedMoveTime"
+      :player="inGamePlayerRight!"
       @quit-game="reemitQuitGame"
     />
     <button
@@ -60,13 +56,13 @@
   import { InGamePlayer } from "@/types/InGamePlayer";
   import signalRHub from "@/services/signalRHub";
   import PlayerInfo from "./PlayerInfo.vue";
+  import formattedTime from "@/services/timeFormatter";
 
   export default defineComponent({
     props: {
       game: {
         required: true,
-        type: Object as PropType<Game | undefined>,
-        default: undefined,
+        type: Object as PropType<Game>,
       },
       identity: {
         required: true,
@@ -77,46 +73,35 @@
       gameTimerId?: number;
       totalMoveTimerId?: number;
       moveTimerId?: number;
-      gameMinutes: number;
-      gameSeconds: number;
-      playedMoveTime: number;
-      totalPlayedMoveTime: number;
+      gameTime: number;
     } {
       return {
         gameTimerId: undefined,
         totalMoveTimerId: undefined,
         moveTimerId: undefined,
-        gameMinutes: 0,
-        gameSeconds: 0,
-        playedMoveTime: 0,
-        totalPlayedMoveTime: 0,
+        gameTime: 0,
       };
     },
     components: {
       Connect4Board,
       PlayerInfo,
     },
+    mounted(): void {
+      this.startGameTimer();
+    },
     unmounted(): void {
-      [this.totalMoveTimerId, this.moveTimerId, this.gameTimerId].forEach((timerId) => {
-        if (timerId) clearInterval(timerId);
-      });
+      if (this.gameTimerId == null) return;
+      clearInterval(this.gameTimerId);
     },
     methods: {
       reemitPlaceStone(column: number): void {
-        if (this.game == null) return;
         if (this.game.activePlayerId !== this.identity.id) return;
-
         this.$emit("place-stone", column);
-        this.stopMoveTimer();
-        this.startMoveTimer();
       },
       confirmGameStart(): void {
         this.$emit("confirm-game-start");
-        this.startGameTimer();
-        this.startMoveTimer();
       },
       reemitQuitGame(): void {
-        if (this.game === undefined) return;
         this.$emit("quit-game");
       },
       stopWatchingGame(): void {
@@ -125,35 +110,9 @@
       },
       startGameTimer(): void {
         this.gameTimerId = setInterval(() => {
-          this.gameSeconds++;
-          if (this.gameSeconds === 60) {
-            this.gameSeconds = 0;
-            this.gameMinutes++;
-          }
-        }, 1000);
-      },
-      startMoveTimer(): void {
-        this.moveTimerId = setInterval(() => {
-          const now = new Date().getTime();
-          this.playedMoveTime = (now - this.game!.MoveStartTime) / 1000;
+          if (this.game.gameStartTime == null) return;
+          this.gameTime = Date.now() - this.game.gameStartTime;
         }, 100);
-      },
-      stopMoveTimer(): void {
-        if (this.moveTimerId) {
-          clearInterval(this.moveTimerId);
-          this.moveTimerId = undefined;
-
-          this.addPlayedMoveTime();
-          this.game!.MoveStartTime = new Date().getTime();
-        }
-      },
-      addPlayedMoveTime(): void {
-        if (typeof this.playedMoveTime === "number" && !isNaN(this.playedMoveTime)) {
-          this.totalPlayedMoveTime += this.playedMoveTime;
-        } else {
-          console.error("playedMoveTime is not a valid number");
-        }
-        this.playedMoveTime = 0;
       },
     },
     computed: {
@@ -190,7 +149,6 @@
         return "";
       },
       gameStatePlayerLeft(): string {
-        if (this.game == null) return "";
         if (this.inGamePlayerLeft == null) return "";
         if (!this.inGamePlayerLeft.hasConfirmedGameStart)
           return this.inGamePlayerLeft.id === this.identity.id
@@ -204,7 +162,6 @@
         return "";
       },
       gameStatePlayerRight(): string {
-        if (this.game == null) return "";
         if (this.inGamePlayerRight == null) return "";
         if (!this.inGamePlayerRight.hasConfirmedGameStart)
           return this.inGamePlayerRight.id === this.identity.id
@@ -218,13 +175,7 @@
         return "";
       },
       isGameParticipant(): boolean {
-        if (this.game == null) return false;
         return this.identity.id === this.game.match.player1.id || this.identity.id === this.game.match.player2.id;
-      },
-      gameTime(): string {
-        let minutes = this.gameMinutes.toString().padStart(2, "0");
-        let seconds = this.gameSeconds.toString().padStart(2, "0");
-        return `${minutes}:${seconds}`;
       },
       isGameStarted(): boolean {
         return (
@@ -232,6 +183,9 @@
           this.game.match.player1.hasConfirmedGameStart &&
           this.game.match.player2.hasConfirmedGameStart
         );
+      },
+      formattedGameTime(): string {
+        return formattedTime(this.gameTime);
       },
     },
   });

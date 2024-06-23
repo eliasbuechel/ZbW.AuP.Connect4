@@ -1,6 +1,6 @@
 <template>
   <MainBoard
-    v-if="!isInGame && identity != null && bestlist != null"
+    v-if="game == null && identity != null && bestlist != null"
     :identity="identity"
     :bestlist="bestlist"
     :connectedPlayers="connectedPlayers"
@@ -8,7 +8,7 @@
     @show-replay="showReplay"
   />
   <Connect4Game
-    v-else-if="isInGame && identity != null && game != null"
+    v-else-if="identity != null && game != null"
     :game="game"
     :identity="identity"
     @place-stone="placeStone"
@@ -155,6 +155,8 @@
       },
       placeStone(column: number): void {
         signalRHub.invoke("PlayMove", column);
+        if (this.game == null) return;
+        this.game.moveStartTime = undefined;
       },
       quitGame(): void {
         signalRHub.invoke("QuitGame");
@@ -259,6 +261,7 @@
 
         this.game.placingField = undefined;
         this.game.lastPlacedStone = field;
+        this.game.moveStartTime = Date.now();
 
         this.game.match.player1.currentHint = undefined;
         this.game.match.player2.currentHint = undefined;
@@ -362,6 +365,13 @@
         if (this.game == null) return;
         if (this.game.match.player1.id === playerId) this.game.match.player1.hasConfirmedGameStart = true;
         else this.game.match.player2.hasConfirmedGameStart = true;
+
+        if (this.game.match.player1.hasConfirmedGameStart && this.game.match.player2.hasConfirmedGameStart) {
+          this.game.gameStartTime = Date.now();
+          this.game.moveStartTime = Date.now();
+          this.game.match.player1.totalPlayTime = 0;
+          this.game.match.player2.totalPlayTime = 0;
+        }
       },
       onSendHint(hint: number): void {
         if (this.identity == null) return;
