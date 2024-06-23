@@ -110,11 +110,11 @@ namespace backend
 
 
             services.AddSingleton<GameManager>();
-            services.AddSingleton<GameBoard>();
+            services.AddSingleton<Board>();
 
             services.AddSingleton<Func<Match, Game>>(s => m =>
             {
-                GameBoard gameBoard = s.GetRequiredService<GameBoard>();
+                Board gameBoard = s.GetRequiredService<Board>();
                 return new Game(m, gameBoard);
             });
 

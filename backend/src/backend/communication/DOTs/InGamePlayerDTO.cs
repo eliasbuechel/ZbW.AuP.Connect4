@@ -7,7 +7,7 @@ namespace backend.communication.DOTs
         public InGamePlayerDTO(Player player) : base(player)
         {
             HasConfirmedGameStart = player.HasConfirmedGameStart;
-            TotalPlayTime = Convert.ToInt64(player.TotalPlayTime.TotalSeconds);
+            TotalPlayTime = player.TotalPlayTime == null ? null : Convert.ToInt64(player.TotalPlayTime.Value.TotalMilliseconds);
 
             if (player is WebPlayer webPlayer)
             {
@@ -24,6 +24,6 @@ namespace backend.communication.DOTs
         public bool HasConfirmedGameStart { get; }
         public int HintsLeft { get; }
         public int? CurrentHint { get; }
-        public long TotalPlayTime { get; }
+        public long? TotalPlayTime { get; }
     }
 }

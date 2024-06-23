@@ -111,6 +111,7 @@ namespace backend.services
                 throw new InvalidPlayerRequestException($"Confirm game start exception [player:{player.Username}]. Has already confirmed game start.");
 
             player.HasConfirmedGameStart = true;
+            _activeGame?.GameStartGotConfirmed();
             ConfirmedGameStart(player);
         }
         public void PlayMove(Player player, int column)

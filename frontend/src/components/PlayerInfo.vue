@@ -5,7 +5,7 @@
       class="move-time"
       v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
     >
-      Move time: {{ formattedPlayedMoveTime }}</label
+      Move time: {{ formattedGameTime }}</label
     >
     <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
       >Move total time: {{ formattedTotalPlayedMoveTime }}
@@ -26,13 +26,13 @@
   import { InGamePlayer } from "@/types/InGamePlayer";
   import { Game } from "@/types/Game";
   import { PlayerIdentity } from "@/types/PlayerIdentity";
+  import formattedTime from "@/services/timeFormatter";
 
   export default defineComponent({
     props: {
       game: {
         required: true,
-        type: Object as PropType<Game | undefined>,
-        default: undefined,
+        type: Object as PropType<Game>,
       },
       player: {
         required: true,
@@ -42,18 +42,37 @@
         required: true,
         type: Object as PropType<PlayerIdentity>,
       },
-      playedMoveTime: {
-        type: Number,
-        default: 0,
-      },
-      totalPlayedMoveTime: {
-        type: Number,
-        default: 0,
-      },
+    },
+    data(): {
+      moveTimerId?: number;
+      playedMoveTime: number;
+      totalPlayedMoveTime: number;
+    } {
+      return {
+        moveTimerId: undefined,
+        playedMoveTime: 0,
+        totalPlayedMoveTime: 0,
+      };
+    },
+    mounted(): void {
+      this.startMoveTimer();
+    },
+    unmounted(): void {
+      if (this.moveTimerId == null) return;
+      clearInterval(this.moveTimerId);
     },
     methods: {
       quitGame(): void {
         this.$emit("quit-game");
+      },
+      startMoveTimer(): void {
+        this.moveTimerId = setInterval(() => {
+          if (!this.isPlayerActive) return;
+          if (this.game.moveStartTime == null) return;
+          this.playedMoveTime = Date.now() - this.game.moveStartTime;
+          if (this.player.totalPlayTime == null) return;
+          this.totalPlayedMoveTime = this.player.totalPlayTime;
+        }, 100);
       },
     },
     computed: {
@@ -87,12 +106,11 @@
         if (this.game == null) return false;
         return this.game.match.player1.hasConfirmedGameStart && this.game.match.player2.hasConfirmedGameStart;
       },
-      formattedPlayedMoveTime(): string {
-        return this.playedMoveTime.toFixed(1) + "s";
+      formattedGameTime(): string {
+        return formattedTime(this.playedMoveTime);
       },
       formattedTotalPlayedMoveTime(): string {
-        console.log("formattedTotalPlayedMoveTime", this.totalPlayedMoveTime);
-        return this.totalPlayedMoveTime.toFixed(1) + "s";
+        return formattedTime(this.totalPlayedMoveTime);
       },
     },
   });

@@ -1,15 +1,16 @@
 ﻿using backend.game.entities;
+using backend.Infrastructure;
 using backend.utilities;
 using System.Diagnostics;
 
 namespace backend.game
 {
-    internal class Game : IDisposable
+    internal class Game : DisposingObject
     {
-        public Game(Match match, GameBoard connect4Board)
+        public Game(Match match, Board board)
         {
             _match = match;
-            _gameBoard = connect4Board;
+            _gameBoard = board;
 
             _gameBoard.OnStonePlaced += OnStonePlaced;
             _gameBoard.OnBoardReset += OnBoardReset;
@@ -38,12 +39,23 @@ namespace backend.game
         public Player ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _gameBoard.FieldAsIds;
         public bool GameEnded => _gameEnded;
-        public DateTime MoveStartTime => _moveStartingTime;
+        public DateTime? MoveStartTime => _moveStartingTime;
+        public DateTime? GameStartTime => _gameStartTime;
 
 
         public Field? PlacingField => _gameBoard.PlacingField;
         public Field? LastPlacedStone { get; private set; }
 
+        public void GameStartGotConfirmed()
+        {
+            if (_match.Player1.HasConfirmedGameStart && _match.Player2.HasConfirmedGameStart)
+            {
+                _gameStartTime = DateTime.Now;
+                _moveStartingTime = DateTime.Now;
+                _match.Player1.TotalPlayTime = new TimeSpan(0);
+                _match.Player2.TotalPlayTime = new TimeSpan(0);
+            }
+        }
         public void PlayMove(Player player, int column)
         {
             if (_activePlayer != player)
@@ -52,14 +64,18 @@ namespace backend.game
             if (_activePlayerPlacedStone)
                 throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. Already played move in his turn!");
 
-            if (column < 0 || column > GameBoard.Columns)
+            if (column < 0 || column > Board.Columns)
                 throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. Column is not in valid range");
 
             _gameBoard.PlaceStone(player, column);
 
-            TimeSpan duration = DateTime.Now - _moveStartingTime;
+            Debug.Assert(_moveStartingTime != null);
+
+            TimeSpan duration = DateTime.Now - _moveStartingTime.Value;
             PlayedMove playedMove = new(column, duration);
+
             _activePlayer.TotalPlayTime += duration;
+
             _playedMoves.Add(playedMove);
             _moveStartingTime = DateTime.Now;
             _activePlayerPlacedStone = true;
@@ -130,16 +146,9 @@ namespace backend.game
             if (_gameEnded) return;
             PlayMove(_activePlayer, column);
         }
-        public void Dispose()
+
+        protected override void OnDispose()
         {
-            if (_disposed)
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _disposed = true;
-
             _gameBoard.OnStonePlaced -= OnStonePlaced;
             _gameBoard.OnBoardReset -= OnBoardReset;
         }
@@ -214,7 +223,7 @@ namespace backend.game
             }
 
             col = lastPlacedStone.Column + 1;
-            while (col < GameBoard.Columns && count < 4)
+            while (col < Board.Columns && count < 4)
             {
                 if (_gameBoard[col][lastPlacedStone.Row] != player)
                     break;
@@ -252,7 +261,7 @@ namespace backend.game
 
             col = lastPlacedStone.Column + 1;
             row = lastPlacedStone.Row + 1;
-            while (col < GameBoard.Columns && row < GameBoard.Rows && count < 4)
+            while (col < Board.Columns && row < Board.Rows && count < 4)
             {
                 if (_gameBoard[col][row] != player)
                     break;
@@ -279,7 +288,7 @@ namespace backend.game
 
             int col = lastPlacedStone.Column - 1;
             int row = lastPlacedStone.Row + 1;
-            while (col >= 0 && row < GameBoard.Rows && count < 4)
+            while (col >= 0 && row < Board.Rows && count < 4)
             {
                 if (_gameBoard[col][row] != player)
                     break;
@@ -291,7 +300,7 @@ namespace backend.game
 
             col = lastPlacedStone.Column + 1;
             row = lastPlacedStone.Row - 1;
-            while (col < GameBoard.Columns && row >= 0 && count < 4)
+            while (col < Board.Columns && row >= 0 && count < 4)
             {
                 if (_gameBoard[col][row] != player)
                     break;
@@ -312,7 +321,7 @@ namespace backend.game
         private bool CheckForNoMoveLeft()
         {
             bool allCollumnsFull = true;
-            for (int i = 0; i  < GameBoard.Columns; i++)
+            for (int i = 0; i  < Board.Columns; i++)
             {
                 Player?[] column = _gameBoard[i];
 
@@ -422,7 +431,7 @@ namespace backend.game
         private bool GetNextFreeRow(int col, out int row)
         {
             int j = 0;
-            while (j < GameBoard.Rows)
+            while (j < Board.Rows)
             {
                 if (_gameBoard[col][j] == null)
                 {
@@ -440,9 +449,9 @@ namespace backend.game
         {
             int boardValue = 0;
 
-            for (int i = 0; i < GameBoard.Columns; i++)
+            for (int i = 0; i < Board.Columns; i++)
             {
-                for (int j = 0; j < GameBoard.Rows; j++)
+                for (int j = 0; j < Board.Rows; j++)
                 {
                     if (_gameBoard[i][j] == maxPlayer)
                         boardValue += _propabilityMatrix[i][j];
@@ -457,8 +466,8 @@ namespace backend.game
         }
         private bool NoMoveLeft()
         {
-            for (int i = 0; i < GameBoard.Columns; i++)
-                if (_gameBoard[i][GameBoard.Rows - 1] == null)
+            for (int i = 0; i < Board.Columns; i++)
+                if (_gameBoard[i][Board.Rows - 1] == null)
                     return false;
 
             return true;
@@ -492,7 +501,7 @@ namespace backend.game
                 count++;
             }
             i = col + 1;
-            while(i < GameBoard.Columns)
+            while(i < Board.Columns)
             {
                 if (_gameBoard[i][row] != player)
                     break;
@@ -518,7 +527,7 @@ namespace backend.game
             }
             i = col + 1;
             j = row + 1;
-            while (i < GameBoard.Columns && j < GameBoard.Rows)
+            while (i < Board.Columns && j < Board.Rows)
             {
                 if (_gameBoard[i][j] != player)
                     break;
@@ -534,7 +543,7 @@ namespace backend.game
             count = 1;
             i = col - 1;
             j = row + 1;
-            while (i >= 0 && j < GameBoard.Rows)
+            while (i >= 0 && j < Board.Rows)
             {
                 if (_gameBoard[i][j] != player)
                     break;
@@ -545,7 +554,7 @@ namespace backend.game
             }
             i = col + 1;
             j = row - 1;
-            while (i < GameBoard.Columns && j >= 0)
+            while (i < Board.Columns && j >= 0)
             {
                 if (_gameBoard[i][j] != player)
                     break;
@@ -560,14 +569,15 @@ namespace backend.game
             return false;
         }
 
-        private DateTime _moveStartingTime = DateTime.Now;
+
+        private DateTime? _moveStartingTime;
+        private DateTime? _gameStartTime;
         private bool _gameEnded;
-        private bool _disposed = false;
         private Player _activePlayer;
         private bool _activePlayerPlacedStone;
         private readonly Player _startingPlayer;
         private readonly Match _match;
-        private readonly GameBoard _gameBoard;
+        private readonly Board _gameBoard;
         private readonly List<PlayedMove> _playedMoves = [];
         private readonly int[] _columnOrder = [3, 2, 4, 1, 5, 0, 6];
         private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],

@@ -4,5 +4,5 @@ export interface InGamePlayer extends PlayerIdentity {
   hasConfirmedGameStart: boolean;
   hintsLeft: number;
   currentHint?: number;
-  TotalPlayTime: number;
+  totalPlayTime?: number;
 }
