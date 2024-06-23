@@ -46,9 +46,11 @@ namespace backend.communication.mqtt
         {
             StartRequestTimeout(() =>
             {
-                string originalTopicValue = "-1";
-                TopicColumnChanged(originalTopicValue);
-                _mqttTopicClient.PublishAsync(TOPIC_COLUMN, originalTopicValue).Wait();
+                _placingField = null;
+                _placingPlayer = null;
+
+                StonePlaced(player, field);
+                _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1").Wait();
             });
 
             Debug.Assert(_placingPlayer == null && _placingField == null);
