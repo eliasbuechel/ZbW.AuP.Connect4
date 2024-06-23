@@ -11,5 +11,6 @@ namespace backend.communication.DOTs
         public long? MoveStartTime { get; } = game.MoveStartTime == null ? null : new DateTimeOffset(game.MoveStartTime.Value).ToUnixTimeMilliseconds();
         public long? GameStartTime { get; } = game.GameStartTime == null ? null : new DateTimeOffset(game.GameStartTime.Value).ToUnixTimeMilliseconds();
         public FieldDTO? LastPlacedStone { get; } = game.LastPlacedStone == null ? null : new(game.LastPlacedStone);
+        public bool IsQuittableByEveryone { get; } = game.IsQuittableByEveryone;
     }
 }

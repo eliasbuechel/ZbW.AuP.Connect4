@@ -1,7 +1,8 @@
 <template>
   <div class="game-board-container">
+    <label v-if="placingField != null">placing stone on roboter...</label>
     <button
-      v-if="isYourTurn && placingField == null"
+      v-else-if="isYourTurn && placingField == null"
       class="button-glowing"
       @click="getHint"
       :disabled="activePlayer.currentHint != null || activePlayer.hintsLeft <= 0"
@@ -24,10 +25,10 @@
           :key="rowIdx"
           :class="{
             cell: true,
-            colorPlayerLeft: cell === playerLeft.id,
-            colorPlayerRight: cell === playerRight.id,
+            colorPlayerLeft: cell === playerLeft.id || isLeftPlayerPlacingCell(colIdx, rowIdx),
+            colorPlayerRight: cell === playerRight.id || isRightPlayerPlacingCell(colIdx, rowIdx),
             nextPlacingCell: isNextPlacableCell(colIdx, rowIdx),
-            placingCell: isPlacingCell(colIdx, rowIdx) && isYourTurn,
+            placingCell: isPlacingCell(colIdx, rowIdx),
             lastPlacedStone: isLastPlacedStone(colIdx, rowIdx),
           }"
         ></div>
@@ -102,6 +103,12 @@
         if (this.placingField == null) return false;
         return this.placingField.column === colIdx && this.placingField.row === rowIdx;
       },
+      isLeftPlayerPlacingCell(colIdx: number, rowIdx: number): boolean {
+        return this.isPlacingCell(colIdx, rowIdx) && this.playerLeft.id === this.activePlayer.id;
+      },
+      isRightPlayerPlacingCell(colIdx: number, rowIdx: number): boolean {
+        return this.isPlacingCell(colIdx, rowIdx) && this.playerRight.id === this.activePlayer.id;
+      },
       isLastPlacedStone(colIdx: number, rowIdx: number): boolean {
         if (this.lastPlacedStone == null) return false;
         return this.lastPlacedStone.column === colIdx && this.lastPlacedStone.row === rowIdx;
@@ -126,7 +133,8 @@
     align-items: center;
   }
 
-  .game-board-container > button {
+  .game-board-container > button,
+  .game-board-container > label {
     justify-self: center;
   }
 

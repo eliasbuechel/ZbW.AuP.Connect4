@@ -433,11 +433,15 @@ button:active:enabled {
 } */
 
 .column > .placingCell {
-  /* border: 5px solid var(--color-orange); */
-  background-color: var(--color-orange);
   transition: 0.1s ease-in-out;
   animation: pulse 2s ease-in-out infinite;
 }
+/* .column > .placingCell.colorPlayerLeft {
+  background-color: var(--color-orange);
+}
+.column > .placingCell.colorPlayerLeft {
+  background-color: var(--color-player-2);
+} */
 
 @keyframes pulse {
   0%,

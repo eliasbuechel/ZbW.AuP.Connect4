@@ -16,7 +16,7 @@
       :identity="identity"
       class="content-card"
     />
-    <GamePlan class="content-card" :gamePlan="gamePlan" />
+    <GamePlan class="content-card" :gamePlan="gamePlan" :identity="identity" />
     <BestList :bestlist="bestlist" @show-replay="showReplay" class="content-card" />
   </div>
 </template>

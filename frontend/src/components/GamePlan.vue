@@ -10,7 +10,7 @@
             <div v-else class="handshake-icon">&#129309;</div>
             <div class="player2">{{ player.player2.username }}</div>
           </div>
-          <button v-if="idx == 0" class="button-light" @click="watchGame()">Watch</button>
+          <button v-if="idx === 0 && !isGameParticipant(idx)" class="button-light" @click="watchGame()">Watch</button>
         </li>
       </ul>
     </div>
@@ -20,6 +20,7 @@
 <script lang="ts">
 import signalRHub from "@/services/signalRHub";
 import { Match } from "@/types/Match";
+import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { defineComponent, PropType } from "vue";
 
 interface GamePlanState {
@@ -33,6 +34,10 @@ export default defineComponent({
       required: true,
       type: Array as PropType<Match[]>,
     },
+    identity: {
+      required: true,
+      type: Object as PropType<PlayerIdentity>,
+    },
   },
   data(): GamePlanState {
     return {
@@ -42,6 +47,11 @@ export default defineComponent({
   methods: {
     watchGame(): void {
       signalRHub.invoke("WatchGame");
+    },
+    isGameParticipant(idx: number): boolean {
+      if (this.identity == null) return false;
+      console.log(this.identity.id, this.gamePlan[idx].player1.id, this.gamePlan[idx].player2.id);
+      return this.gamePlan[idx].player1.id === this.identity.id || this.gamePlan[idx].player2.id === this.identity.id;
     },
   },
 });

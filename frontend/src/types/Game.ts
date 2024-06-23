@@ -10,4 +10,5 @@ export interface Game extends Entity {
   gameStartTime?: number;
   placingField?: Field;
   lastPlacedStone?: Field;
+  isQuittableByEveryone: boolean;
 }
