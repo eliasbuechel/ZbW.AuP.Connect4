@@ -1,8 +1,8 @@
 <template>
   <div class="grid-container">
-    <div class="grid-item-page-info container">
+    <div class="grid-item-page-info-container">
       <h2>Connect Four</h2>
-      <span v-if="isGameStarted">{{ gameTime }}</span>
+      <h3 v-if="isGameStarted">{{ gameTime }}</h3>
     </div>
     <button
       v-if="!isGameParticipant"
@@ -107,11 +107,12 @@
 
         this.$emit("place-stone", column);
         this.stopMoveTimer();
+        this.startMoveTimer();
       },
       confirmGameStart(): void {
+        this.$emit("confirm-game-start");
         this.startGameTimer();
         this.startMoveTimer();
-        this.$emit("confirm-game-start");
       },
       reemitQuitGame(): void {
         if (this.game === undefined) return;
@@ -133,7 +134,6 @@
       startMoveTimer(): void {
         this.moveTimerId = setInterval(() => {
           const now = new Date().getTime();
-          console.log("startMovetimer", this.playedMoveTime);
           this.playedMoveTime = (now - this.game!.MoveStartTime) / 1000;
         }, 100);
       },
@@ -145,7 +145,6 @@
           this.addPlayedMoveTime();
           this.game!.MoveStartTime = new Date().getTime();
         }
-        this.startMoveTimer();
       },
       addPlayedMoveTime(): void {
         if (typeof this.playedMoveTime === "number" && !isNaN(this.playedMoveTime)) {
@@ -238,10 +237,12 @@
 </script>
 
 <style scoped>
-  .grid-item-page-info {
-    grid-column: 4 / span 6;
+  .grid-item-page-info-container {
+    grid-column: 6 / span 3;
     grid-row: 1 / span 1;
+    text-align: center;
   }
+
   .grid-item-leave-game-view-button {
     grid-column: 4 / span 6;
     grid-row: 2 / span 1;
