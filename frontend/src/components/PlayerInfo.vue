@@ -25,7 +25,7 @@ import { PropType, defineComponent } from "vue";
 import { InGamePlayer } from "@/types/InGamePlayer";
 import { Game } from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
-import formattedTime from "@/services/timeFormatter";
+import TimeFormatter from "@/services/timeFormatter";
 
 export default defineComponent({
   props: {
@@ -107,10 +107,10 @@ export default defineComponent({
       return this.game.match.player1.hasConfirmedGameStart && this.game.match.player2.hasConfirmedGameStart;
     },
     formattedGameTime(): string {
-      return formattedTime(this.playedMoveTime);
+      return TimeFormatter.formatAsSeconds(this.playedMoveTime, 1);
     },
     formattedTotalPlayedMoveTime(): string {
-      return formattedTime(this.totalPlayedMoveTime);
+      return TimeFormatter.formatAsSeconds(this.totalPlayedMoveTime, 0);
     },
   },
 });
@@ -118,6 +118,7 @@ export default defineComponent({
 
 <style scoped>
 @import "@/assets/playerInfo.css";
+
 .move-time {
   background-color: transparent;
   font-size: medium;
