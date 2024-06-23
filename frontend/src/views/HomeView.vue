@@ -295,6 +295,21 @@ export default defineComponent({
       this.game.placingField = field;
       this.game.match.player1.currentHint = undefined;
       this.game.match.player2.currentHint = undefined;
+
+      if (this.game.moveStartTime != null) {
+        if (this.game.match.player1.id === playerId) {
+          if (this.game.match.player1.totalPlayTime != null) {
+            this.game.match.player1.totalPlayTime += Date.now() - this.game.moveStartTime;
+          }
+        }
+        if (this.game.match.player2.id === playerId) {
+          if (this.game.match.player2.totalPlayTime != null) {
+            this.game.match.player2.totalPlayTime += Date.now() - this.game.moveStartTime;
+          }
+        }
+      }
+
+      this.game.moveStartTime = undefined;
     },
     switchActivePlayer(): void {
       this.game!.activePlayerId =

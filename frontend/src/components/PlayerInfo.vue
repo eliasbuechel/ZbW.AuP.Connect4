@@ -2,10 +2,8 @@
   <div class="player-info">
     <div class="player-data">
       <label class="player-name">{{ playerName }}</label>
-      <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id">
-        Move time: {{ formattedGameTime }}</label
-      >
-      <label class="move-time" v-if="isPlayerInGame && gameHasStarted && isPlayerActive && player.id === identity.id"
+      <label class="move-time" v-if="gameHasStarted && isPlayerActive"> Move time: {{ formattedGameTime }}</label>
+      <label class="move-time" v-if="gameHasStarted && isPlayerActive"
         >Move total time: {{ formattedTotalPlayedMoveTime }}
       </label>
     </div>

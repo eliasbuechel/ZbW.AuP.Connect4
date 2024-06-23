@@ -75,7 +75,7 @@ namespace backend.game
             TimeSpan duration = DateTime.Now - _moveStartingTime.Value;
             PlayedMove playedMove = new(column, duration);
 
-            _activePlayer.TotalPlayTime += duration;
+            _activePlayer.TotalPlayTime = _activePlayer.TotalPlayTime == null ? duration : _activePlayer.TotalPlayTime.Value + duration;
 
             _playedMoves.Add(playedMove);
             _moveStartingTime = DateTime.Now;
