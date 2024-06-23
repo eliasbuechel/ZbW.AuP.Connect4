@@ -83,12 +83,16 @@ namespace backend.game
         }
         public void PlayerQuit(Player player)
         {
-            if ((!(_match.Player1 is OpponentRoboterPlayer) || !(_match.Player2 is OpponentRoboterPlayer)) && (!_match.Player1.Equals(player) && !_match.Player2.Equals(player)))
+            Player quittingPlayer = player;
+            if (_match.Player1 is OpponentRoboterPlayer && _match.Player2 is AlgorythmPlayer algorythmPlayer2)
+                quittingPlayer = algorythmPlayer2;
+            else if (_match.Player2 is OpponentRoboterPlayer && _match.Player1 is AlgorythmPlayer algorythmPlayer1)
+                quittingPlayer = algorythmPlayer1;
+            else if (!_match.Player1.Equals(player) && !_match.Player2.Equals(player))
                 throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. Quitting player is not part of the active game.");
 
-            Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            bool hasWinnerRow = false;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
+            Player winner = quittingPlayer == _match.Player1 ? _match.Player2 : _match.Player1;
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, false);
             OnGameEndet(gameResult);
         }
         public void Initialize()

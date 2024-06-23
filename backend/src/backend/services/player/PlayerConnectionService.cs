@@ -46,7 +46,7 @@ namespace backend.services.player
                 if (player.Id == playerId)
                     return player;
 
-            throw new ArgumentException($"The PlayerId {playerId} is not contained in the player connections.");
+           throw new ArgumentException($"The PlayerId {playerId} is not contained in the player connections.");
         }
         public Player? GetPlayerOrDefault(string playerId)
         {

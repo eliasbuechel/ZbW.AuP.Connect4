@@ -1,11 +1,20 @@
 <template>
   <div class="game-board-container">
-    <label v-if="placingField != null">placing stone on roboter...</label>
+    <div v-if="placingField != null" class="playing-move-info-container">
+      <div
+        :class="{
+          loadingCube: true,
+          loadingCubeLeft: activePlayer.id === playerLeft.id,
+          loadingCubeRight: activePlayer.id === playerRight.id,
+        }"
+      ></div>
+      <label>placing stone on roboter...</label>
+    </div>
     <button
       v-else-if="isYourTurn && placingField == null"
       class="button-glowing"
       @click="getHint"
-      :disabled="activePlayer.currentHint != null || activePlayer.hintsLeft <= 0"
+      :disabled="activePlayer.currentHint != null || (activePlayer.hintsLeft <= 0 && !isUsingHint)"
     >
       Hints {{ activePlayer.hintsLeft }}/2
     </button>
@@ -29,7 +38,7 @@
             colorPlayerRight: cell === playerRight.id || isRightPlayerPlacingCell(colIdx, rowIdx),
             nextPlacingCell: isNextPlacableCell(colIdx, rowIdx),
             placingCell: isPlacingCell(colIdx, rowIdx),
-            lastPlacedStone: isLastPlacedStone(colIdx, rowIdx),
+            lastPlacedStone: isLastPlacedStone(colIdx, rowIdx) && placingField == null,
           }"
         ></div>
       </div>
@@ -38,108 +47,139 @@
 </template>
 
 <script lang="ts">
-  import signalRHub from "@/services/signalRHub";
-  import { Field } from "@/types/Field";
-  import { InGamePlayer } from "@/types/InGamePlayer";
-  import { PlayerIdentity } from "@/types/PlayerIdentity";
-  import { PropType, defineComponent } from "vue";
+import signalRHub from "@/services/signalRHub";
+import { Field } from "@/types/Field";
+import { InGamePlayer } from "@/types/InGamePlayer";
+import { PlayerIdentity } from "@/types/PlayerIdentity";
+import { PropType, defineComponent } from "vue";
 
-  export default defineComponent({
-    name: "Connect4Board",
-    props: {
-      identity: {
-        required: true,
-        type: Object as PropType<PlayerIdentity>,
-      },
-      connect4Board: {
-        required: true,
-        type: Array as PropType<String[][]>,
-      },
-      playerLeft: {
-        required: true,
-        type: Object as PropType<InGamePlayer>,
-      },
-      playerRight: {
-        required: true,
-        type: Object as PropType<InGamePlayer>,
-      },
-      activePlayerId: {
-        required: true,
-        type: Object as PropType<string>,
-      },
-      placingField: {
-        required: true,
-        type: Object as PropType<Field | undefined>,
-      },
-      lastPlacedStone: {
-        required: true,
-        type: Object as PropType<Field | undefined>,
-      },
+export default defineComponent({
+  name: "Connect4Board",
+  props: {
+    identity: {
+      required: true,
+      type: Object as PropType<PlayerIdentity>,
     },
-    methods: {
-      placeStone(column: number): void {
-        if (!this.isYourTurn) return;
-        if (this.columnIsFull(column)) return;
-        if (this.placingField != null) return;
-        this.$emit("place-stone", column);
-      },
-      getHint(): void {
-        if (this.activePlayer.currentHint != null) return;
-        signalRHub.invoke("GetHint");
-      },
-      columnIsFull(colIdx: number): boolean {
-        return this.connect4Board[colIdx][this.connect4Board[colIdx].length - 1] != "";
-      },
-      isHint(colIdx: number): boolean {
-        if (this.activePlayer.currentHint == null) return false;
-        return this.activePlayer.currentHint == colIdx;
-      },
-      isNextPlacableCell(colIdx: number, rowIdx: number): boolean {
-        if (this.connect4Board[colIdx][rowIdx] != "") return false;
-        if (rowIdx <= 0) return true;
-        return this.connect4Board[colIdx][rowIdx - 1] != "";
-      },
-      isPlacingCell(colIdx: number, rowIdx: number): boolean {
-        if (this.placingField == null) return false;
-        return this.placingField.column === colIdx && this.placingField.row === rowIdx;
-      },
-      isLeftPlayerPlacingCell(colIdx: number, rowIdx: number): boolean {
-        return this.isPlacingCell(colIdx, rowIdx) && this.playerLeft.id === this.activePlayer.id;
-      },
-      isRightPlayerPlacingCell(colIdx: number, rowIdx: number): boolean {
-        return this.isPlacingCell(colIdx, rowIdx) && this.playerRight.id === this.activePlayer.id;
-      },
-      isLastPlacedStone(colIdx: number, rowIdx: number): boolean {
-        if (this.lastPlacedStone == null) return false;
-        return this.lastPlacedStone.column === colIdx && this.lastPlacedStone.row === rowIdx;
-      },
+    connect4Board: {
+      required: true,
+      type: Array as PropType<String[][]>,
     },
-    computed: {
-      isYourTurn(): boolean {
-        return this.activePlayerId === this.identity.id;
-      },
-      activePlayer(): InGamePlayer {
-        return this.playerLeft.id === this.activePlayerId ? this.playerLeft : this.playerRight;
-      },
+    playerLeft: {
+      required: true,
+      type: Object as PropType<InGamePlayer>,
     },
-  });
+    playerRight: {
+      required: true,
+      type: Object as PropType<InGamePlayer>,
+    },
+    activePlayerId: {
+      required: true,
+      type: Object as PropType<string>,
+    },
+    placingField: {
+      required: true,
+      type: Object as PropType<Field | undefined>,
+    },
+    lastPlacedStone: {
+      required: true,
+      type: Object as PropType<Field | undefined>,
+    },
+  },
+  data(): { isUsingHint: boolean } {
+    return {
+      isUsingHint: false,
+    };
+  },
+  methods: {
+    placeStone(column: number): void {
+      if (!this.isYourTurn) return;
+      if (this.columnIsFull(column)) return;
+      if (this.placingField != null) return;
+      this.$emit("place-stone", column);
+    },
+    getHint(): void {
+      if (this.activePlayer.currentHint != null) return;
+      this.isUsingHint = true;
+      signalRHub.invoke("GetHint");
+    },
+    columnIsFull(colIdx: number): boolean {
+      return this.connect4Board[colIdx][this.connect4Board[colIdx].length - 1] != "";
+    },
+    isHint(colIdx: number): boolean {
+      if (this.activePlayer.currentHint == null) return false;
+      if (this.activePlayer.currentHint == colIdx) {
+        this.isUsingHint = false;
+        return true;
+      }
+      return false;
+    },
+    isNextPlacableCell(colIdx: number, rowIdx: number): boolean {
+      if (this.connect4Board[colIdx][rowIdx] != "") return false;
+      if (rowIdx <= 0) return true;
+      return this.connect4Board[colIdx][rowIdx - 1] != "";
+    },
+    isPlacingCell(colIdx: number, rowIdx: number): boolean {
+      if (this.placingField == null) return false;
+      return this.placingField.column === colIdx && this.placingField.row === rowIdx;
+    },
+    isLeftPlayerPlacingCell(colIdx: number, rowIdx: number): boolean {
+      return this.isPlacingCell(colIdx, rowIdx) && this.playerLeft.id === this.activePlayer.id;
+    },
+    isRightPlayerPlacingCell(colIdx: number, rowIdx: number): boolean {
+      return this.isPlacingCell(colIdx, rowIdx) && this.playerRight.id === this.activePlayer.id;
+    },
+    isLastPlacedStone(colIdx: number, rowIdx: number): boolean {
+      if (this.lastPlacedStone == null) return false;
+      return this.lastPlacedStone.column === colIdx && this.lastPlacedStone.row === rowIdx;
+    },
+  },
+  computed: {
+    isYourTurn(): boolean {
+      return this.activePlayerId === this.identity.id;
+    },
+    activePlayer(): InGamePlayer {
+      return this.playerLeft.id === this.activePlayerId ? this.playerLeft : this.playerRight;
+    },
+  },
+});
 </script>
 
 <style scoped>
-  .game-board-container {
-    display: grid;
-    grid-template-rows: 4rem auto;
-    flex-direction: column;
-    align-items: center;
-  }
+.game-board-container {
+  display: grid;
+  grid-template-rows: 4rem auto;
+  flex-direction: column;
+  align-items: center;
+}
+.game-board-container > div,
+.game-board-container > button {
+  justify-self: center;
+}
 
-  .game-board-container > button,
-  .game-board-container > label {
-    justify-self: center;
-  }
+.game-board-container > .playing-move-info-container {
+  display: flex;
+}
 
-  .game-board-container > .board {
-    align-self: flex-start;
-    grid-row-start: 2;
-  }
+.game-board-container > .playing-move-info-container > .loadingCube {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 25%;
+  border: 1px solid white;
+  margin-right: 0.8rem;
+  transition: 0.1s ease-in-out;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loadingCubeLeft {
+  background-color: var(--color-orange);
+}
+
+.loadingCubeRight {
+  background-color: var(--color-player-2);
+}
+
+.game-board-container > .board {
+  align-self: flex-start;
+  grid-row-start: 2;
+}
 </style>

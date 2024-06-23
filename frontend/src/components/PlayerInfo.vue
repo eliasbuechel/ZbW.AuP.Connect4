@@ -10,13 +10,6 @@
       </label>
     </div>
     <div class="playing-state">{{ gameState }}</div>
-    <button
-      v-if="isPlayerInGame && isPlayerActive && gameHasStarted && player.id === identity.id"
-      class="button-light"
-      @click="quitGame"
-    >
-      Quit game
-    </button>
   </div>
 </template>
 
@@ -61,9 +54,6 @@ export default defineComponent({
     clearInterval(this.moveTimerId);
   },
   methods: {
-    quitGame(): void {
-      this.$emit("quit-game");
-    },
     startMoveTimer(): void {
       this.moveTimerId = setInterval(() => {
         if (!this.isPlayerActive) return;
@@ -88,7 +78,7 @@ export default defineComponent({
       if (!this.player.hasConfirmedGameStart)
         return this.player.id === this.identity.id ? "confirm to start the game" : "confirming game start...";
       if (this.game.activePlayerId === this.player.id) {
-        if (this.game.placingField != null) return "placing on roboter...";
+        if (this.game.placingField != null) return "";
         else if (this.player.id == this.identity.id) return "your turn!";
         return "playing...";
       }

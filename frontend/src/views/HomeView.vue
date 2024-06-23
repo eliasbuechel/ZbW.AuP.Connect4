@@ -160,6 +160,9 @@ export default defineComponent({
       signalRHub.invoke("PlayMove", column);
       if (this.game == null) return;
 
+      this.game.match.player1.currentHint = undefined;
+      this.game.match.player2.currentHint = undefined;
+
       if (this.game.moveStartTime != null) {
         if (this.game.match.player1.id === playerId) {
           if (this.game.match.player1.totalPlayTime != null) {
@@ -269,6 +272,10 @@ export default defineComponent({
         if (gameResult.match.player2.id === this.identity!.id && p.id === gameResult.match.player1.id)
           p.matched = false;
       });
+
+      this.connectedPlayers.opponentRoboterPlayers.forEach((p) => {
+        if (p.id === gameResult.match.player1.id || p.id === gameResult.match.player2.id) p.matched = false;
+      });
     },
     onMovePlayed(playerId: string, field: Field): void {
       if (this.game == null) return;
@@ -277,16 +284,17 @@ export default defineComponent({
       this.game.placingField = undefined;
       this.game.lastPlacedStone = field;
       this.game.moveStartTime = Date.now();
-
       this.game.match.player1.currentHint = undefined;
       this.game.match.player2.currentHint = undefined;
-
-      this.game!.connect4Board[field.column][field.row] = playerId;
+      this.game.connect4Board[field.column][field.row] = playerId;
       this.switchActivePlayer();
     },
     onPlacingStone(playerId: string, field: Field): void {
       if (this.game == null) return;
+
       this.game.placingField = field;
+      this.game.match.player1.currentHint = undefined;
+      this.game.match.player2.currentHint = undefined;
     },
     switchActivePlayer(): void {
       this.game!.activePlayerId =
