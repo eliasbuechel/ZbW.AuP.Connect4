@@ -45,6 +45,7 @@ namespace backend.game
 
         public Field? PlacingField => _gameBoard.PlacingField;
         public Field? LastPlacedStone { get; private set; }
+        public bool IsQuittableByEveryone => _match.Player1 is OpponentRoboterPlayer || _match.Player2 is OpponentRoboterPlayer;
 
         public void GameStartGotConfirmed()
         {
@@ -82,7 +83,7 @@ namespace backend.game
         }
         public void PlayerQuit(Player player)
         {
-            if (!_match.Player1.Equals(player) && !_match.Player2.Equals(player))
+            if ((!(_match.Player1 is OpponentRoboterPlayer) || !(_match.Player2 is OpponentRoboterPlayer)) && (!_match.Player1.Equals(player) && !_match.Player2.Equals(player)))
                 throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. Quitting player is not part of the active game.");
 
             Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;

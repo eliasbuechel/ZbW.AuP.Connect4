@@ -4,9 +4,10 @@
       <h2>Connect Four</h2>
       <h3 v-if="game.gameStartTime != null">{{ formattedGameTime }}</h3>
     </div>
-    <button v-if="!isGameParticipant" class="button-light grid-item-leave-game-view-button" @click="stopWatchingGame">
-      Back home
-    </button>
+    <div class="grid-item-leave-game-view-button">
+      <button v-if="!isGameParticipant" class="button-light" @click="stopWatchingGame">Back home</button>
+      <button v-if="game.isQuittableByEveryone" @click="reemitQuitGame" class="button-light">Stop game</button>
+    </div>
     <PlayerInfo
       class="grid-item-player1 player-info player-info-left"
       :game="game"
@@ -22,7 +23,7 @@
       @quit-game="reemitQuitGame"
     />
     <button
-      v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart"
+      v-if="game != null && !inGamePlayerLeft?.hasConfirmedGameStart && isGameParticipant"
       class="button-light grid-item-connect4-board confirm-game-start-button"
       @click="confirmGameStart"
     >
@@ -197,6 +198,9 @@ export default defineComponent({
   height: fit-content;
   align-self: center;
   justify-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .grid-item-player1 {

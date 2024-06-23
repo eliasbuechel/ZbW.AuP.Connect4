@@ -1,14 +1,13 @@
 <template>
-  <MainBoard
-    v-if="game == null && identity != null && bestlist != null"
+  <LoadingScreen v-if="identity == null || bestlist == null" />
+  <GameResultView
+    v-else-if="gameResult != null"
+    :gameResult="gameResult"
     :identity="identity"
-    :bestlist="bestlist"
-    :connectedPlayers="connectedPlayers"
-    :gamePlan="gamePlan"
-    @show-replay="showReplay"
+    @leave-game-result-view="leaveGameResultView"
   />
   <Connect4Game
-    v-else-if="identity != null && game != null"
+    v-else-if="game != null"
     :game="game"
     :identity="identity"
     @place-stone="placeStone"
@@ -16,11 +15,13 @@
     @confirm-game-start="confirmGameStart"
     @stop-watching-game="stopWatchingGame"
   />
-  <GameResultView
-    v-if="identity != null && gameResult != null"
-    :gameResult="gameResult"
+  <MainBoard
+    v-else-if="bestlist != null"
     :identity="identity"
-    @leave-game-result-view="leaveGameResultView"
+    :bestlist="bestlist"
+    :connectedPlayers="connectedPlayers"
+    :gamePlan="gamePlan"
+    @show-replay="showReplay"
   />
 </template>
 
@@ -38,6 +39,7 @@ import { GameResult } from "@/types/GameResult";
 import { Field } from "@/types/Field";
 import GameResultView from "@/components/GameResultView.vue";
 import { ConnectedPlayers } from "@/types/ConnectedPlayers";
+import LoadingScreen from "@/components/LoadingScreen.vue";
 
 interface HomeState {
   identity?: PlayerIdentity;
@@ -66,6 +68,7 @@ export default defineComponent({
     };
   },
   components: {
+    LoadingScreen,
     MainBoard,
     Connect4Game,
     GameResultView,
@@ -157,17 +160,13 @@ export default defineComponent({
       signalRHub.invoke("PlayMove", column);
       if (this.game == null) return;
 
-      console.log("Placing column", column, playerId);
-
       if (this.game.moveStartTime != null) {
         if (this.game.match.player1.id === playerId) {
-          console.log("player1");
           if (this.game.match.player1.totalPlayTime != null) {
             this.game.match.player1.totalPlayTime += Date.now() - this.game.moveStartTime;
           }
         }
         if (this.game.match.player2.id === playerId) {
-          console.log("player2");
           if (this.game.match.player2.totalPlayTime != null) {
             this.game.match.player2.totalPlayTime += Date.now() - this.game.moveStartTime;
           }
@@ -286,7 +285,6 @@ export default defineComponent({
       this.switchActivePlayer();
     },
     onPlacingStone(playerId: string, field: Field): void {
-      console.log(field);
       if (this.game == null) return;
       this.game.placingField = field;
     },
