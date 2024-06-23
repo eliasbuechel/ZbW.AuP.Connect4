@@ -9,4 +9,5 @@ export interface GameResult extends Entity {
   playedMoves: PlayedMove[];
   startingPlayerId: string;
   match: GameResultMatch;
+  hasWinnerRow: boolean;
 }

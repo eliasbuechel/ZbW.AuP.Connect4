@@ -6,6 +6,7 @@ export interface Game extends Entity {
   match: Match;
   activePlayerId: string;
   connect4Board: string[][];
+  MoveStartTime: number;
   placingField?: Field;
   lastPlacedStone?: Field;
 }

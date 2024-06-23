@@ -2,6 +2,7 @@
 using backend.Data.entities;
 using backend.game.entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace backend.services
 {
@@ -12,13 +13,16 @@ namespace backend.services
             get
             {
                 using BackendDbContext context = _dbContextFactory.GetDbContext();
-                IEnumerable<GameResult> gameResults = context.GameResults
+                var gameResultsQuery = context.GameResults
                     .Include(x => x.Line)
                     .Include(x => x.Match)
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Include(x => x.PlayedMoves)
-                    .Where(x => x.WinnerId != null)
+                    .AsEnumerable();
+
+                IEnumerable<GameResult> gameResults = gameResultsQuery
+                    .Where(x => x.HasWinnerRow == true)
                     .Select(x => new GameResult(x))
                     .ToArray();
 
@@ -36,6 +40,7 @@ namespace backend.services
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Include(x => x.PlayedMoves)
+                    .Include(x => x.HasWinnerRow)
                     .Select(x => new GameResult(x))
                     .ToArray();
                 return gameResults;
@@ -52,7 +57,8 @@ namespace backend.services
                 Line = GetOrAdd(gameResult.Line, context),
                 PlayedMoves = GetOrAdd(gameResult.PlayedMoves, context),
                 StartingPlayerId = gameResult.StartingPlayerId,
-                Match = GetOrAdd(gameResult.Match, context)
+                Match = GetOrAdd(gameResult.Match, context),
+                HasWinnerRow = gameResult.HasWinnerRow
             };
 
             context.GameResults.Add(dbGameResult);

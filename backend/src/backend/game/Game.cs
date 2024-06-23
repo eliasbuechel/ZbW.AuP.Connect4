@@ -38,6 +38,8 @@ namespace backend.game
         public Player ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _gameBoard.FieldAsIds;
         public bool GameEnded => _gameEnded;
+        public DateTime MoveStartTime => _moveStartingTime;
+
 
         public Field? PlacingField => _gameBoard.PlacingField;
         public Field? LastPlacedStone { get; private set; }
@@ -57,8 +59,10 @@ namespace backend.game
 
             TimeSpan duration = DateTime.Now - _moveStartingTime;
             PlayedMove playedMove = new(column, duration);
+            _activePlayer.TotalPlayTime += duration;
             _playedMoves.Add(playedMove);
-            _moveStartingTime = DateTime.Now; _activePlayerPlacedStone = true;
+            _moveStartingTime = DateTime.Now;
+            _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(Player player)
         {
@@ -66,7 +70,8 @@ namespace backend.game
                 throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. Quitting player is not part of the active game.");
 
             Player winner = player == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            bool hasWinnerRow = false;
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
             OnGameEndet(gameResult);
         }
         public void Initialize()
@@ -323,12 +328,14 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
-            GameResult gameResult = new(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            bool hasWinnerRow = true;
+            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            GameResult gameResult = new(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            bool hasWinnerRow = false;
+            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
             OnGameEndet(gameResult);
         }
         private void OnGameEndet(GameResult gameResult)

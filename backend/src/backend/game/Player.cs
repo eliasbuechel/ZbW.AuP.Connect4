@@ -6,6 +6,7 @@
         public string Username { get; } = username;
         public bool HasConfirmedGameStart { get; set; }
         public bool IsInGame { get; set; }
+        public TimeSpan TotalPlayTime { get; set; }
 
         public readonly ICollection<Player> MatchingRequests = new List<Player>();
         public Player? Matching { get; set; }
