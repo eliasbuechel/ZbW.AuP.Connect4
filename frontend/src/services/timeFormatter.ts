@@ -1,6 +1,13 @@
-export default function formattedTime(time: number): string {
-  return (time / 1000).toFixed(1).toString();
-  // const minutes = (time / 60000).toFixed(0);
-  // const seconds = ((time % 60000) / 1000).toFixed(0);
-  // return `${minutes}:${seconds}`;
+class TimeFormatter {
+  formatAsSeconds(time: number, decimal: number): string {
+    return (time / 1000).toFixed(decimal).toString();
+  }
+
+  formatAsMinutesAndSeconds(time: number): string {
+    const minutes = Math.floor(time / 60000).toString();
+    const seconds = ((time % 60000) / 1000).toFixed(0).padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  }
 }
+
+export default TimeFormatter;
