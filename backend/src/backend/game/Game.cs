@@ -40,6 +40,7 @@ namespace backend.game
         public bool GameEnded => _gameEnded;
 
         public Field? PlacingField => _gameBoard.PlacingField;
+        public Field? LastPlacedStone { get; private set; }
 
         public void PlayMove(Player player, int column)
         {
@@ -145,6 +146,7 @@ namespace backend.game
         private void OnStonePlaced(Player player, Field field)
         {
             SwapActivePlayer();
+            LastPlacedStone = field;
             OnMovePlayed?.Invoke(player, field);
             CheckForWin(field, player);
         }

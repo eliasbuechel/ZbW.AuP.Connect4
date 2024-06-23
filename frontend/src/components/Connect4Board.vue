@@ -1,7 +1,7 @@
 <template>
   <div class="game-board-container">
     <button
-      v-if="activePlayerId === identity.id"
+      v-if="isYourTurn && placingField == null"
       class="button-glowing"
       @click="getHint"
       :disabled="activePlayer.currentHint != null || activePlayer.hintsLeft <= 0"
@@ -28,6 +28,7 @@
             colorPlayerRight: cell === playerRight.id,
             nextPlacingCell: isNextPlacableCell(colIdx, rowIdx),
             placingCell: isPlacingCell(colIdx, rowIdx) && isYourTurn,
+            lastPlacedStone: isLastPlacedStone(colIdx, rowIdx),
           }"
         ></div>
       </div>
@@ -69,6 +70,10 @@ export default defineComponent({
       required: true,
       type: Object as PropType<Field | undefined>,
     },
+    lastPlacedStone: {
+      required: true,
+      type: Object as PropType<Field | undefined>,
+    },
   },
   methods: {
     placeStone(column: number): void {
@@ -96,6 +101,10 @@ export default defineComponent({
     isPlacingCell(colIdx: number, rowIdx: number): boolean {
       if (this.placingField == null) return false;
       return this.placingField.column === colIdx && this.placingField.row === rowIdx;
+    },
+    isLastPlacedStone(colIdx: number, rowIdx: number): boolean {
+      if (this.lastPlacedStone == null) return false;
+      return this.lastPlacedStone.column === colIdx && this.lastPlacedStone.row === rowIdx;
     },
   },
   computed: {

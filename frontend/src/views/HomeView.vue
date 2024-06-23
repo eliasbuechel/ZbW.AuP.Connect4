@@ -253,6 +253,7 @@ export default defineComponent({
       if (this.identity == null) return;
 
       this.game.placingField = undefined;
+      this.game.lastPlacedStone = field;
 
       this.game.match.player1.currentHint = undefined;
       this.game.match.player2.currentHint = undefined;

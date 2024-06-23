@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using backend.Infrastructure;
+using System.Collections.Concurrent;
 
 namespace backend.utilities
 {
@@ -21,9 +22,10 @@ namespace backend.utilities
                     {
                         await request.Methode.Invoke();
                     }
-                    catch (InvalidPlayerRequestException)
+                    catch (InvalidPlayerRequestException e)
                     {
                         OnRequestError?.Invoke(request.ConnectionId);
+                        Logger.Log(LogCase.ERROR, e.Message);
                     }
                 else
                     Thread.Sleep(100); // Avoid busy-waiting

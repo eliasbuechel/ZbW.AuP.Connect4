@@ -50,6 +50,7 @@ namespace backend.game
         public static int Rows => ROWS;
         public Field? PlacingField { get; private set; }
 
+
         public Player?[] this[int index]
         {
             get { return _field[index]; }

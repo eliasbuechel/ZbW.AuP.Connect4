@@ -30,6 +30,7 @@
       :playerRight="playerRight!"
       :activePlayerId="game.activePlayerId"
       :placingField="game.placingField"
+      :lastPlacedStone="game.lastPlacedStone"
       @place-stone="reemitPlaceStone"
       @quit-game="reemitQuitGame"
       class="grid-item-connect4-board"
