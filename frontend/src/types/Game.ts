@@ -8,4 +8,5 @@ export interface Game extends Entity {
   connect4Board: string[][];
   MoveStartTime: number;
   placingField?: Field;
+  lastPlacedStone?: Field;
 }

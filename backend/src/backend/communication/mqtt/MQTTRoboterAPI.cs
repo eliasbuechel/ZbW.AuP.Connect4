@@ -95,6 +95,7 @@ namespace backend.communication.mqtt
                 _placingPlayer = null;
 
                 StonePlaced(placingPlayer, placingField);
+                _currentRequestId = Guid.Empty;
                 return Task.CompletedTask;
             }
 
@@ -123,6 +124,7 @@ namespace backend.communication.mqtt
             }
 
             BoardReset();
+            _currentRequestId = Guid.Empty;
             _resettingBoard = false;
             return Task.CompletedTask;
         }
@@ -143,6 +145,7 @@ namespace backend.communication.mqtt
             {
                 _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1").Wait();
                 ManualMove(column);
+                _currentRequestId = Guid.Empty;
             }
 
             return Task.CompletedTask;
@@ -158,7 +161,7 @@ namespace backend.communication.mqtt
 
             Thread thread = new(() =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(3000);
                 lock(_lock)
                 {
                     if (_currentRequestId == requestId)
