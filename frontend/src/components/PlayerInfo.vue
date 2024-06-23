@@ -103,4 +103,8 @@
     /* to be in front of the game board */
     z-index: 1;
   }
+  .move-time {
+    background-color: transparent;
+    font-size: 1rem;
+  }
 </style>
