@@ -3,28 +3,65 @@
     <div class="listing-container">
       <h2>Bestlist</h2>
       <input class="bestlist-search" v-model="searchTerm" placeholder="Search..." @blur="clearSearch" />
-
-      <div class="header-bar">
-        <div>Winner</div>
-        <div>Loser</div>
-        <div>Winner Time</div>
-      </div>
-
-      <ul>
-        <li v-for="gameResult in filteredBestlist" :key="gameResult.id" class="game-result-entrie">
-          <span
-            :class="{ winner: !checkIfGameHasWinningRow(gameResult), draw: checkIfGameHasWinningRow(gameResult) }"
-            >{{ showWinner(gameResult).username }}</span
-          >
-          <span> vs. </span>
-          <span
-            :class="{ loser: !checkIfGameHasWinningRow(gameResult), draw: checkIfGameHasWinningRow(gameResult) }"
-            >{{ ShowLoser(gameResult).username }}</span
-          >
-          <span>{{ showWinnerTime(gameResult) }}</span>
-          <button class="button-light" @click="showReplay(gameResult)">Replay</button>
-        </li>
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th @click="sortBy('winner')" :class="{ active: sortKey === 'winner' }">
+              <div class="header-content">
+                <span>Winner</span>
+                <div class="sort-arrows">
+                  <div class="arrow-up" :class="{ asc: sortKey === 'winner' && sortOrder === 'asc' }"></div>
+                  <div class="arrow-down" :class="{ desc: sortKey === 'winner' && sortOrder === 'desc' }"></div>
+                </div>
+              </div>
+            </th>
+            <th @click="sortBy('loser')" :class="{ active: sortKey === 'loser' }">
+              <div class="header-content">
+                <span>Loser</span>
+                <div class="sort-arrows">
+                  <div class="arrow-up" :class="{ asc: sortKey === 'loser' && sortOrder === 'asc' }"></div>
+                  <div class="arrow-down" :class="{ desc: sortKey === 'loser' && sortOrder === 'desc' }"></div>
+                </div>
+              </div>
+            </th>
+            <th @click="sortBy('winnerTime')" :class="{ active: sortKey === 'winnerTime' }">
+              <div class="header-content">
+                <span>Winner Time</span>
+                <div class="sort-arrows">
+                  <div class="arrow-up" :class="{ asc: sortKey === 'winnerTime' && sortOrder === 'asc' }"></div>
+                  <div
+                    class="arrow-down"
+                    :class="{ desc: sortKey === 'winnerTime' && sortOrder === 'desc' }"
+                  ></div>
+                </div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="gameResult in filteredBestlist" :key="gameResult.id">
+            <td
+              :class="{
+                winner: !checkIfGameHasWinningRow(gameResult),
+                draw: checkIfGameHasWinningRow(gameResult),
+              }"
+            >
+              {{ showWinner(gameResult).username }}
+            </td>
+            <td
+              :class="{ loser: !checkIfGameHasWinningRow(gameResult), draw: checkIfGameHasWinningRow(gameResult) }"
+            >
+              {{ showLoser(gameResult).username }}
+            </td>
+            <td class="winner-time-column">
+              {{ showWinnerTime(gameResult).toFixed(2) }}
+            </td>
+            <td>
+              <button class="button-light button-column" @click="showReplay(gameResult)">Replay</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -42,13 +79,24 @@
         type: Array as PropType<GameResult[]>,
       },
     },
-    data(): { searchTerm: string } {
+    data(): { searchTerm: string; sortKey: string; sortOrder: string } {
       return {
         searchTerm: "",
+        sortKey: "winnerTime",
+        sortOrder: "asc",
       };
     },
     emits: ["show-replay"],
     methods: {
+      sortBy(key: string) {
+        if (this.sortKey === key) {
+          this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
+        } else {
+          this.sortKey = key;
+          this.sortOrder = "asc";
+        }
+      },
+
       showReplay(gameResult: GameResult): void {
         let idx = this.bestlist.indexOf(gameResult);
         this.$emit("show-replay", this.bestlist[idx]);
@@ -59,7 +107,7 @@
           ? gameResult.match.player1
           : gameResult.match.player2;
       },
-      ShowLoser(gameResult: GameResult): PlayerIdentity {
+      showLoser(gameResult: GameResult): PlayerIdentity {
         return this.showWinner(gameResult).id === gameResult.match.player1.id
           ? gameResult.match.player2
           : gameResult.match.player1;
@@ -90,9 +138,39 @@
     },
     computed: {
       filteredBestlist(): GameResult[] {
-        let bestlist = this.bestlist;
+        let bestlist = this.bestlist.slice(); // Copy the array to prevent mutating the original array
 
-        bestlist.sort((a, b) => this.showWinnerTime(a) - this.showWinnerTime(b));
+        if (this.sortKey === "winner") {
+          bestlist.sort((a, b) => {
+            let winnerA = this.showWinner(a).username.toLowerCase();
+            let winnerB = this.showWinner(b).username.toLowerCase();
+            if (this.sortOrder === "asc") {
+              return winnerA.localeCompare(winnerB);
+            } else {
+              return winnerB.localeCompare(winnerA);
+            }
+          });
+        } else if (this.sortKey === "loser") {
+          bestlist.sort((a, b) => {
+            let loserA = this.showLoser(a).username.toLowerCase();
+            let loserB = this.showLoser(b).username.toLowerCase();
+            if (this.sortOrder === "asc") {
+              return loserA.localeCompare(loserB);
+            } else {
+              return loserB.localeCompare(loserA);
+            }
+          });
+        } else if (this.sortKey === "winnerTime") {
+          bestlist.sort((a, b) => {
+            let winnerTimeA = this.showWinnerTime(a);
+            let winnerTimeB = this.showWinnerTime(b);
+            if (this.sortOrder === "asc") {
+              return winnerTimeA - winnerTimeB;
+            } else {
+              return winnerTimeB - winnerTimeA;
+            }
+          });
+        }
 
         if (this.searchTerm !== "") {
           bestlist = bestlist.filter(
@@ -102,6 +180,7 @@
               this.showWinnerTime(gameResult).toString().includes(this.searchTerm)
           );
         }
+
         return bestlist;
       },
     },
@@ -110,33 +189,47 @@
 
 <style scoped>
   .bestlist-search {
-    padding: 0.2rem 0.8rem;
+    color: var(--color-light);
     background-color: transparent;
     border: 2px solid var(--color-orange);
     border-radius: 0.5em;
+    padding: 0.2rem 0.8rem;
+    margin-bottom: 1rem;
     font-size: 1rem;
-    color: var(--color-light);
   }
-  .winner {
-    font-weight: bolder;
-  }
-  .game-result-entrie {
-    display: flex;
+
+  .header-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
-    flex-direction: row;
+    gap: 0.2rem;
   }
-  .game-result-entrie > button {
-    margin-left: auto;
+
+  .sort-arrows {
+    padding: 0.1rem;
+    vertical-align: super;
   }
-  .game-result-entrie > span {
-    margin-right: 0.5rem;
+
+  .arrow-up {
+    position: relative;
+    border-left: 0.4em solid transparent;
+    border-right: 0.4em solid transparent;
+    border-bottom: 0.6em solid var(--color-player-2);
   }
-  .header-bar {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem;
-    background-color: var(--color-orange);
-    color: var(--color-light);
-    font-weight: bold;
+
+  .arrow-up.asc {
+    border-bottom: 0.6em solid var(--color-orange);
+  }
+
+  .arrow-down {
+    position: relative;
+    top: 0.4em;
+    border-left: 0.4em solid transparent;
+    border-right: 0.4em solid transparent;
+    border-top: 0.6em solid var(--color-player-2);
+  }
+
+  .arrow-down.desc {
+    border-top: 0.6em solid var(--color-orange);
   }
 </style>
