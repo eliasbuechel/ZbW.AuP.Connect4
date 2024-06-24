@@ -1,9 +1,10 @@
 ﻿using backend.game;
 using backend.game.entities;
+using backend.Infrastructure;
 
 namespace backend.communication.mqtt
 {
-    internal abstract class RoboterAPI
+    internal abstract class RoboterAPI : DisposingObject
     {
         public event Action<Player, Field>? OnStonePlaced;
         public event Action? OnBoardReset;

@@ -87,8 +87,8 @@ export default defineComponent({
     eventBus.off("signalr-connected", this.onSignalRConnected);
     eventBus.off("signalr-disconnected", this.onSignalRDisconnected);
 
-    signalRHub.stop();
     this.unsubscribe();
+    signalRHub.stop();
   },
   methods: {
     subscribe(): void {

@@ -14,5 +14,7 @@ namespace backend.communication.mqtt
         {
             StonePlaced(player, field);
         }
+        protected override void OnDispose()
+        {}
     }
 }

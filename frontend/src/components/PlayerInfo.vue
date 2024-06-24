@@ -73,8 +73,10 @@ export default defineComponent({
     gameState(): string {
       if (this.game == null) return "";
       if (this.player == null) return "";
-      if (!this.player.hasConfirmedGameStart)
+      if (!this.game.match.player1.hasConfirmedGameStart || !this.game.match.player2.hasConfirmedGameStart) {
+        if (this.player.hasConfirmedGameStart) return "";
         return this.player.id === this.identity.id ? "confirm to start the game" : "confirming game start...";
+      }
       if (this.game.activePlayerId === this.player.id) {
         if (this.game.placingField != null) return "";
         else if (this.player.id == this.identity.id) return "your turn!";
