@@ -1,4 +1,4 @@
-.player-info {
+.player-info-container {
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
@@ -13,27 +13,23 @@
   justify-self: flex-end;
 }
 
-.player-info > button {
-  width: fit-content;
-}
-
-.player-info > label {
+/* .player-info > label {
   border-radius: 0.5rem;
   font-size: larger;
-}
+} */
 
-.player-info > .player-data {
+.player-info-data-container {
   display: flex;
   flex-direction: column;
   border-radius: 0.5rem;
   min-width: 11rem;
 }
 
-.player-info > .player-data > label {
+.player-info-data-container > label {
   padding: 0.2rem 0.5rem;
 }
 
-.player-info > .player-data > .player-name {
+.player-info-data-container > .player-info-name {
   border-radius: 0.5rem;
   padding: 0.5rem;
   font-size: x-large;
@@ -41,19 +37,19 @@
   margin-bottom: 0.5rem;
 }
 
-.player-info-left > .player-data {
+.player-info-left > .player-info-data-container {
   background-color: var(--color-orange-transparent);
 }
 
-.player-info-right > .player-data {
+.player-info-right > .player-info-data-container {
   background-color: var(--color-player-2-transparent);
 }
 
-.player-info-left > .player-data > .player-name {
+.player-info-left > .player-info-data-container > .player-info-name {
   background-color: var(--color-orange);
   color: var(--color-dark);
 }
-.player-info-right > .player-data > .player-name {
+.player-info-right > .player-info-data-container > .player-info-name {
   background-color: var(--color-player-2);
   color: var(--color-light);
 }

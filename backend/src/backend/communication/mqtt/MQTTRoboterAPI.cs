@@ -17,8 +17,8 @@ namespace backend.communication.mqtt
             StartRequestTimeout(async () =>
             {
                 string originalTopicValue = false.ToString();
-                await TopicResetChanged(originalTopicValue);
                 await _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue);
+                await TopicResetChanged(originalTopicValue);
             });
 
             _resettingBoard = true;
@@ -38,8 +38,8 @@ namespace backend.communication.mqtt
                 _placingField = null;
                 _placingPlayer = null;
 
-                StonePlaced(player, field);
                 await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1");
+                StonePlaced(player, field);
             });
 
             Debug.Assert(_placingPlayer == null && _placingField == null);
