@@ -17,6 +17,7 @@ class SignalRHub {
   }
 
   public start(): void {
+    this._closingNormally = false;
     this._client
       .start()
       .then(() => this.onConnected())
@@ -28,6 +29,7 @@ class SignalRHub {
   }
 
   public stop(): void {
+    this._closingNormally = true;
     this._client
       .stop()
       .then(() => this.onDisconnected())
@@ -69,12 +71,16 @@ class SignalRHub {
 
   private onDisconnected(error?: Error | undefined): void {
     this._isConnected = false;
+    if (this._closingNormally) {
+      return;
+    }
     eventBus.emit("signalr-connected", false);
     eventBus.emit("error", "Lost connection to backen via SignalR!", "Try again by reloading");
   }
 
   private _isConnected: boolean = false;
   private _client: HubConnection;
+  private _closingNormally: boolean = false;
 }
 
 export default new SignalRHub();

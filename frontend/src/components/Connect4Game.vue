@@ -49,7 +49,7 @@ import { PlayerIdentity } from "@/types/PlayerIdentity";
 import Connect4Board from "./Connect4Board.vue";
 import { InGamePlayer } from "@/types/InGamePlayer";
 import signalRHub from "@/services/signalRHub";
-import PlayerInfo from "./PlayerInfo.vue";
+import PlayerInfoVue from "./PlayerInfoVue.vue";
 import TimeFormatter from "@/services/timeFormatter";
 
 export default defineComponent({
@@ -79,7 +79,7 @@ export default defineComponent({
   },
   components: {
     Connect4Board,
-    PlayerInfo,
+    PlayerInfo: PlayerInfoVue,
   },
   mounted(): void {
     this.startGameTimer();

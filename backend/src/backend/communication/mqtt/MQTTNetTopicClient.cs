@@ -87,7 +87,7 @@ namespace backend.communication.mqtt
 
             await _managedClient.PublishAsync(applicationMessage);
 
-            Log($"Sent data to server on {topic}: '{message}'");
+            Log($"Send on [{topic}]:'{message}'");
         }
         public async Task SubscribeToAsync(string topic, Func<string, Task> callback)
         {
@@ -141,7 +141,7 @@ namespace backend.communication.mqtt
             string topic = e.ApplicationMessage.Topic;
             string message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-            Log($"Received test message for topic: {topic}");
+            Log($"Recive on [{topic}]:'{message}'");
 
             if (_topicValueMappings[topic] == null)
             {

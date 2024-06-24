@@ -90,7 +90,7 @@ namespace backend.services.player
             connection.TimeoutCounter++;
             Thread thread = new Thread(async () =>
             {
-                await Task.Delay(5000);
+                await Task.Delay(DISCONECCTING_TIMOUT_TIME_IN_MS);
 
                 PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identitfication)).FirstOrDefault();
 
@@ -171,5 +171,7 @@ namespace backend.services.player
                 return HashCode.Combine(Identification);
             }
         }
+
+        private const int DISCONECCTING_TIMOUT_TIME_IN_MS = 30000;
     }
 }

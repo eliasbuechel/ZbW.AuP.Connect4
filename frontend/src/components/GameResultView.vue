@@ -1,13 +1,31 @@
 <template>
   <div class="game-container">
     <div class="game-info-container">
-      <div class="player-info player-info-left">
-        <label>{{ namePlayerLeft }}</label>
-      </div>
-      <div class="player-info player-info-right">
-        <label> {{ playerRight.username }}</label>
-      </div>
+      <GameResultPlayerInfoVue
+        :gameResult="gameResult"
+        :player="playerLeft"
+        :identity="identity"
+        class="player-info-left"
+      />
+      <GameResultPlayerInfoVue
+        :gameResult="gameResult"
+        :player="playerRight"
+        :identity="identity"
+        class="player-info-right"
+      />
     </div>
+    <!-- <div class="game-info-container">
+      <div class="player-info-container player-info-left">
+        <div class="player-info-data-container">
+          <label class="player-info-name">{{ namePlayerLeft }}</label>
+        </div>
+      </div>
+      <div class="player-info-container player-info-right">
+        <div class="player-info-data-container">
+          <label class="player-info-name"> {{ playerRight.username }}</label>
+        </div>
+      </div>
+    </div> -->
     <div class="game-result-container">
       <div class="game-result-message">
         <h3>{{ resultMessage }}</h3>
@@ -45,6 +63,7 @@
 import { GameResult } from "@/types/GameResult";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { PropType, defineComponent } from "vue";
+import GameResultPlayerInfoVue from "./GameResultPlayerInfoVue.vue";
 
 interface GameResultState {
   connect4Board: string[][];
@@ -62,6 +81,9 @@ export default defineComponent({
       required: true,
       type: Object as PropType<PlayerIdentity>,
     },
+  },
+  components: {
+    GameResultPlayerInfoVue,
   },
   mounted() {
     for (let i = 0; i < this.connect4Board.length; i++) {
@@ -149,8 +171,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-@import "@/assets/playerInfo.css";
-
 .game-container {
   display: flex;
   flex-direction: column;

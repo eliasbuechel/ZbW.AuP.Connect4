@@ -9,60 +9,63 @@ namespace backend.communication.mqtt
         public MQTTRoboterAPI(MQTTNetTopicClient mqttTopicClient)
         {
             _mqttTopicClient = mqttTopicClient;
-
-            _mqttTopicClient.ConnectAsync().Wait();
-            _mqttTopicClient.SubscribeToAsync(TOPIC_COLUMN, TopicColumnChanged).Wait();
-            _mqttTopicClient.SubscribeToAsync(TOPIC_RESET, TopicResetChanged).Wait();
-            _mqttTopicClient.SubscribeToAsync(TOPIC_MANUAL_COLUMN, TopicManualColumnChanged).Wait();
-        }
-        ~MQTTRoboterAPI()
-        {
-            _mqttTopicClient.UnsubscribeFromAsync(TOPIC_COLUMN, TopicColumnChanged).Wait();
-            _mqttTopicClient.UnsubscribeFromAsync(TOPIC_RESET, TopicResetChanged).Wait();
-            _mqttTopicClient.UnsubscribeFromAsync(TOPIC_MANUAL_COLUMN, TopicManualColumnChanged).Wait();
-            _mqttTopicClient.DisconnectAsync().Wait();
+            Connect();
         }
 
-        public override void ResetConnect4Board()
+        public override async void ResetConnect4Board()
         {
-            StartRequestTimeout(() =>
+            StartRequestTimeout(async () =>
             {
                 string originalTopicValue = false.ToString();
-                TopicResetChanged(originalTopicValue);
-                _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue).Wait();
+                await _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue);
+                await TopicResetChanged(originalTopicValue);
             });
 
             _resettingBoard = true;
             if (_mqttTopicClient.IsConnected)
             {
-                _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString()).Wait();
+                await _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString());
                 return;
             }
 
             _mqttTopicClient.OnConnected += RequestConnect4BoardReset;
         }
 
-        protected override void PlaceStoneOnApi(Player player, Field field)
+        protected override async void PlaceStoneOnApi(Player player, Field field)
         {
-            StartRequestTimeout(() =>
+            StartRequestTimeout(async () =>
             {
                 _placingField = null;
                 _placingPlayer = null;
 
+                await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1");
                 StonePlaced(player, field);
-                _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1").Wait();
             });
 
             Debug.Assert(_placingPlayer == null && _placingField == null);
 
             _placingPlayer = player;
             _placingField = field;
-            _mqttTopicClient.PublishAsync(TOPIC_COLUMN, field.Column.ToString()).Wait();
+            await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, field.Column.ToString());
+        }
+        protected override async void OnDispose()
+        {
+            await _mqttTopicClient.UnsubscribeFromAsync(TOPIC_COLUMN, TopicColumnChanged);
+            await _mqttTopicClient.UnsubscribeFromAsync(TOPIC_RESET, TopicResetChanged);
+            await _mqttTopicClient.UnsubscribeFromAsync(TOPIC_MANUAL_COLUMN, TopicManualColumnChanged);
+            await _mqttTopicClient.DisconnectAsync();
         }
 
-        private void RequestConnect4BoardReset()
+        private async void Connect()
         {
-            _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString()).Wait();
+            await _mqttTopicClient.SubscribeToAsync(TOPIC_COLUMN, TopicColumnChanged);
+            await _mqttTopicClient.SubscribeToAsync(TOPIC_RESET, TopicResetChanged);
+            await _mqttTopicClient.SubscribeToAsync(TOPIC_MANUAL_COLUMN, TopicManualColumnChanged);
+            await _mqttTopicClient.ConnectAsync();
+        }
+        private async void RequestConnect4BoardReset()
+        {
+            await _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString());
             _mqttTopicClient.OnConnected -= RequestConnect4BoardReset;
         }
         private Task TopicColumnChanged(string value)
@@ -130,7 +133,7 @@ namespace backend.communication.mqtt
             _resettingBoard = false;
             return Task.CompletedTask;
         }
-        private Task TopicManualColumnChanged(string value)
+        private async Task TopicManualColumnChanged(string value)
         {
             int column;
             try
@@ -140,19 +143,18 @@ namespace backend.communication.mqtt
             catch
             {
                 Debug.Assert(false);
-                return Task.CompletedTask;
+                return;
             }
 
             if (column >= 0 && column <= 6)
             {
-                _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1").Wait();
+                await _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1");
                 ManualMove(column);
                 _currentRequestId = Guid.Empty;
             }
 
-            return Task.CompletedTask;
+            return;
         }
-
         private void StartRequestTimeout(Action onTimeout)
         {
             Guid requestId = Guid.NewGuid();
@@ -161,9 +163,9 @@ namespace backend.communication.mqtt
                 _currentRequestId = requestId;
             }
 
-            Thread thread = new(() =>
+            Thread thread = new(async () =>
             {
-                Thread.Sleep(3000);
+                await Task.Delay(TIMOUT_TIME_IN_MS);
                 lock(_lock)
                 {
                     if (_currentRequestId == requestId)
@@ -173,6 +175,7 @@ namespace backend.communication.mqtt
             thread.Start();
         }
 
+        private const int TIMOUT_TIME_IN_MS = 3000;
         private const string TOPIC_COLUMN = "column";
         private const string TOPIC_RESET = "reset";
         private const string TOPIC_MANUAL_COLUMN = "manualColumn";

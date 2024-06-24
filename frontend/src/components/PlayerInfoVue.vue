@@ -1,13 +1,13 @@
 <template>
-  <div class="player-info">
-    <div class="player-data">
-      <label class="player-name">{{ playerName }}</label>
+  <div class="player-info-container">
+    <div class="player-info-data-container">
+      <label class="player-info-name">{{ playerName }}</label>
       <label class="move-time" v-if="gameHasStarted && isPlayerActive"> Move time: {{ formattedGameTime }}</label>
       <label class="move-time" v-if="gameHasStarted && isPlayerActive"
         >Move total time: {{ formattedTotalPlayedMoveTime }}
       </label>
     </div>
-    <div class="playing-state">{{ gameState }}</div>
+    <div class="player-info-playing-state">{{ gameState }}</div>
   </div>
 </template>
 
@@ -73,8 +73,10 @@ export default defineComponent({
     gameState(): string {
       if (this.game == null) return "";
       if (this.player == null) return "";
-      if (!this.player.hasConfirmedGameStart)
+      if (!this.game.match.player1.hasConfirmedGameStart || !this.game.match.player2.hasConfirmedGameStart) {
+        if (this.player.hasConfirmedGameStart) return "";
         return this.player.id === this.identity.id ? "confirm to start the game" : "confirming game start...";
+      }
       if (this.game.activePlayerId === this.player.id) {
         if (this.game.placingField != null) return "";
         else if (this.player.id == this.identity.id) return "your turn!";
@@ -106,9 +108,4 @@ export default defineComponent({
 
 <style scoped>
 @import "@/assets/playerInfo.css";
-
-.move-time {
-  background-color: transparent;
-  font-size: medium;
-}
 </style>
