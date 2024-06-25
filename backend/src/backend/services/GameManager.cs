@@ -65,16 +65,30 @@ namespace backend.services
                 if (p.Equals(requester))
                     return;
 
-                if (p.MatchingRequests.Contains(requester))
+                if (p.MatchingRequests.Where(x => x.Player.Equals(requester)).Any())
                     throw new InvalidPlayerRequestException($"Matcing request exception. {requester.Username} has already requested {p.Username}.");
             });
 
-            opponent.MatchingRequests.Add(requester);
+            MatchRequest matchRequest = new MatchRequest(requester);
+            opponent.MatchingRequests.Add(matchRequest);
             RequestedMatch(requester, opponent);
+            StartMatchRequestTimeout(requester, opponent, matchRequest.Id);
         }
+
+        private void StartMatchRequestTimeout(Player requester, Player opponent, string id)
+        {
+            Thread thread = new Thread(async () =>
+            {
+                await Task.Delay(REQUEST_TIMEOUT_DURATION_IN_MS);
+                if (opponent.MatchingRequests.Where(x => x.Id == id).Any())
+                    RejectedMatch(opponent, requester);
+            });
+            thread.Start();
+        }
+
         public void AcceptMatch(Player accepter, Player opponent)
         {
-            if (!accepter.MatchingRequests.Contains(opponent))
+            if (!accepter.MatchingRequests.Where(x => x.Player.Equals(opponent)).Any())
                 throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. There is no matching request to accept.");
 
             if (accepter.Matching != null)
@@ -84,7 +98,9 @@ namespace backend.services
             if (opponent.Matching != null)
                 throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. Opponent player already has matched with {opponent.Matching.Username}.");
 
-            Debug.Assert(accepter.MatchingRequests.Remove(opponent));
+            MatchRequest? matchRequest = accepter.MatchingRequests.Where(x => x.Equals(opponent)).FirstOrDefault();
+            Debug.Assert(matchRequest != null);
+            accepter.MatchingRequests.Remove(matchRequest);
             accepter.Matching = opponent;
             opponent.Matching = accepter;
 
@@ -96,10 +112,11 @@ namespace backend.services
         }
         public void RejectMatch(Player rejecter, Player opponent)
         {
-            if (!rejecter.MatchingRequests.Contains(rejecter))
+            if (!rejecter.MatchingRequests.Where(x => x.Player.Equals(rejecter)).Any())
                 throw new InvalidPlayerRequestException($"Reject macht exception [rejecter:{rejecter.Username} opponent:{opponent.Username}]. There is no matching request to reject.");
 
-            rejecter.MatchingRequests.Remove(opponent);
+            MatchRequest matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).First();
+            rejecter.MatchingRequests.Remove(matchRequest);
             RejectedMatch(rejecter, opponent);
         }
         public void ConfirmGameStart(Player player)
@@ -178,15 +195,18 @@ namespace backend.services
         }
         private void RejectedMatch(Player rejecter, Player opponent)
         {
-            opponent.MatchingRequests.Remove(opponent);
+            MatchRequest matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).First();
+            opponent.MatchingRequests.Remove(matchRequest);
             OnRejectedMatch?.Invoke(rejecter, opponent);
         }
         private void Matched(Match match)
         {
-            if (match.Player1.MatchingRequests.Contains(match.Player2))
-                match.Player1.MatchingRequests.Remove(match.Player2);
-            if (match.Player2.MatchingRequests.Contains(match.Player1))
-                match.Player2.MatchingRequests.Remove(match.Player1);
+            MatchRequest? matchRequestPlayer1 = match.Player1.MatchingRequests.Where(x => x.Player.Equals(match.Player2)).FirstOrDefault();
+            if (matchRequestPlayer1 != null)
+                match.Player1.MatchingRequests.Remove(matchRequestPlayer1);
+            MatchRequest? matchRequestPlayer2 = match.Player2.MatchingRequests.Where(x => x.Player.Equals(match.Player1)).FirstOrDefault();
+            if (matchRequestPlayer2 != null)
+                match.Player1.MatchingRequests.Remove(matchRequestPlayer2);
 
             match.Player1.Matching = match.Player2;
             match.Player2.Matching = match.Player1;
@@ -273,5 +293,6 @@ namespace backend.services
         private readonly PlayerConnectionService _playerConnectionService;
         private readonly Func<Match, Game> _getConnect4Game;
         private ConcurrentQueue<Match> _gamePlan = new();
+        private const int REQUEST_TIMEOUT_DURATION_IN_MS = 15000;
     }
 }
