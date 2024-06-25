@@ -1,5 +1,6 @@
 ﻿using backend.game;
 using backend.Infrastructure;
+using backend.utilities;
 using Org.BouncyCastle.Asn1.Mozilla;
 using System.Collections.Concurrent;
 using System.ComponentModel;
@@ -105,7 +106,11 @@ namespace backend.services.player
                     return;
 
                 _connections = new ConcurrentBag<PlayerConnection>(_connections.Where(x => !x.Equals(connection)));
-                PlayerDisconnected(player);
+                try
+                {
+                    PlayerDisconnected(player);
+                }
+                catch (InvalidPlayerRequestException) { }
             });
             thread.Start();
         }

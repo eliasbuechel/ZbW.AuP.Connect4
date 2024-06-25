@@ -454,11 +454,7 @@ export default defineComponent({
   },
   computed: {
     isInGame(): boolean {
-      return (
-        (this.game != null && this.identity != null) || // &&
-        // (this.game.match.player1.id === this.identity.id || this.game.match.player2.id === this.identity.id)) ||
-        this.gameResult != null
-      );
+      return (this.game != null && this.identity != null) || this.gameResult != null;
     },
   },
 });

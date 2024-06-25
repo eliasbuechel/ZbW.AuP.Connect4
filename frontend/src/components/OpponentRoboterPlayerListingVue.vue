@@ -10,7 +10,10 @@
         </div>
         <button class="button-accept" @click="connect" :disabled="errors.addingHubUrl !== ''">+</button>
       </div>
-      <ul>
+      <span v-if="connectedOpponentRoboterPlayers.length <= 0"
+        >No oppoenent roboter players connected at the moment.</span
+      >
+      <ul v-else>
         <li v-for="player in connectedOpponentRoboterPlayers" :key="player.id" class="matchable-player">
           <span class="matchable-player-username">{{ player.username }}</span>
           <svg

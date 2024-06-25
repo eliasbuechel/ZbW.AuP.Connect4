@@ -9,7 +9,8 @@
       >
         Watch
       </button>
-      <ul>
+      <span v-if="gamePlan.length <= 0">No game planed.</span>
+      <ul v-else>
         <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
           <div class="player player1">{{ player.player1.username }}</div>
           <div v-if="idx == 0" class="battle-icon">&#9876;</div>

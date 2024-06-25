@@ -2,7 +2,8 @@
   <div class="container">
     <div class="listing-container">
       <h2>Online players</h2>
-      <ul>
+      <span v-if="onlinePlayers.length <= 0">No players online at the moment.</span>
+      <ul v-else>
         <li v-for="player in onlinePlayers" :key="player.id" class="matchable-player">
           <span class="matchable-player-username">{{ player.username }}</span>
           <svg

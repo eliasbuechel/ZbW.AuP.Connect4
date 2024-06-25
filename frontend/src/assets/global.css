@@ -208,6 +208,11 @@ li {
   border-radius: 0.5rem;
 }
 
+.listing-container > span {
+  align-self: center;
+  opacity: 0.7;
+}
+
 .listing-container > ul {
   overflow-y: scroll;
   max-height: 30vh;
