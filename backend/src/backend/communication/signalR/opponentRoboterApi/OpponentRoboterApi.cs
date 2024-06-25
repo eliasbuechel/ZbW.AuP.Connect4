@@ -1,4 +1,5 @@
-﻿using backend.utilities;
+﻿using backend.Infrastructure;
+using backend.utilities;
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
@@ -25,6 +26,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         // receving
         public void Connected(string callerUrl, string connectionId)
         {
+            LogRecive(nameof(Connected));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnConnected?.Invoke(callerUrl, connectionId);
@@ -33,6 +35,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void Disconnected(string callerUrl, string connectionId)
         {
+            LogRecive(nameof(Disconnected));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnDisconnected?.Invoke(callerUrl, connectionId);
@@ -41,6 +44,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void RequestMatch(string connectionId)
         {
+            LogRecive(nameof(RequestMatch));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnRequestMatch?.Invoke(connectionId);
@@ -49,6 +53,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void AcceptMatch(string connectionId)
         {
+            LogRecive(nameof(AcceptMatch));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnAcceptMatch?.Invoke(connectionId);
@@ -57,6 +62,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void RejectMatch(string connectionId)
         {
+            LogRecive(nameof(RejectMatch));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnRejectMatch?.Invoke(connectionId);
@@ -65,6 +71,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void ConfirmGameStart(string connectionId)
         {
+            LogRecive(nameof(ConfirmGameStart));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnConfirmGameStart?.Invoke(connectionId);
@@ -73,6 +80,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void PlayMove(string connectionId, int column)
         {
+            LogRecive(nameof(PlayMove));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnPlayMove?.Invoke(connectionId, column);
@@ -81,12 +89,34 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void QuitGame(string connectionId)
         {
+            LogRecive(nameof(QuitGame));
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnQuitGame?.Invoke(connectionId);
                 return Task.CompletedTask;
             }, connectionId);
         }
+
+        private void Log(string message)
+        {
+            Logger.Log(LogCase.DEBUG, $"OPPONENT-ROBOTER-API: {message}");
+        }
+        protected void LogSend(string methodeName, string? data = null)
+        {
+            if (data == null)
+                Log($"Send on '{methodeName}'.");
+            else
+                Log($"Send on '{methodeName}':[{data}]");
+        }
+        protected void LogRecive(string methodeName, string? data = null)
+        {
+            if (data == null)
+                Log($"Recive on '{methodeName}'.");
+            else
+                Log($"Recive on '{methodeName}':[{data}]");
+        }
+
+        protected abstract string LogContext {get;}
 
         private readonly RequestHandlerManager<string> _requestHandlerManager = requestHandlerManager;
     }

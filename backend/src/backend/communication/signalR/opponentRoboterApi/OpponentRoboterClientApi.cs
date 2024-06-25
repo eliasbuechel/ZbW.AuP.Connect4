@@ -57,26 +57,32 @@ namespace backend.communication.signalR.opponentRoboterApi
         // sending
         public async void Send_RequestMatch()
         {
+            LogSend(nameof(RequestMatch), _hubUrl);
             await _connection.SendAsync(nameof(RequestMatch), _hubUrl);
         }
         public async void Send_AcceptMatch()
         {
+            LogSend(nameof(AcceptMatch));
             await _connection.SendAsync(nameof(AcceptMatch));
         }
         public async void Send_RejectMatch()
         {
+            LogSend(nameof(RejectMatch));
             await _connection.SendAsync(nameof(RejectMatch));
         }
         public async void Send_ConfirmGameStart()
         {
+            LogSend(nameof(ConfirmGameStart));
             await _connection.SendAsync(nameof(ConfirmGameStart));
         }
         public async void Send_PlayMove(int column)
         {
+            LogSend(nameof(PlayMove), column.ToString());
             await _connection.SendAsync(nameof(PlayMove), column);
         }
         public async void Send_QuitGame()
         {
+            LogSend(nameof(QuitGame));
             await _connection.SendAsync(nameof(QuitGame));
         }
 
@@ -138,6 +144,8 @@ namespace backend.communication.signalR.opponentRoboterApi
             await _connection.DisposeAsync();
         }
 
+        protected override string LogContext => "OPPONENT_ROBOTER_CLIENT_API";
+
         private bool _disposed;
         private readonly string _hubUrl;
         private readonly HubConnection _connection;
@@ -148,5 +156,6 @@ namespace backend.communication.signalR.opponentRoboterApi
         private readonly IDisposable _confirmGameStartHandler;
         private readonly IDisposable _playMoveHandler;
         private readonly IDisposable _quitGameHandler;
+
     }
 }

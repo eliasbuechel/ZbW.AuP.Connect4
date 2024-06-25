@@ -25,7 +25,7 @@ namespace backend.utilities
                     catch (InvalidPlayerRequestException e)
                     {
                         OnRequestError?.Invoke(request.ConnectionId);
-                        Logger.Log(LogCase.ERROR, e.Message);
+                        Logger.Log(LogCase.ERROR, $"PLAYER_REQUEST_ERROR: {e.Message}");
                     }
                 else
                     Thread.Sleep(100); // Avoid busy-waiting
