@@ -14,13 +14,22 @@
 
 @media (max-width: 800px) {
   .game-header {
-    justify-content: center;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 1.5rem;
   }
   .game-header > .game-info-container {
-    order: -1;
-    width: 500px;
+    order: 3;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .game-header > .game-info-container > h2 {
+    display: none;
+  }
+
+  .total-game-time {
+    font-size: 1.2rem;
   }
 }
 
