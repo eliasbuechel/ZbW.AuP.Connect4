@@ -179,4 +179,14 @@
   .align-right {
     align-self: flex-end;
   }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  form > button {
+    align-self: stretch;
+    margin-top: 0.5rem;
+  }
 </style>
