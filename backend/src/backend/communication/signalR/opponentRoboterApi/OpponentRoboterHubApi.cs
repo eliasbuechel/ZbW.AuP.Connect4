@@ -44,7 +44,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             await _opponentRoboterHubConetxt.Clients.Client(connectionId).SendAsync(nameof(QuitGame));
         }
 
-        protected override LogContext LogContext => LogContext.OPPONENT_ROBOTER_CLIENT_API;
+        protected override LogContext LogContext => LogContext.OPPONENT_ROBOTER_HUB_API;
 
         private readonly IHubContext<OpponentRoboterHub> _opponentRoboterHubConetxt = opponentRoboterHubContext;
     }

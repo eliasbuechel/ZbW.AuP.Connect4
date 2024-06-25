@@ -90,7 +90,9 @@ namespace backend.services
 
         public void AcceptMatch(Player accepter, Player opponent)
         {
-            if (!accepter.MatchingRequests.Where(x => x.Player.Equals(opponent)).Any())
+            MatchRequest? matchRequest = accepter.MatchingRequests.Where(x => x.Player.Equals(opponent)).FirstOrDefault();
+
+            if (matchRequest == null)
                 throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. There is no matching request to accept.");
 
             if (accepter.Matching != null)
@@ -100,8 +102,6 @@ namespace backend.services
             if (opponent.Matching != null)
                 throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. Opponent player already has matched with {opponent.Matching.Username}.");
 
-            MatchRequest? matchRequest = accepter.MatchingRequests.Where(x => x.Equals(opponent)).FirstOrDefault();
-            Debug.Assert(matchRequest != null);
             accepter.MatchingRequests.Remove(matchRequest);
             accepter.Matching = opponent;
             opponent.Matching = accepter;
