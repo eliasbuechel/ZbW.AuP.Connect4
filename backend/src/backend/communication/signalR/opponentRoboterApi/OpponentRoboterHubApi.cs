@@ -1,4 +1,5 @@
-﻿using backend.utilities;
+﻿using backend.Infrastructure;
+using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -43,7 +44,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             await _opponentRoboterHubConetxt.Clients.Client(connectionId).SendAsync(nameof(QuitGame));
         }
 
-        protected override string LogContext => "OPPONENT_ROBOTER_CLIENT_API";
+        protected override LogContext LogContext => LogContext.OPPONENT_ROBOTER_CLIENT_API;
 
         private readonly IHubContext<OpponentRoboterHub> _opponentRoboterHubConetxt = opponentRoboterHubContext;
     }

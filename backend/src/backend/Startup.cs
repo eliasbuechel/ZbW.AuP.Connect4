@@ -140,7 +140,7 @@ namespace backend
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(LogCase.ERROR, "Not able to migrate database.", e);
+                    Logger.Log(LogLevel.Error, LogContext.ENTITY_FRAMEWORK, "Not able to migrate database.", e);
                 }
             }
 

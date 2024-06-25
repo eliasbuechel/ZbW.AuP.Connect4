@@ -17,7 +17,7 @@ namespace backend.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.LogTo(message => Logger.Log(LogCase.DEBUG, $"ENTITY_FRAMEWORK: {message}"), LogLevel.Warning);
+            optionsBuilder.LogTo(message => Logger.Log(LogLevel.Debug, LogContext.ENTITY_FRAMEWORK, message));
             base.OnConfiguring(optionsBuilder);
         }
         protected override void OnModelCreating(ModelBuilder builder)

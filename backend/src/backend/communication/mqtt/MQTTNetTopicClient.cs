@@ -87,7 +87,7 @@ namespace backend.communication.mqtt
 
             await _managedClient.PublishAsync(applicationMessage);
 
-            Log($"Send on [{topic}]:'{message}'");
+            Log(LogLevel.Debug, $"Send on [{topic}]:'{message}'");
         }
         public async Task SubscribeToAsync(string topic, Func<string, Task> callback)
         {
@@ -124,14 +124,14 @@ namespace backend.communication.mqtt
             
         private async Task OnConnectedToBorker(MqttClientConnectedEventArgs e)
         {
-            Console.WriteLine("Connected to broker!");
+            Log(LogLevel.Debug, "Connected to broker!");
             _connected = true;
             OnConnected?.Invoke();
             await Task.CompletedTask;
         }
         private async Task OnDisonnectedFromBroker(MqttClientDisconnectedEventArgs e)
         {
-            Console.WriteLine("Disconnected from broker!");
+            Log(LogLevel.Debug, "Disconnected from broker!");
             _connected = false;
             OnDisconnected?.Invoke();
             await Task.CompletedTask;
@@ -141,7 +141,7 @@ namespace backend.communication.mqtt
             string topic = e.ApplicationMessage.Topic;
             string message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-            Log($"Recive on [{topic}]:'{message}'");
+            Log(LogLevel.Debug, $"Recive on [{topic}]:'{message}'");
 
             if (_topicValueMappings[topic] == null)
             {
@@ -162,14 +162,14 @@ namespace backend.communication.mqtt
                 }
                 catch (Exception ex)
                 {
-                    Log($"Error while executing callback for topic {topic}: {ex.Message}");
+                    Log(LogLevel.Error, $"Error while executing callback for topic {topic}: {ex.Message}");
                 }
             }
         }
 
-        private static void Log(string message)
+        private static void Log(LogLevel logLevel, string message)
         {
-            Console.WriteLine($"MQTT-CLIENT: {message}");
+            Logger.Log(logLevel, LogContext.MQTT_CLIENT, $"{message}");
         }
 
         protected override void OnDispose()

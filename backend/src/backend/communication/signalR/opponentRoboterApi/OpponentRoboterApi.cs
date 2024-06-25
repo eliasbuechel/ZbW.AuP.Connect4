@@ -99,7 +99,7 @@ namespace backend.communication.signalR.opponentRoboterApi
 
         private void Log(string message)
         {
-            Logger.Log(LogCase.DEBUG, $"OPPONENT-ROBOTER-API: {message}");
+            Logger.Log(LogLevel.Debug, LogContext, $"OPPONENT-ROBOTER-API: {message}");
         }
         protected void LogSend(string methodeName, string? data = null)
         {
@@ -116,7 +116,7 @@ namespace backend.communication.signalR.opponentRoboterApi
                 Log($"Recive on '{methodeName}':[{data}]");
         }
 
-        protected abstract string LogContext {get;}
+        protected abstract LogContext LogContext {get;}
 
         private readonly RequestHandlerManager<string> _requestHandlerManager = requestHandlerManager;
     }

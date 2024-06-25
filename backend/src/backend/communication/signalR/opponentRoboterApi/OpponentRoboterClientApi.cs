@@ -1,4 +1,5 @@
-﻿using backend.utilities;
+﻿using backend.Infrastructure;
+using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Collections.Concurrent;
@@ -144,7 +145,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             await _connection.DisposeAsync();
         }
 
-        protected override string LogContext => "OPPONENT_ROBOTER_CLIENT_API";
+        protected override LogContext LogContext => LogContext.OPPONENT_ROBOTER_CLIENT_API;
 
         private bool _disposed;
         private readonly string _hubUrl;
