@@ -4,7 +4,7 @@
       <h2>Bestlist</h2>
       <input class="bestlist-search" v-model="searchTerm" placeholder="Search..." @blur="clearSearch" />
       <span v-if="filteredBestlist.length === 0">There are no entries on the leaderboard yet.</span>
-      <table>
+      <table class="bestlist-table">
         <thead v-if="filteredBestlist.length > 0">
           <tr>
             <th @click="sortBy('winner')" :class="{ active: sortKey === 'winner' }">
@@ -189,6 +189,14 @@
 </script>
 
 <style scoped>
+  .bestlist-table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+    border-collapse: collapse;
+  }
+
   .bestlist-search {
     color: var(--color-light);
     background-color: transparent;
