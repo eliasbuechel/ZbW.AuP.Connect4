@@ -371,8 +371,8 @@ button:active:enabled {
   display: flex;
   flex-direction: column-reverse;
   padding: 0 min(max(0.2rem, 0.5vw), 0.5rem);
-  border: 0.3rem solid transparent;
-  border-radius: 2rem;
+  border: min(max(min(0.5vh, 0.5vw), 2px), 0.3rem) solid transparent;
+  border-radius: min(max(min(3vh, 3vw), 2px), 3rem);
   transition: 0.1s ease-in-out;
 }
 
@@ -383,8 +383,8 @@ button:active:enabled {
 
 .cell {
   background-color: var(--color-dark);
-  width: min(8vw, 10vh);
-  height: min(8vw, 10vh);
+  width: min(10vw, 10vh);
+  height: min(10vw, 10vh);
   border-radius: 25%;
   margin: min(max(0.2rem, 0.5vw), 0.5rem) 0;
   border: 2px solid var(--color-light);

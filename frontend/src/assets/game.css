@@ -9,6 +9,19 @@
   display: flex;
   padding: 2rem;
   justify-content: space-between;
+  min-height: 215px;
+}
+
+@media (max-width: 800px) {
+  .game-header {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .game-header > .game-info-container {
+    order: -1;
+    width: 500px;
+  }
 }
 
 .game-info-container {
@@ -56,7 +69,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 40px;
+  min-height: 115px;
+}
+
+.game-board-bar > button {
+  margin-bottom: 1rem;
 }
 
 .playing-move-info-container {
@@ -79,4 +96,9 @@
 
 .loadingCubeRight {
   background-color: var(--color-player-2);
+}
+
+.total-game-time {
+  font-size: x-large;
+  margin: 1rem;
 }

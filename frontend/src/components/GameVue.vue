@@ -4,7 +4,6 @@
       <InGamePlayerInfoVue class="player-info-left" :game="game" :identity="identity" :player="playerLeft!" />
       <div class="game-info-container">
         <h2>Connect Four</h2>
-        <h3 v-if="game.gameStartTime != null">{{ formattedGameTime }}</h3>
         <button v-if="!isGameParticipant" class="button-light" @click="stopWatchingGame">Back home</button>
         <button v-if="isYourTurn || game.isQuittableByEveryone" @click="quitGame" class="button-light">
           Quit game
@@ -22,6 +21,7 @@
       </button>
       <div class="game-board">
         <div class="game-board-bar">
+          <label v-if="game.gameStartTime != null" class="total-game-time">{{ formattedGameTime }}</label>
           <div v-if="placingField != null" class="playing-move-info-container">
             <div
               :class="{

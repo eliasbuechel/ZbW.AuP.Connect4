@@ -113,4 +113,28 @@ export default defineComponent({
 
 <style scoped>
 @import "@/assets/playerInfo.css";
+
+.player-info-playing-state {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  35% {
+    opacity: 1;
+    color: var(--color-light);
+    transform: translateX(0px);
+  }
+  50% {
+    opacity: 0.8;
+    color: var(--color-yellow);
+    transform: translateX(3px);
+  }
+  65%,
+  100% {
+    opacity: 1;
+    color: var(--color-light);
+    transform: translateX(0px);
+  }
+}
 </style>
