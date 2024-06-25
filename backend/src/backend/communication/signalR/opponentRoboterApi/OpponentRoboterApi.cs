@@ -99,7 +99,7 @@ namespace backend.communication.signalR.opponentRoboterApi
 
         private void Log(string message)
         {
-            Logger.Log(LogLevel.Debug, LogContext, $"OPPONENT-ROBOTER-API: {message}");
+            Logger.Log(LogLevel.Debug, LogContext, message);
         }
         protected void LogSend(string methodeName, string? data = null)
         {

@@ -210,8 +210,9 @@ namespace backend.game
 
             foreach (var p in _playerConnectionService.Players)
             {
-                if (p.MatchingRequests.Contains(webPlayer))
-                    p.MatchingRequests.Remove(webPlayer);
+                MatchRequest? matchRequest = p.MatchingRequests.Where(x => x.Player.Equals(webPlayer)).FirstOrDefault();
+                if (matchRequest != null)
+                    p.MatchingRequests.Remove(matchRequest);
 
                 if (p.Matching == webPlayer)
                     p.Matching = null;

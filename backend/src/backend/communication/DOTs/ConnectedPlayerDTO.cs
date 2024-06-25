@@ -6,8 +6,8 @@ namespace backend.communication.DOTs
     {
         public ConnectedPlayerDTO(Player player, Player potentialOpponent) : base(player)
         {
-            RequestedMatch = potentialOpponent.MatchingRequests.Contains(player);
-            YouRequestedMatch = player.MatchingRequests.Contains(potentialOpponent);
+            RequestedMatch = potentialOpponent.MatchingRequests.Where(x => x.Player.Equals(player)).Any();
+            YouRequestedMatch = player.MatchingRequests.Where(x => x.Player.Equals(potentialOpponent)).Any();
             Matched = player.Matching == potentialOpponent;
         }
 

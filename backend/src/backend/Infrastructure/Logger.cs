@@ -38,6 +38,9 @@
 
         public static void Log(LogLevel logLevel, LogContext context, string message)
         {
+            if (context == LogContext.ENTITY_FRAMEWORK)
+                return;
+
             Log(logLevel, $"{Convert.ToString(context)}: {message}");
         }
         public static void Log(LogLevel logCase, LogContext context, string message, Exception exception)

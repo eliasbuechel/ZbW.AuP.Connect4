@@ -8,7 +8,7 @@
         public bool IsInGame { get; set; }
         public TimeSpan? TotalPlayTime { get; set; }
 
-        public readonly ICollection<Player> MatchingRequests = new List<Player>();
+        public readonly ICollection<MatchRequest> MatchingRequests = new List<MatchRequest>();
         public Player? Matching { get; set; }
 
         public override bool Equals(object? obj)

@@ -29,7 +29,11 @@ namespace backend.services
                 client.Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password);
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
 
-                await client.SendMailAsync(mailMessage);
+                try
+                {
+                    await client.SendMailAsync(mailMessage);
+                }
+                catch (Exception) { }
             }
         }
 
