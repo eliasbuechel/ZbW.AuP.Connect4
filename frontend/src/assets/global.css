@@ -141,6 +141,11 @@ li {
 }
 
 @media (max-width: 800px) {
+  html, body {
+    height: 100%;
+    overflow-y: auto;
+  }
+
   .main-board-container {
     padding: 0.5rem;
   }
@@ -153,7 +158,7 @@ li {
 
   .username {
     max-width: 60vw;
-    text-overflow: ellipsis;
+   margin-right: 0.8rem;
   }
   .user-data {
     max-width: 60vw;
