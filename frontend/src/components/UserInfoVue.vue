@@ -40,6 +40,7 @@ import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { PropType, defineComponent } from "vue";
 
 export default defineComponent({
+  name: "UserInfoVue",
   props: {
     identity: {
       required: true,

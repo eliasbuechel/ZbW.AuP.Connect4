@@ -1,8 +1,8 @@
 <template>
-  <div class="player-info-container">
-    <div class="player-info-data-container">
+  <div class="player-info">
+    <div class="player-info-card">
       <label class="player-info-name">{{ playerName }}</label>
-      <label>Play time: {{ formattedTotalPlayedMoveTime }} </label>
+      <label>Total play time: {{ formattedTotalPlayedMoveTime }} s </label>
     </div>
   </div>
 </template>
@@ -14,6 +14,7 @@ import TimeFormatter from "@/services/timeFormatter";
 import { GameResult } from "@/types/GameResult";
 
 export default defineComponent({
+  name: "GameResultPlayerInfoVue",
   props: {
     gameResult: {
       required: true,
@@ -38,7 +39,7 @@ export default defineComponent({
         if (i % 2 === (this.gameResult.startingPlayerId === this.player.id ? 0 : 1))
           totalPlayedMoveTime += move.duration;
       });
-      return TimeFormatter.formatAsSeconds(totalPlayedMoveTime, 0) + "s";
+      return TimeFormatter.formatAsSeconds(totalPlayedMoveTime, 0);
     },
   },
 });

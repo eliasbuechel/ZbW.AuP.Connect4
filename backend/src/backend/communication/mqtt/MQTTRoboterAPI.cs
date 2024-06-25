@@ -1,5 +1,6 @@
 ﻿using backend.game;
 using backend.game.entities;
+using backend.utilities;
 using System.Diagnostics;
 
 namespace backend.communication.mqtt
@@ -18,7 +19,12 @@ namespace backend.communication.mqtt
             {
                 string originalTopicValue = false.ToString();
                 await _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue);
-                await TopicResetChanged(originalTopicValue);
+                try
+                {
+                    await TopicResetChanged(originalTopicValue);
+                }
+                catch (InvalidPlayerRequestException)
+                { }
             });
 
             _resettingBoard = true;
@@ -39,7 +45,12 @@ namespace backend.communication.mqtt
                 _placingPlayer = null;
 
                 await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1");
-                StonePlaced(player, field);
+                try
+                {
+                    StonePlaced(player, field);
+                }
+                catch (InvalidPlayerRequestException)
+                { }
             });
 
             Debug.Assert(_placingPlayer == null && _placingField == null);
@@ -149,8 +160,12 @@ namespace backend.communication.mqtt
             if (column >= 0 && column <= 6)
             {
                 await _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1");
-                ManualMove(column);
-                _currentRequestId = Guid.Empty;
+                try
+                {
+                    ManualMove(column);
+                }
+                catch (InvalidPlayerRequestException)
+                { }
             }
 
             return;

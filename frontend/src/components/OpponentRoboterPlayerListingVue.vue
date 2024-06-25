@@ -1,9 +1,17 @@
 <template>
   <div class="container">
     <div class="listing-container">
-      <h2>Online players</h2>
+      <h2>Opponent roboter players</h2>
+      <div class="adding-opponent-roboter-player-container">
+        <div class="input-field input-field-light">
+          <label for="addingHubUrl">Hub url</label>
+          <input type="text" id="addingHubUrl" v-model="addingHubUrl" @change="validateAddingHubUrl" required />
+          <span v-if="errors.addingHubUrl" class="error">{{ errors.addingHubUrl }}</span>
+        </div>
+        <button class="button-accept" @click="connect" :disabled="errors.addingHubUrl !== ''">+</button>
+      </div>
       <ul>
-        <li v-for="player in onlinePlayers" :key="player.id" class="matchable-player">
+        <li v-for="player in connectedOpponentRoboterPlayers" :key="player.id" class="matchable-player">
           <span class="matchable-player-username">{{ player.username }}</span>
           <svg
             v-if="player.matched"
@@ -83,10 +91,12 @@ import { PropType, defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
+import eventBus from "@/services/eventBus";
 
 export default defineComponent({
+  name: "OpponentRoboterPlayerListingVue",
   props: {
-    onlinePlayers: {
+    connectedOpponentRoboterPlayers: {
       required: true,
       type: Array as PropType<OnlinePlayer[]>,
     },
@@ -94,22 +104,52 @@ export default defineComponent({
       required: true,
       type: Object as PropType<PlayerIdentity>,
     },
-    hasPendingRequest: {
-      required: true,
-      type: Boolean,
-    },
+  },
+  data(): { addingHubUrl: string; errors: { addingHubUrl: string } } {
+    return {
+      addingHubUrl: "",
+      errors: {
+        addingHubUrl: " ",
+      },
+    };
+  },
+  mounted() {
+    eventBus.on(
+      "NotAbleToConnectToOpponentRoboterPlayer",
+      (errorMessage: string) => (this.errors.addingHubUrl = errorMessage)
+    );
   },
   methods: {
+    connect() {
+      signalRHub.invoke("ConnectToOpponentRoboterPlayer", this.addingHubUrl);
+    },
+    async validateAddingHubUrl() {
+      const emailInput: HTMLInputElement = document.getElementById("addingHubUrl") as HTMLInputElement;
+      if (!emailInput.checkValidity()) {
+        this.errors.addingHubUrl = emailInput.validationMessage;
+        return;
+      }
+      this.errors.addingHubUrl = "";
+    },
     requestMatch(player: OnlinePlayer): void {
-      signalRHub.invoke("RequestMatch", player.id);
+      signalRHub.invoke("RequestOppoenntRoboterPlyerMatch", player.id);
       player.youRequestedMatch = true;
     },
     acceptMatch(player: OnlinePlayer): void {
-      signalRHub.invoke("AcceptMatch", player.id);
+      signalRHub.invoke("AcceptOppoenntRoboterPlyerMatch", player.id);
     },
     rejectMatch(player: OnlinePlayer): void {
-      signalRHub.invoke("RejectMatch", player.id);
+      signalRHub.invoke("RejectOppoenntRoboterPlyerMatch", player.id);
       player.requestedMatch = false;
+    },
+  },
+  computed: {
+    hasPendingRequest(): boolean {
+      let doesHavePendingRequest: boolean = false;
+      this.connectedOpponentRoboterPlayers.forEach((p) => {
+        if (p.youRequestedMatch) doesHavePendingRequest = true;
+      });
+      return doesHavePendingRequest;
     },
   },
 });
@@ -128,6 +168,21 @@ export default defineComponent({
 
 .reject-match-button {
   margin-left: 0.5rem;
+}
+
+.adding-opponent-roboter-player-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.adding-opponent-roboter-player-container > div {
+  flex-direction: column;
+  width: 100%;
+}
+.adding-opponent-roboter-player-container > div > input,
+.adding-opponent-roboter-player-container > div > span {
+  width: 100%;
 }
 </style>
 @/types/DataTransferObjects

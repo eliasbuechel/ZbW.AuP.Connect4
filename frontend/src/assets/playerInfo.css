@@ -1,35 +1,25 @@
-.player-info-container {
+.player-info {
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
   color: var(--color-light);
   gap: 1rem;
   font-size: larger;
-}
-.player-info-left {
-  justify-self: flex-start;
-}
-.player-info-right {
-  justify-self: flex-end;
+  width: 250px;
 }
 
-/* .player-info > label {
-  border-radius: 0.5rem;
-  font-size: larger;
-} */
-
-.player-info-data-container {
+.player-info-card {
   display: flex;
   flex-direction: column;
   border-radius: 0.5rem;
   min-width: 11rem;
 }
 
-.player-info-data-container > label {
+.player-info-card > label {
   padding: 0.2rem 0.5rem;
 }
 
-.player-info-data-container > .player-info-name {
+.player-info-card > .player-info-name {
   border-radius: 0.5rem;
   padding: 0.5rem;
   font-size: x-large;
@@ -37,19 +27,19 @@
   margin-bottom: 0.5rem;
 }
 
-.player-info-left > .player-info-data-container {
+.player-info-left > .player-info-card {
   background-color: var(--color-orange-transparent);
 }
 
-.player-info-right > .player-info-data-container {
+.player-info-right > .player-info-card {
   background-color: var(--color-player-2-transparent);
 }
 
-.player-info-left > .player-info-data-container > .player-info-name {
+.player-info-left > .player-info-card > .player-info-name {
   background-color: var(--color-orange);
   color: var(--color-dark);
 }
-.player-info-right > .player-info-data-container > .player-info-name {
+.player-info-right > .player-info-card > .player-info-name {
   background-color: var(--color-player-2);
   color: var(--color-light);
 }

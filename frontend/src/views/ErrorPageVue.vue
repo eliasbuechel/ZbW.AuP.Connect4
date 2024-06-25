@@ -8,7 +8,7 @@
 import { PropType, defineComponent } from "vue";
 
 export default defineComponent({
-  name: "ErrorPage",
+  name: "ErrorPageVue",
   props: {
     errorCode: {
       required: true,

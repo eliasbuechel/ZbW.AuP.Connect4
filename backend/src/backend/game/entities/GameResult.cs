@@ -4,14 +4,13 @@ namespace backend.game.entities
 {
     internal class GameResult : Entity
     {
-        public GameResult(Player? winner, ICollection<Field>? line, ICollection<PlayedMove> playedMoves, Player startingPlayer, Match match, bool hasWinningRow)
+        public GameResult(Player? winner, ICollection<Field>? line, ICollection<PlayedMove> playedMoves, Player startingPlayer, Match match)
         {
             WinnerId = winner?.Id;
             Line = line;
             PlayedMoves = playedMoves;
             StartingPlayerId = startingPlayer.Id;
             Match = new GameResultMatch(match);
-            HasWinnerRow = hasWinningRow;
         }
         public GameResult(DbGameResult gameResult) : base(gameResult)
         {
@@ -20,7 +19,6 @@ namespace backend.game.entities
             PlayedMoves = gameResult.PlayedMoves.OrderBy(x => x.MoveOrderIndex).Select(x => new PlayedMove(x)).ToList();
             StartingPlayerId = gameResult.StartingPlayerId;
             Match = new GameResultMatch(gameResult.Match);
-            HasWinnerRow = gameResult.HasWinnerRow;
         }
 
         public string? WinnerId { get; }
@@ -28,6 +26,5 @@ namespace backend.game.entities
         public ICollection<PlayedMove> PlayedMoves { get; }
         public string StartingPlayerId { get; }
         public GameResultMatch Match { get; }
-        public bool HasWinnerRow { get; }
     }
 }

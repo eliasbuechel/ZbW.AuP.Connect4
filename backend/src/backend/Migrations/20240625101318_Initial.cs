@@ -57,6 +57,20 @@ namespace backend.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "Fields",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
+                    Column = table.Column<int>(type: "int", nullable: false),
+                    Row = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Fields", x => x.Id);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Players",
                 columns: table => new
                 {
@@ -225,22 +239,27 @@ namespace backend.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Fields",
+                name: "DbFieldDbGameResult",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Column = table.Column<int>(type: "int", nullable: false),
-                    Row = table.Column<int>(type: "int", nullable: false),
-                    DbGameResultId = table.Column<string>(type: "varchar(255)", nullable: true)
+                    LineId = table.Column<string>(type: "varchar(255)", nullable: false),
+                    LineId1 = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Fields", x => x.Id);
+                    table.PrimaryKey("PK_DbFieldDbGameResult", x => new { x.LineId, x.LineId1 });
                     table.ForeignKey(
-                        name: "FK_Fields_GameResults_DbGameResultId",
-                        column: x => x.DbGameResultId,
+                        name: "FK_DbFieldDbGameResult_Fields_LineId",
+                        column: x => x.LineId,
+                        principalTable: "Fields",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DbFieldDbGameResult_GameResults_LineId1",
+                        column: x => x.LineId1,
                         principalTable: "GameResults",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
@@ -250,6 +269,7 @@ namespace backend.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false),
                     Column = table.Column<int>(type: "int", nullable: false),
+                    MoveOrderIndex = table.Column<int>(type: "int", nullable: false),
                     Duration = table.Column<TimeSpan>(type: "time(6)", nullable: false),
                     DbGameResultId = table.Column<string>(type: "varchar(255)", nullable: true)
                 },
@@ -302,9 +322,9 @@ namespace backend.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Fields_DbGameResultId",
-                table: "Fields",
-                column: "DbGameResultId");
+                name: "IX_DbFieldDbGameResult_LineId1",
+                table: "DbFieldDbGameResult",
+                column: "LineId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameResults_MatchId",
@@ -346,7 +366,7 @@ namespace backend.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Fields");
+                name: "DbFieldDbGameResult");
 
             migrationBuilder.DropTable(
                 name: "PlayerMoves");
@@ -356,6 +376,9 @@ namespace backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Fields");
 
             migrationBuilder.DropTable(
                 name: "GameResults");

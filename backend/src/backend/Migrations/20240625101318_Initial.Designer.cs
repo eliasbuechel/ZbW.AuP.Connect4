@@ -11,7 +11,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240611200648_Initial")]
+    [Migration("20240625101318_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -21,6 +21,21 @@ namespace backend.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("DbFieldDbGameResult", b =>
+                {
+                    b.Property<string>("LineId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("LineId1")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("LineId", "LineId1");
+
+                    b.HasIndex("LineId1");
+
+                    b.ToTable("DbFieldDbGameResult");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -222,15 +237,10 @@ namespace backend.Migrations
                     b.Property<int>("Column")
                         .HasColumnType("int");
 
-                    b.Property<string>("DbGameResultId")
-                        .HasColumnType("varchar(255)");
-
                     b.Property<int>("Row")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DbGameResultId");
 
                     b.ToTable("Fields");
                 });
@@ -291,6 +301,9 @@ namespace backend.Migrations
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("time(6)");
 
+                    b.Property<int>("MoveOrderIndex")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DbGameResultId");
@@ -310,6 +323,21 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("DbFieldDbGameResult", b =>
+                {
+                    b.HasOne("backend.Data.entities.DbField", null)
+                        .WithMany()
+                        .HasForeignKey("LineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Data.entities.DbGameResult", null)
+                        .WithMany()
+                        .HasForeignKey("LineId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -363,13 +391,6 @@ namespace backend.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("backend.Data.entities.DbField", b =>
-                {
-                    b.HasOne("backend.Data.entities.DbGameResult", null)
-                        .WithMany("Line")
-                        .HasForeignKey("DbGameResultId");
-                });
-
             modelBuilder.Entity("backend.Data.entities.DbGameResult", b =>
                 {
                     b.HasOne("backend.Data.entities.DbGameResultMatch", "Match")
@@ -403,8 +424,6 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Data.entities.DbGameResult", b =>
                 {
-                    b.Navigation("Line");
-
                     b.Navigation("PlayedMoves");
                 });
 #pragma warning restore 612, 618

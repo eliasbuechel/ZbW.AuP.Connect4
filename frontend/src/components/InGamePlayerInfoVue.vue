@@ -1,24 +1,23 @@
 <template>
-  <div class="player-info-container">
-    <div class="player-info-data-container">
+  <div class="player-info">
+    <div class="player-info-card">
       <label class="player-info-name">{{ playerName }}</label>
-      <label class="move-time" v-if="gameHasStarted && isPlayerActive"> Move time: {{ formattedGameTime }}</label>
-      <label class="move-time" v-if="gameHasStarted && isPlayerActive"
-        >Move total time: {{ formattedTotalPlayedMoveTime }}
-      </label>
+      <label v-if="showCurrentMoveTime"> Current move time: {{ formattedGameTime }}</label>
+      <label v-if="gameHasStarted">Total play time: {{ formattedTotalPlayedMoveTime }} s </label>
     </div>
-    <div class="player-info-playing-state">{{ gameState }}</div>
+    <div class="player-info-playing-state">{{ playingState }}</div>
   </div>
 </template>
 
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
 import { InGamePlayer } from "@/types/InGamePlayer";
-import { Game } from "@/types/Game";
+import Game from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import TimeFormatter from "@/services/timeFormatter";
 
 export default defineComponent({
+  name: "InGamePlayerInfoVue",
   props: {
     game: {
       required: true,
@@ -63,6 +62,9 @@ export default defineComponent({
     },
   },
   computed: {
+    isYourTurn(): boolean {
+      return this.game.activePlayer().id === this.identity.id;
+    },
     playerName(): string {
       if (this.player != null) {
         if (this.player.id == this.identity.id) return "you";
@@ -70,7 +72,7 @@ export default defineComponent({
       }
       return "";
     },
-    gameState(): string {
+    playingState(): string {
       if (this.game == null) return "";
       if (this.player == null) return "";
       if (!this.game.match.player1.hasConfirmedGameStart || !this.game.match.player2.hasConfirmedGameStart) {
@@ -101,6 +103,9 @@ export default defineComponent({
     },
     formattedTotalPlayedMoveTime(): string {
       return TimeFormatter.formatAsSeconds(this.totalPlayedMoveTime, 0);
+    },
+    showCurrentMoveTime(): boolean {
+      return this.gameHasStarted && this.isPlayerActive && this.game.placingField == null;
     },
   },
 });

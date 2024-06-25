@@ -1,6 +1,6 @@
 <template>
   <div class="game-container">
-    <div class="game-info-container">
+    <div class="game-header">
       <GameResultPlayerInfoVue
         :gameResult="gameResult"
         :player="playerLeft"
@@ -14,24 +14,12 @@
         class="player-info-right"
       />
     </div>
-    <!-- <div class="game-info-container">
-      <div class="player-info-container player-info-left">
-        <div class="player-info-data-container">
-          <label class="player-info-name">{{ namePlayerLeft }}</label>
-        </div>
-      </div>
-      <div class="player-info-container player-info-right">
-        <div class="player-info-data-container">
-          <label class="player-info-name"> {{ playerRight.username }}</label>
-        </div>
-      </div>
-    </div> -->
-    <div class="game-result-container">
+    <div class="game-board-container">
       <div class="game-result-message">
         <h3>{{ resultMessage }}</h3>
         <button class="button-light" @click="leaveGameResultView">Back home</button>
       </div>
-      <div class="game-result-board">
+      <div class="game-board">
         <div class="game-result-move-navigation">
           <button class="button-light" @click="showPreviousMove" :disabled="moveIndex === 0">&lt;</button>
           <span> {{ moveIndex }} / {{ gameResult.playedMoves.length }} </span>
@@ -51,7 +39,7 @@
                 gameResultCell: true,
               }"
             >
-              <div v-if="lastMoveWidthLine && isInLine(colIdx, rowIdx)" class="inLine"></div>
+              <div v-if="isLastMove && isInLine(colIdx, rowIdx)" class="inLine"></div>
             </div>
           </div>
         </div>
@@ -71,7 +59,7 @@ interface GameResultState {
 }
 
 export default defineComponent({
-  name: "GameResult",
+  name: "GameResultVue",
   props: {
     gameResult: {
       required: true,
@@ -159,7 +147,7 @@ export default defineComponent({
       if (this.gameResult.winnerId === this.playerLeft.id) return this.namePlayerLeft + " won!";
       return this.youArePartOfGame ? "You lost!" : this.playerRight.username + " won!";
     },
-    lastMoveWidthLine(): boolean {
+    isLastMove(): boolean {
       if (this.gameResult.line == null) return false;
       return this.gameResult.playedMoves.length === this.moveIndex;
     },
@@ -171,27 +159,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.game-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  padding: 2rem;
-}
-
-.game-info-container {
-  display: flex;
-  justify-content: space-between;
-  height: 20vh;
-}
-
-.game-result-container {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
-  height: 80vh;
-}
+@import "@/assets/game.css";
 
 .game-result-message {
   display: flex;
@@ -206,19 +174,8 @@ export default defineComponent({
   margin: 0 0 1.5rem 0;
 }
 
-.game-result-move-navigation {
-  margin-bottom: 1.2rem;
-}
-
 .game-result-move-navigation > span {
-  margin: 2vw;
-}
-
-.game-result-board {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  margin: 0 2vw;
 }
 
 .gameResultCell {

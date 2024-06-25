@@ -92,7 +92,7 @@ namespace backend.game
                 throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. Quitting player is not part of the active game.");
 
             Player winner = quittingPlayer == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match, false);
+            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
         public void Initialize()
@@ -342,14 +342,12 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
-            bool hasWinnerRow = true;
-            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
+            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            bool hasWinnerRow = false;
-            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match, hasWinnerRow);
+            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
             OnGameEndet(gameResult);
         }
         private void OnGameEndet(GameResult gameResult)

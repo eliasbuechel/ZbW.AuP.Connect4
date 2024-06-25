@@ -28,18 +28,18 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import signalRHub from "@/services/signalRHub";
-import MainBoard from "@/components/MainBoard.vue";
-import Connect4Game from "@/components/Connect4Game.vue";
+import MainBoardVue from "@/components/MainBoardVue.vue";
+import GameVue from "@/components/GameVue.vue";
 import eventBus from "@/services/eventBus";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
-import { Game } from "@/types/Game";
+import Game, { IGame } from "@/types/Game";
 import { Match } from "@/types/Match";
 import { OnlinePlayer } from "@/types/OnlinePlayer";
 import { GameResult } from "@/types/GameResult";
 import { Field } from "@/types/Field";
 import GameResultView from "@/components/GameResultView.vue";
 import { ConnectedPlayers } from "@/types/ConnectedPlayers";
-import LoadingScreen from "@/components/LoadingScreen.vue";
+import LoadingScreenVue from "@/components/LoadingScreenVue.vue";
 
 interface HomeState {
   identity?: PlayerIdentity;
@@ -68,9 +68,9 @@ export default defineComponent({
     };
   },
   components: {
-    LoadingScreen,
-    MainBoard,
-    Connect4Game,
+    LoadingScreen: LoadingScreenVue,
+    MainBoard: MainBoardVue,
+    Connect4Game: GameVue,
     GameResultView,
   },
   mounted(): void {
@@ -184,13 +184,13 @@ export default defineComponent({
     updateUserIdentity(identity: PlayerIdentity): void {
       this.identity = identity;
     },
-    updateGame(game: Game | null): void {
-      if (!game) return;
-      this.game = game;
+    updateGame(game?: IGame): void {
+      if (game == null) return;
+      this.game = new Game(game);
     },
-    onGameStarted(game: Game): void {
+    onGameStarted(game: IGame): void {
       this.gameResult = undefined;
-      this.game = game;
+      this.game = new Game(game);
     },
     onYouQuitGame(): void {
       if (this.game === undefined) {
@@ -286,7 +286,7 @@ export default defineComponent({
       this.game.moveStartTime = Date.now();
       this.game.match.player1.currentHint = undefined;
       this.game.match.player2.currentHint = undefined;
-      this.game.connect4Board[field.column][field.row] = playerId;
+      this.game.board[field.column][field.row] = playerId;
       this.switchActivePlayer();
     },
     onPlacingStone(playerId: string, field: Field): void {

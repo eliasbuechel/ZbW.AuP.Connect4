@@ -14,13 +14,13 @@ import signalRHub from "@/services/signalRHub";
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  name: "SinglePlayerModeSelectionVue",
   props: {
     hasPendingRequest: {
       required: true,
       type: Boolean,
     },
   },
-  name: "SinglePlayerModeSelection",
   methods: {
     requestSinglePlayerMatch(): void {
       signalRHub.invoke("RequestSinglePlayerMatch");

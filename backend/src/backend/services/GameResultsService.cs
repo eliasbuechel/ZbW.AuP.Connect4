@@ -2,7 +2,6 @@
 using backend.Data.entities;
 using backend.game.entities;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace backend.services
 {
@@ -22,7 +21,7 @@ namespace backend.services
                     .AsEnumerable();
 
                 IEnumerable<GameResult> gameResults = gameResultsQuery
-                    .Where(x => x.HasWinnerRow == true)
+                    .Where(x => x.Line.Count() == 4)
                     .Select(x => new GameResult(x))
                     .ToArray();
 
@@ -40,7 +39,6 @@ namespace backend.services
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Include(x => x.PlayedMoves)
-                    .Include(x => x.HasWinnerRow)
                     .Select(x => new GameResult(x))
                     .ToArray();
                 return gameResults;
@@ -57,8 +55,7 @@ namespace backend.services
                 Line = GetOrAdd(gameResult.Line, context),
                 PlayedMoves = GetOrAdd(gameResult.PlayedMoves, context),
                 StartingPlayerId = gameResult.StartingPlayerId,
-                Match = GetOrAdd(gameResult.Match, context),
-                HasWinnerRow = gameResult.HasWinnerRow
+                Match = GetOrAdd(gameResult.Match, context)
             };
 
             context.GameResults.Add(dbGameResult);
@@ -103,11 +100,11 @@ namespace backend.services
             DbField? dbField = context.Fields.Where(x => x.Column == field.Column && x.Row == field.Row).FirstOrDefault();
 
             dbField ??= new DbField()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Column = field.Column,
-                    Row = field.Row
-                };
+            {
+                Id = Guid.NewGuid().ToString(),
+                Column = field.Column,
+                Row = field.Row
+            };
 
             return dbField;
         }
@@ -117,10 +114,10 @@ namespace backend.services
             DbPlayerInfo? dbPlayer = context.Players.FirstOrDefault(x => x.Id == player.Id);
 
             dbPlayer ??= new DbPlayerInfo
-                {
-                    Id = player.Id,
-                    Username = player.Username
-                };
+            {
+                Id = player.Id,
+                Username = player.Username
+            };
 
             return dbPlayer;
         }
@@ -132,15 +129,14 @@ namespace backend.services
             DbGameResultMatch? dbGameResultMatch = context.Matches.Where(x => (x.Player1 == dbPlayer1 && x.Player2 == dbPlayer2) || (x.Player1 == dbPlayer2 && x.Player2 == dbPlayer1)).FirstOrDefault();
 
             dbGameResultMatch ??= new DbGameResultMatch()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Player1 = dbPlayer1,
-                    Player2 = dbPlayer2
-                };
+            {
+                Id = Guid.NewGuid().ToString(),
+                Player1 = dbPlayer1,
+                Player2 = dbPlayer2
+            };
 
             return dbGameResultMatch;
         }
-
 
         private readonly BackendDbContextFacory _dbContextFactory = dbContextFactory;
     }

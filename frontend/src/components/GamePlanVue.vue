@@ -2,15 +2,19 @@
   <div class="container">
     <div class="listing-container">
       <h2>Game plan</h2>
+      <button
+        v-if="gamePlan.length > 0 && !isGameParticipant(0)"
+        class="button-light watch-button"
+        @click="watchGame()"
+      >
+        Watch
+      </button>
       <ul>
         <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
-          <div>
-            <div class="player1">{{ player.player1.username }}</div>
-            <div v-if="idx == 0" class="battle-icon">&#9876;</div>
-            <div v-else class="handshake-icon">&#129309;</div>
-            <div class="player2">{{ player.player2.username }}</div>
-          </div>
-          <button v-if="idx === 0 && !isGameParticipant(idx)" class="button-light" @click="watchGame()">Watch</button>
+          <div class="player player1">{{ player.player1.username }}</div>
+          <div v-if="idx == 0" class="battle-icon">&#9876;</div>
+          <div v-else class="handshake-icon">&#129309;</div>
+          <div class="player player2">{{ player.player2.username }}</div>
         </li>
       </ul>
     </div>
@@ -28,7 +32,7 @@ interface GamePlanState {
 }
 
 export default defineComponent({
-  name: "GamePlan",
+  name: "GamePlanVue",
   props: {
     gamePlan: {
       required: true,
@@ -50,7 +54,6 @@ export default defineComponent({
     },
     isGameParticipant(idx: number): boolean {
       if (this.identity == null) return false;
-      console.log(this.identity.id, this.gamePlan[idx].player1.id, this.gamePlan[idx].player2.id);
       return this.gamePlan[idx].player1.id === this.identity.id || this.gamePlan[idx].player2.id === this.identity.id;
     },
   },
@@ -61,38 +64,43 @@ export default defineComponent({
 .match {
   display: flex;
   color: whitesmoke;
-  align-items: center;
-  width: 100%;
-}
-
-.match > div {
-  display: flex;
-  align-items: center;
+  text-align: center;
   justify-content: center;
-  width: calc(100% - 80px);
+  align-items: center;
 }
 
-.match > div > .battle-icon {
+.battle-icon {
   font-size: xx-large;
   color: brown;
   width: 50px;
   text-align: center;
 }
-.match > div > .handshake-icon {
+.handshake-icon {
   font-size: x-large;
   width: 50px;
   text-align: center;
 }
 
-.match > div > .player1 {
+.match > .player {
+  width: 240px;
+}
+
+.match > .player1 {
   text-align: end;
-  width: 50%;
 }
-.match > div > .player2 {
-  width: 50%;
+.match > .player2 {
+  text-align: start;
 }
-.match > button {
-  margin-left: 0.3rem;
+
+.listing-container {
+  position: relative;
+}
+
+.watch-button {
+  position: absolute;
+  width: fit-content;
+  top: 2rem;
+  right: 2rem;
 }
 </style>
 @/types/DataTransferObjects@/types/GameResultMatch

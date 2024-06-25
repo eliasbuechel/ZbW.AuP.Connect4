@@ -23,15 +23,15 @@
 
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
-import OnlinePlayersListing from "@/components/OnlinePlayersListing.vue";
-import GamePlan from "@/components/GamePlan.vue";
-import UserInfo from "@/components/UserInfo.vue";
+import OnlinePlayersListingVue from "@/components/OnlinePlayersListingVue.vue";
+import GamePlanVue from "@/components/GamePlanVue.vue";
+import UserInfoVue from "@/components/UserInfoVue.vue";
 import { Match } from "@/types/Match";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
-import SinglePlayerModeSelection from "./SinglePlayerModeSelection.vue";
+import SinglePlayerModeSelectionVue from "./SinglePlayerModeSelectionVue.vue";
 import { GameResult } from "@/types/GameResult";
-import BestList from "@/components/BestList.vue";
-import OpponentRoboterPlayerListing from "./OpponentRoboterPlayerListing.vue";
+import BestListVue from "@/components/BestListVue.vue";
+import OpponentRoboterPlayerListingVue from "./OpponentRoboterPlayerListingVue.vue";
 import { ConnectedPlayers } from "@/types/ConnectedPlayers";
 
 interface MainBoardState {
@@ -39,7 +39,7 @@ interface MainBoardState {
 }
 
 export default defineComponent({
-  name: "MainBoard",
+  name: "MainBoardVue",
   props: {
     identity: {
       required: true,
@@ -65,12 +65,12 @@ export default defineComponent({
     };
   },
   components: {
-    UserInfo,
-    BestList,
-    SinglePlayerModeSelection,
-    OnlinePlayersListing,
-    OpponentRoboterPlayerListing,
-    GamePlan,
+    UserInfo: UserInfoVue,
+    BestList: BestListVue,
+    SinglePlayerModeSelection: SinglePlayerModeSelectionVue,
+    OnlinePlayersListing: OnlinePlayersListingVue,
+    OpponentRoboterPlayerListing: OpponentRoboterPlayerListingVue,
+    GamePlan: GamePlanVue,
   },
   methods: {
     showReplay(gameResult: GameResult): void {

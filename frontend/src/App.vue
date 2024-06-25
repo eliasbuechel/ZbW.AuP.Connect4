@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import ErrorPage from "./views/ErrorPage.vue";
+import ErrorPageVue from "./views/ErrorPageVue.vue";
 import eventBus from "./services/eventBus";
 
 export default defineComponent({
@@ -19,7 +19,7 @@ export default defineComponent({
     };
   },
   components: {
-    ErrorPage,
+    ErrorPage: ErrorPageVue,
   },
   mounted() {
     eventBus.on("error", this.onError);

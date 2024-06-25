@@ -423,10 +423,6 @@ button:active:enabled {
 .playableColumn:hover {
   cursor: grab;
 }
-/* 
-.playableColumn:hover {
-  background-color: var(--color-orange);
-} */
 
 .colorPlayerLeft {
   background-color: var(--color-orange);
