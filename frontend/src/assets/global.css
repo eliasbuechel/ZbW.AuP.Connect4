@@ -144,6 +144,22 @@ li {
   .main-board-container {
     padding: 0.5rem;
   }
+
+  #logo-home {
+    max-width: 30vw;
+    max-height: 90px;
+    margin-right: 1rem;
+  }
+
+  .username {
+    max-width: 60vw;
+    text-overflow: ellipsis;
+  }
+  .user-data {
+    max-width: 60vw;
+    margin-right: 1rem;
+  }
+
 }
 
 .main-board-container::-webkit-scrollbar-track {
