@@ -1,5 +1,6 @@
 ﻿using backend.game;
 using backend.game.entities;
+using backend.Infrastructure;
 using backend.utilities;
 using System.Diagnostics;
 
@@ -164,8 +165,10 @@ namespace backend.communication.mqtt
                 {
                     ManualMove(column);
                 }
-                catch (InvalidPlayerRequestException)
-                { }
+                catch (InvalidPlayerRequestException e)
+                {
+                    Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "Not able to process manual move from roboter.", e);
+                }
             }
 
             return;

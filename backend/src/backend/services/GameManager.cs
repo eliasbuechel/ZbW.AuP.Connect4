@@ -239,7 +239,10 @@ namespace backend.services
 
         private void PlayManualMove(int column)
         {
-            _activeGame?.PlayManualMove(column);
+            if (_activeGame == null)
+                throw new InvalidPlayerRequestException("Cannot play manual move if there is no game running.");
+
+            _activeGame.PlayManualMove(column);
         }
         private void StartNewGame(Match match)
         {
