@@ -38,6 +38,7 @@
 <script lang="ts">
   import { PlayerIdentity } from "@/types/PlayerIdentity";
   import { PropType, defineComponent } from "vue";
+  import signalRHub from "@/services/signalRHub";
 
   export default defineComponent({
     name: "UserInfoVue",
@@ -125,6 +126,7 @@
           await this.$axios.post("/account/logout?useCookies=true", {}, { withCredentials: true });
           this.$router.push("/login");
           this.dropdownVisible = false;
+          signalRHub.stop();
         } catch (error) {
           console.log("Logout failed:", error);
         }
