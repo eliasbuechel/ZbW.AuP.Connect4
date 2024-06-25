@@ -54,6 +54,8 @@ namespace backend.services
 
         public void RequestMatch(Player requester, Player opponent)
         {
+
+
             if (requester.Matching != null)
                 throw new InvalidPlayerRequestException($"Matcing request exception. Requester {requester.Username} has already matched with {requester.Matching.Username}.");
 
@@ -112,7 +114,7 @@ namespace backend.services
         }
         public void RejectMatch(Player rejecter, Player opponent)
         {
-            if (!rejecter.MatchingRequests.Where(x => x.Player.Equals(rejecter)).Any())
+            if (!rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).Any())
                 throw new InvalidPlayerRequestException($"Reject macht exception [rejecter:{rejecter.Username} opponent:{opponent.Username}]. There is no matching request to reject.");
 
             MatchRequest matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).First();
@@ -195,8 +197,10 @@ namespace backend.services
         }
         private void RejectedMatch(Player rejecter, Player opponent)
         {
-            MatchRequest matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).First();
-            opponent.MatchingRequests.Remove(matchRequest);
+            MatchRequest? matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).FirstOrDefault();
+            if (matchRequest != null)
+                opponent.MatchingRequests.Remove(matchRequest);
+
             OnRejectedMatch?.Invoke(rejecter, opponent);
         }
         private void Matched(Match match)
@@ -294,5 +298,9 @@ namespace backend.services
         private readonly Func<Match, Game> _getConnect4Game;
         private ConcurrentQueue<Match> _gamePlan = new();
         private const int REQUEST_TIMEOUT_DURATION_IN_MS = 15000;
+    }
+
+    internal class MatchingService
+    {
     }
 }
