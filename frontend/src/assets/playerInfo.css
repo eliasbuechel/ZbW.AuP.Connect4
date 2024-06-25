@@ -25,6 +25,9 @@
   font-size: 1.4em;
   font-weight: bold;
   margin-bottom: 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .player-info-left > .player-info-card {

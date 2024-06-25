@@ -3,8 +3,9 @@
     <div class="listing-container">
       <h2>Bestlist</h2>
       <input class="bestlist-search" v-model="searchTerm" placeholder="Search..." @blur="clearSearch" />
-      <table>
-        <thead>
+      <span v-if="filteredBestlist.length === 0">There are no entries on the leaderboard yet.</span>
+      <table class="bestlist-table">
+        <thead v-if="filteredBestlist.length > 0">
           <tr>
             <th @click="sortBy('winner')" :class="{ active: sortKey === 'winner' }">
               <div class="header-content">
@@ -29,7 +30,10 @@
                 <span>Winner Time</span>
                 <div class="sort-arrows">
                   <div class="arrow-up" :class="{ asc: sortKey === 'winnerTime' && sortOrder === 'asc' }"></div>
-                  <div class="arrow-down" :class="{ desc: sortKey === 'winnerTime' && sortOrder === 'desc' }"></div>
+                  <div
+                    class="arrow-down"
+                    :class="{ desc: sortKey === 'winnerTime' && sortOrder === 'desc' }"
+                  ></div>
                 </div>
               </div>
             </th>
@@ -45,7 +49,9 @@
             >
               {{ showWinner(gameResult).username }}
             </td>
-            <td :class="{ loser: !checkIfGameHasWinningRow(gameResult), draw: checkIfGameHasWinningRow(gameResult) }">
+            <td
+              :class="{ loser: !checkIfGameHasWinningRow(gameResult), draw: checkIfGameHasWinningRow(gameResult) }"
+            >
               {{ showLoser(gameResult).username }}
             </td>
             <td class="winner-time-column">
@@ -62,167 +68,177 @@
 </template>
 
 <script lang="ts">
-import { GameResult } from "@/types/GameResult";
-import { PlayerIdentity } from "@/types/PlayerIdentity";
-import { PropType, defineComponent } from "vue";
+  import { GameResult } from "@/types/GameResult";
+  import { PlayerIdentity } from "@/types/PlayerIdentity";
+  import { PropType, defineComponent } from "vue";
 
-export default defineComponent({
-  name: "BestListVue",
-  props: {
-    bestlist: {
-      required: true,
-      type: Array as PropType<GameResult[]>,
+  export default defineComponent({
+    name: "BestListVue",
+    props: {
+      bestlist: {
+        required: true,
+        type: Array as PropType<GameResult[]>,
+      },
     },
-  },
-  data(): { searchTerm: string; sortKey: string; sortOrder: string } {
-    return {
-      searchTerm: "",
-      sortKey: "winnerTime",
-      sortOrder: "asc",
-    };
-  },
-  emits: ["show-replay"],
-  methods: {
-    sortBy(key: string) {
-      if (this.sortKey === key) {
-        this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
-      } else {
-        this.sortKey = key;
-        this.sortOrder = "asc";
-      }
+    data(): { searchTerm: string; sortKey: string; sortOrder: string } {
+      return {
+        searchTerm: "",
+        sortKey: "winnerTime",
+        sortOrder: "asc",
+      };
     },
+    emits: ["show-replay"],
+    methods: {
+      sortBy(key: string) {
+        if (this.sortKey === key) {
+          this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
+        } else {
+          this.sortKey = key;
+          this.sortOrder = "asc";
+        }
+      },
 
-    showReplay(gameResult: GameResult): void {
-      let idx = this.bestlist.indexOf(gameResult);
-      this.$emit("show-replay", this.bestlist[idx]);
-    },
-    showWinner(gameResult: GameResult): PlayerIdentity {
-      if (this.checkIfGameHasWinningRow(gameResult)) return gameResult.match.player1;
-      return gameResult.winnerId === gameResult.match.player1.id ? gameResult.match.player1 : gameResult.match.player2;
-    },
-    showLoser(gameResult: GameResult): PlayerIdentity {
-      return this.showWinner(gameResult).id === gameResult.match.player1.id
-        ? gameResult.match.player2
-        : gameResult.match.player1;
-    },
-    checkIfGameHasWinningRow(gameResult: GameResult): boolean {
-      return gameResult.winnerId === null;
-    },
-    showWinnerTime(gameResult: GameResult): number {
-      let totalDuration = 0;
+      showReplay(gameResult: GameResult): void {
+        let idx = this.bestlist.indexOf(gameResult);
+        this.$emit("show-replay", this.bestlist[idx]);
+      },
+      showWinner(gameResult: GameResult): PlayerIdentity {
+        if (this.checkIfGameHasWinningRow(gameResult)) return gameResult.match.player1;
+        return gameResult.winnerId === gameResult.match.player1.id
+          ? gameResult.match.player1
+          : gameResult.match.player2;
+      },
+      showLoser(gameResult: GameResult): PlayerIdentity {
+        return this.showWinner(gameResult).id === gameResult.match.player1.id
+          ? gameResult.match.player2
+          : gameResult.match.player1;
+      },
+      checkIfGameHasWinningRow(gameResult: GameResult): boolean {
+        return gameResult.winnerId === null;
+      },
+      showWinnerTime(gameResult: GameResult): number {
+        let totalDuration = 0;
 
-      if (gameResult.winnerId === gameResult.startingPlayerId) {
-        let evenIndexMoves = gameResult.playedMoves.filter((move, index) => index % 2 === 0);
-        totalDuration = evenIndexMoves.reduce((total, move) => total + move.duration, 0);
-      }
+        if (gameResult.winnerId === gameResult.startingPlayerId) {
+          let evenIndexMoves = gameResult.playedMoves.filter((move, index) => index % 2 === 0);
+          totalDuration = evenIndexMoves.reduce((total, move) => total + move.duration, 0);
+        }
 
-      let oddIndexMoves = gameResult.playedMoves.filter((move, index) => index % 2 !== 0);
-      totalDuration = oddIndexMoves.reduce((total, move) => total + move.duration, 0);
+        let oddIndexMoves = gameResult.playedMoves.filter((move, index) => index % 2 !== 0);
+        totalDuration = oddIndexMoves.reduce((total, move) => total + move.duration, 0);
 
-      totalDuration = totalDuration / 1000;
-      return Math.round(totalDuration * 100) / 100;
+        totalDuration = totalDuration / 1000;
+        return Math.round(totalDuration * 100) / 100;
+      },
+      clearSearch() {
+        // Timeout to prevent clearing the search term before the click event on the replay button is triggered
+        setTimeout(() => {
+          this.searchTerm = "";
+        }, 1000);
+      },
     },
-    clearSearch() {
-      // Timeout to prevent clearing the search term before the click event on the replay button is triggered
-      setTimeout(() => {
-        this.searchTerm = "";
-      }, 1000);
+    computed: {
+      filteredBestlist(): GameResult[] {
+        let bestlist = this.bestlist.slice(); // Copy the array to prevent mutating the original array
+
+        if (this.sortKey === "winner") {
+          bestlist.sort((a, b) => {
+            let winnerA = this.showWinner(a).username.toLowerCase();
+            let winnerB = this.showWinner(b).username.toLowerCase();
+            if (this.sortOrder === "asc") {
+              return winnerA.localeCompare(winnerB);
+            } else {
+              return winnerB.localeCompare(winnerA);
+            }
+          });
+        } else if (this.sortKey === "loser") {
+          bestlist.sort((a, b) => {
+            let loserA = this.showLoser(a).username.toLowerCase();
+            let loserB = this.showLoser(b).username.toLowerCase();
+            if (this.sortOrder === "asc") {
+              return loserA.localeCompare(loserB);
+            } else {
+              return loserB.localeCompare(loserA);
+            }
+          });
+        } else if (this.sortKey === "winnerTime") {
+          bestlist.sort((a, b) => {
+            let winnerTimeA = this.showWinnerTime(a);
+            let winnerTimeB = this.showWinnerTime(b);
+            if (this.sortOrder === "asc") {
+              return winnerTimeA - winnerTimeB;
+            } else {
+              return winnerTimeB - winnerTimeA;
+            }
+          });
+        }
+
+        if (this.searchTerm !== "") {
+          bestlist = bestlist.filter(
+            (gameResult) =>
+              gameResult.match.player1.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+              gameResult.match.player2.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+              this.showWinnerTime(gameResult).toString().includes(this.searchTerm)
+          );
+        }
+
+        return bestlist;
+      },
     },
-  },
-  computed: {
-    filteredBestlist(): GameResult[] {
-      let bestlist = this.bestlist.slice(); // Copy the array to prevent mutating the original array
-
-      if (this.sortKey === "winner") {
-        bestlist.sort((a, b) => {
-          let winnerA = this.showWinner(a).username.toLowerCase();
-          let winnerB = this.showWinner(b).username.toLowerCase();
-          if (this.sortOrder === "asc") {
-            return winnerA.localeCompare(winnerB);
-          } else {
-            return winnerB.localeCompare(winnerA);
-          }
-        });
-      } else if (this.sortKey === "loser") {
-        bestlist.sort((a, b) => {
-          let loserA = this.showLoser(a).username.toLowerCase();
-          let loserB = this.showLoser(b).username.toLowerCase();
-          if (this.sortOrder === "asc") {
-            return loserA.localeCompare(loserB);
-          } else {
-            return loserB.localeCompare(loserA);
-          }
-        });
-      } else if (this.sortKey === "winnerTime") {
-        bestlist.sort((a, b) => {
-          let winnerTimeA = this.showWinnerTime(a);
-          let winnerTimeB = this.showWinnerTime(b);
-          if (this.sortOrder === "asc") {
-            return winnerTimeA - winnerTimeB;
-          } else {
-            return winnerTimeB - winnerTimeA;
-          }
-        });
-      }
-
-      if (this.searchTerm !== "") {
-        bestlist = bestlist.filter(
-          (gameResult) =>
-            gameResult.match.player1.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-            gameResult.match.player2.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-            this.showWinnerTime(gameResult).toString().includes(this.searchTerm)
-        );
-      }
-
-      return bestlist;
-    },
-  },
-});
+  });
 </script>
 
 <style scoped>
-.bestlist-search {
-  color: var(--color-light);
-  background-color: transparent;
-  border: 2px solid var(--color-orange);
-  border-radius: 0.5em;
-  padding: 0.2rem 0.8rem;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
+  .bestlist-table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+    border-collapse: collapse;
+  }
 
-.header-content {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.2rem;
-}
+  .bestlist-search {
+    color: var(--color-light);
+    background-color: transparent;
+    border: 2px solid var(--color-orange);
+    border-radius: 0.5em;
+    padding: 0.2rem 0.8rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
 
-.sort-arrows {
-  padding: 0.1rem;
-  vertical-align: super;
-}
+  .header-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.2rem;
+  }
 
-.arrow-up {
-  position: relative;
-  border-left: 0.4em solid transparent;
-  border-right: 0.4em solid transparent;
-  border-bottom: 0.6em solid var(--color-player-2);
-}
+  .sort-arrows {
+    padding: 0.1rem;
+    vertical-align: super;
+  }
 
-.arrow-up.asc {
-  border-bottom: 0.6em solid var(--color-orange);
-}
+  .arrow-up {
+    position: relative;
+    border-left: 0.4em solid transparent;
+    border-right: 0.4em solid transparent;
+    border-bottom: 0.6em solid var(--color-player-2);
+  }
 
-.arrow-down {
-  position: relative;
-  top: 0.4em;
-  border-left: 0.4em solid transparent;
-  border-right: 0.4em solid transparent;
-  border-top: 0.6em solid var(--color-player-2);
-}
+  .arrow-up.asc {
+    border-bottom: 0.6em solid var(--color-orange);
+  }
 
-.arrow-down.desc {
-  border-top: 0.6em solid var(--color-orange);
-}
+  .arrow-down {
+    position: relative;
+    top: 0.4em;
+    border-left: 0.4em solid transparent;
+    border-right: 0.4em solid transparent;
+    border-top: 0.6em solid var(--color-player-2);
+  }
+
+  .arrow-down.desc {
+    border-top: 0.6em solid var(--color-orange);
+  }
 </style>
