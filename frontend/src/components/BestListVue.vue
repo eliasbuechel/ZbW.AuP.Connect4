@@ -189,56 +189,5 @@
 </script>
 
 <style scoped>
-  .bestlist-table {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    display: block;
-    border-collapse: collapse;
-  }
-
-  .bestlist-search {
-    color: var(--color-light);
-    background-color: transparent;
-    border: 2px solid var(--color-orange);
-    border-radius: 0.5em;
-    padding: 0.2rem 0.8rem;
-    margin-bottom: 1rem;
-    font-size: 1rem;
-  }
-
-  .header-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 0.2rem;
-  }
-
-  .sort-arrows {
-    padding: 0.1rem;
-    vertical-align: super;
-  }
-
-  .arrow-up {
-    position: relative;
-    border-left: 0.4em solid transparent;
-    border-right: 0.4em solid transparent;
-    border-bottom: 0.6em solid var(--color-player-2);
-  }
-
-  .arrow-up.asc {
-    border-bottom: 0.6em solid var(--color-orange);
-  }
-
-  .arrow-down {
-    position: relative;
-    top: 0.4em;
-    border-left: 0.4em solid transparent;
-    border-right: 0.4em solid transparent;
-    border-top: 0.6em solid var(--color-player-2);
-  }
-
-  .arrow-down.desc {
-    border-top: 0.6em solid var(--color-orange);
-  }
+  @import "@/assets/bestlist.css";
 </style>
