@@ -182,6 +182,7 @@ namespace backend.game
         }
         private void CheckForWin(Field field, Player player)
         {
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Check for win. Player: {player.Username} Column: {field.Column}");
             if (CheckForWinInColumn(field, player))
                 return;
             if (CheckForWinInRow(field, player))
