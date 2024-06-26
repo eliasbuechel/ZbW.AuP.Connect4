@@ -11,7 +11,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240626165018_Initial")]
+    [Migration("20240626175300_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

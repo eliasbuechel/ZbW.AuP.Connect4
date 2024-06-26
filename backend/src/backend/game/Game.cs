@@ -166,7 +166,9 @@ namespace backend.game
         {
             SwapActivePlayer();
             LastPlacedStone = field;
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in game. Player: {player.Username} Column: {field.Column}");
             OnMovePlayed?.Invoke(player, field);
+            Task.Delay(100);
             CheckForWin(field, player);
         }
         private void SwapActivePlayer()

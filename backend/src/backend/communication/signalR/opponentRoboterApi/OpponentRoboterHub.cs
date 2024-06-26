@@ -5,7 +5,7 @@ namespace backend.communication.signalR.opponentRoboterApi
 {
     internal class OpponentRoboterHub(OpponentRoboterHubApi opponentRoboterHubApi) : Hub
     {
-        public void RequestMatch(string clientUrl)
+        public void RequestMatch()
         {
             _opponentRoboterHubApi.RequestMatch(Context.ConnectionId);
         }

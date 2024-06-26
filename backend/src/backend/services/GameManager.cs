@@ -230,6 +230,7 @@ namespace backend.services
         }
         private void MovePlayed(Player player, Field field)
         {
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in gameManager. Player: {player.Username} Column: {field.Column}");
             OnMovePlayed?.Invoke(player, field);
         }
         private void SendHint(Player player, int column)
@@ -265,8 +266,10 @@ namespace backend.services
                 return;
             }
 
+
             _activeGame.OnGameEnded -= GameHasEnded;
             _activeGame.OnGameStarted -= GameStarted;
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Unregister from OnMovePlayed event of game.");
             _activeGame.OnMovePlayed -= MovePlayed;
 
             _activeGame.Match.Player1.Matching = null;

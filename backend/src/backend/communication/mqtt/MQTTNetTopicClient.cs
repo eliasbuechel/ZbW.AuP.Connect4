@@ -72,6 +72,7 @@ namespace backend.communication.mqtt
 
         public async Task PublishAsync(string topic, string message)
         {
+            return;
             if (!IsConnected)
             {
                 //Debug.Assert(false);

@@ -1,5 +1,6 @@
 ﻿using backend.communication.mqtt;
 using backend.game.entities;
+using backend.Infrastructure;
 using backend.utilities;
 
 namespace backend.game
@@ -90,6 +91,7 @@ namespace backend.game
 
         private void OnStonePlacedOnRoboter(Player player, Field field)
         {
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move on board. Player: {player.Username} Column: {field.Column}");
             OnStonePlaced?.Invoke(player, field);
             PlacingField = null;
         }

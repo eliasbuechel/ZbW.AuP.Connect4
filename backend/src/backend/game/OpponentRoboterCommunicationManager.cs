@@ -195,6 +195,8 @@ namespace backend.game
         }
         private void OnMovePlayed(Player player, Field field)
         {
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in opponentRoboterCommunicationManager. Player: {player.Username} Column: {field.Column}");
+
             if (player is AlgorythmPlayer algorythmPlayer)
             {
                 if (algorythmPlayer.OpponentPlayer is OpponentRoboterPlayer opponentRboboterPlayer)

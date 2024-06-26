@@ -6,7 +6,8 @@
         ENTITY_FRAMEWORK,
         OPPONENT_ROBOTER_CLIENT_API,
         OPPONENT_ROBOTER_HUB_API,
-        PLAYER_REQUEST
+        PLAYER_REQUEST,
+        GAME_PLAY
     }
 
     internal static class Logger
@@ -39,6 +40,9 @@
         public static void Log(LogLevel logLevel, LogContext context, string message)
         {
             if (context == LogContext.ENTITY_FRAMEWORK && (logLevel == LogLevel.Information || logLevel == LogLevel.Debug))
+                return;
+
+            if (context == LogContext.MQTT_CLIENT)
                 return;
 
             Log(logLevel, $"{Convert.ToString(context)}: {message}");
