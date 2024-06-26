@@ -2,6 +2,7 @@
 using backend.Infrastructure;
 using backend.utilities;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.game
 {
@@ -93,6 +94,8 @@ namespace backend.game
 
             Player winner = quittingPlayer == _match.Player1 ? _match.Player2 : _match.Player1;
             GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
+
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Player quit during game. Player: {player.Username}");
             OnGameEndet(gameResult);
         }
         public void Initialize()
@@ -346,11 +349,15 @@ namespace backend.game
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
             GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Game ended with connect4. Player: {player.Username}");
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
             GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Game ended with no move left.");
             OnGameEndet(gameResult);
         }
         private void OnGameEndet(GameResult gameResult)
