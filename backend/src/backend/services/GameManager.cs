@@ -228,10 +228,11 @@ namespace backend.services
         {
             OnConfirmedGameStart?.Invoke(player);
         }
-        private void MovePlayed(Player player, Field field)
+        private Task MovePlayed(Player player, Field field)
         {
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in gameManager. Player: {player.Username} Column: {field.Column}");
             OnMovePlayed?.Invoke(player, field);
+            return Task.CompletedTask;
         }
         private void SendHint(Player player, int column)
         {
@@ -265,7 +266,6 @@ namespace backend.services
                 Debug.Assert(false);
                 return;
             }
-
 
             _activeGame.OnGameEnded -= GameHasEnded;
             _activeGame.OnGameStarted -= GameStarted;

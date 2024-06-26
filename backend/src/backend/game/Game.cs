@@ -31,7 +31,7 @@ namespace backend.game
         }
 
         public event Action<GameResult>? OnGameEnded;
-        public event Action<Player, Field>? OnMovePlayed;
+        public event Func<Player, Field, Task>? OnMovePlayed;
         public event Action<Game>? OnGameStarted;
 
         public Guid Id { get; } = new Guid();
@@ -162,13 +162,14 @@ namespace backend.game
         {
             OnGameStarted?.Invoke(this);
         }
-        private void OnStonePlaced(Player player, Field field)
+        private async void OnStonePlaced(Player player, Field field)
         {
             SwapActivePlayer();
             LastPlacedStone = field;
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in game. Player: {player.Username} Column: {field.Column}");
-            OnMovePlayed?.Invoke(player, field);
-            Task.Delay(100);
+            if (OnMovePlayed != null)
+                await OnMovePlayed.Invoke(player, field);
+
             CheckForWin(field, player);
         }
         private void SwapActivePlayer()
