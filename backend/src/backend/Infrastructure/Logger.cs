@@ -6,7 +6,8 @@
         ENTITY_FRAMEWORK,
         OPPONENT_ROBOTER_CLIENT_API,
         OPPONENT_ROBOTER_HUB_API,
-        PLAYER_REQUEST
+        PLAYER_REQUEST,
+        GAME_PLAY
     }
 
     internal static class Logger

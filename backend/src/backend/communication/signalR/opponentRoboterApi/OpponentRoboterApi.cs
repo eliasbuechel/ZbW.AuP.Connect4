@@ -80,7 +80,7 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
         public void PlayMove(string connectionId, int column)
         {
-            LogRecive(nameof(PlayMove));
+            LogRecive(nameof(PlayMove), column.ToString());
             _requestHandlerManager.GetOrCreateHandler(connectionId).Enqueue(() =>
             {
                 OnPlayMove?.Invoke(connectionId, column);

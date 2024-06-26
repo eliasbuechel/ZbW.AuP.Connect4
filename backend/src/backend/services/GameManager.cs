@@ -230,6 +230,7 @@ namespace backend.services
         }
         private void MovePlayed(Player player, Field field)
         {
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in gameManager. Player: {player.Username} Column: {field.Column}");
             OnMovePlayed?.Invoke(player, field);
         }
         private void SendHint(Player player, int column)
