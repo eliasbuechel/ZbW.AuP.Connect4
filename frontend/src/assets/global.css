@@ -227,6 +227,7 @@ li {
   width: 100%;
   background-color: var(--color-container-bg);
   border-radius: 0.5rem;
+  overflow-x: auto;
 }
 
 .listing-container > span {

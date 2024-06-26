@@ -1,0 +1,83 @@
+.bestlist-search {
+    color: var(--color-light);
+    background-color: transparent;
+    border: 2px solid var(--color-light);
+    border-radius: 0.5em;
+    padding: 0.2rem 0.8rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+.bestlist-search:focus {
+    border-color: var(--color-orange); 
+    outline: none; 
+}
+
+.bestlist-table {
+    width: 100%;
+    max-width: 100%;
+    /* overflow-x: auto; */
+    border-collapse: collapse;
+    table-layout: fixed;
+    display: block;
+}
+
+.bestlist-table-header-row {
+user-select: none;
+white-space: nowrap;
+border-bottom: 1.2rem solid transparent;
+}
+
+.header-content {
+display: flex;
+align-items: center;
+}
+
+.winner, .loser {
+    width: 35%;
+}
+
+
+.bestlist-table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.winner-time-column {
+    width: 25%;
+    text-align: right;
+    padding-right: 1rem;
+}
+
+.active {
+color: var(--color-orange);
+}
+
+.sort-arrows {
+padding: 0.3rem;
+vertical-align: super;
+display: inline-block;
+margin-left: 0.2rem;
+}
+
+.arrow-up {
+position: relative;
+border-left: 0.4em solid transparent;
+border-right: 0.4em solid transparent;
+border-bottom: 0.6em solid var(--color-player-2);
+}
+
+.arrow-up.asc {
+border-bottom: 0.6em solid var(--color-orange);
+}
+
+.arrow-down {
+position: relative;
+top: 0.3em;
+border-left: 0.4em solid transparent;
+border-right: 0.4em solid transparent;
+border-top: 0.6em solid var(--color-player-2);
+}
+
+.arrow-down.desc {
+border-top: 0.6em solid var(--color-orange);
+}
