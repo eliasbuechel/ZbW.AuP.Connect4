@@ -17,7 +17,6 @@ namespace backend.communication.signalR.opponentRoboterApi
             LogSend(nameof(RequestMatch));
             await _opponentRoboterHubConetxt.Clients.Client(connectionId).SendAsync(nameof(RequestMatch));
         }
-
         public async void Send_AcceptMatch(string connectionId)
         {
             LogSend(nameof(AcceptMatch));
