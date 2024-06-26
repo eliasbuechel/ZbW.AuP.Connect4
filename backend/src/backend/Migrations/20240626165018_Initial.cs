@@ -242,12 +242,12 @@ namespace backend.Migrations
                 name: "DbFieldDbGameResult",
                 columns: table => new
                 {
-                    LineId = table.Column<string>(type: "varchar(255)", nullable: false),
-                    LineId1 = table.Column<string>(type: "varchar(255)", nullable: false)
+                    GameResultsId = table.Column<string>(type: "varchar(255)", nullable: false),
+                    LineId = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbFieldDbGameResult", x => new { x.LineId, x.LineId1 });
+                    table.PrimaryKey("PK_DbFieldDbGameResult", x => new { x.GameResultsId, x.LineId });
                     table.ForeignKey(
                         name: "FK_DbFieldDbGameResult_Fields_LineId",
                         column: x => x.LineId,
@@ -255,8 +255,8 @@ namespace backend.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_DbFieldDbGameResult_GameResults_LineId1",
-                        column: x => x.LineId1,
+                        name: "FK_DbFieldDbGameResult_GameResults_GameResultsId",
+                        column: x => x.GameResultsId,
                         principalTable: "GameResults",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -322,9 +322,9 @@ namespace backend.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DbFieldDbGameResult_LineId1",
+                name: "IX_DbFieldDbGameResult_LineId",
                 table: "DbFieldDbGameResult",
-                column: "LineId1");
+                column: "LineId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameResults_MatchId",

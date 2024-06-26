@@ -19,7 +19,7 @@ namespace backend.communication.mqtt
             StartRequestTimeout(async () =>
             {
                 string originalTopicValue = false.ToString();
-                await _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue);
+                //await _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue);
                 try
                 {
                     await TopicResetChanged(originalTopicValue);
@@ -45,7 +45,7 @@ namespace backend.communication.mqtt
                 _placingField = null;
                 _placingPlayer = null;
 
-                await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1");
+                //await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1");
                 try
                 {
                     StonePlaced(player, field);
@@ -193,7 +193,7 @@ namespace backend.communication.mqtt
             thread.Start();
         }
 
-        private const int TIMOUT_TIME_IN_MS = 3000;
+        private const int TIMOUT_TIME_IN_MS = 60000;
         private const string TOPIC_COLUMN = "column";
         private const string TOPIC_RESET = "reset";
         private const string TOPIC_MANUAL_COLUMN = "manualColumn";

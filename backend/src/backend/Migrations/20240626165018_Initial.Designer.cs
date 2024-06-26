@@ -11,7 +11,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(BackendDbContext))]
-    [Migration("20240625101318_Initial")]
+    [Migration("20240626165018_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,15 +24,15 @@ namespace backend.Migrations
 
             modelBuilder.Entity("DbFieldDbGameResult", b =>
                 {
+                    b.Property<string>("GameResultsId")
+                        .HasColumnType("varchar(255)");
+
                     b.Property<string>("LineId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("LineId1")
-                        .HasColumnType("varchar(255)");
+                    b.HasKey("GameResultsId", "LineId");
 
-                    b.HasKey("LineId", "LineId1");
-
-                    b.HasIndex("LineId1");
+                    b.HasIndex("LineId");
 
                     b.ToTable("DbFieldDbGameResult");
                 });
@@ -327,15 +327,15 @@ namespace backend.Migrations
 
             modelBuilder.Entity("DbFieldDbGameResult", b =>
                 {
-                    b.HasOne("backend.Data.entities.DbField", null)
+                    b.HasOne("backend.Data.entities.DbGameResult", null)
                         .WithMany()
-                        .HasForeignKey("LineId")
+                        .HasForeignKey("GameResultsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Data.entities.DbGameResult", null)
+                    b.HasOne("backend.Data.entities.DbField", null)
                         .WithMany()
-                        .HasForeignKey("LineId1")
+                        .HasForeignKey("LineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

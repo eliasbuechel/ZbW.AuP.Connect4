@@ -5,6 +5,6 @@
         public int Column { get; set; }
         public int Row { get; set; }
 
-        public virtual IList<DbGameResult> Line { get; set; } = new List<DbGameResult>();
+        public virtual IList<DbGameResult> GameResults { get; set; } = new List<DbGameResult>();
     }
 }
