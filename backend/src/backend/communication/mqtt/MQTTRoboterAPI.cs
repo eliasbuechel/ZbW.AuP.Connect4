@@ -193,7 +193,7 @@ namespace backend.communication.mqtt
             thread.Start();
         }
 
-        private const int TIMOUT_TIME_IN_MS = 60000;
+        private const int TIMOUT_TIME_IN_MS = 3000;
         private const string TOPIC_COLUMN = "column";
         private const string TOPIC_RESET = "reset";
         private const string TOPIC_MANUAL_COLUMN = "manualColumn";
