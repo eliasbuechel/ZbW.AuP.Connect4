@@ -266,8 +266,10 @@ namespace backend.services
                 return;
             }
 
+
             _activeGame.OnGameEnded -= GameHasEnded;
             _activeGame.OnGameStarted -= GameStarted;
+            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Unregister from OnMovePlayed event of game.");
             _activeGame.OnMovePlayed -= MovePlayed;
 
             _activeGame.Match.Player1.Matching = null;
