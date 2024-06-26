@@ -124,14 +124,22 @@ namespace backend.communication.mqtt
             
         private async Task OnConnectedToBorker(MqttClientConnectedEventArgs e)
         {
-            Log(LogLevel.Debug, "Connected to broker!");
+            if (string.IsNullOrEmpty(_username))
+                Log(LogLevel.Information, $"Connected to broker at '{_brokerUri}'.");
+            else
+                Log(LogLevel.Information, $"Connected as '{_username}' to broker at '{_brokerUri}'.");
+
             _connected = true;
             OnConnected?.Invoke();
             await Task.CompletedTask;
         }
         private async Task OnDisonnectedFromBroker(MqttClientDisconnectedEventArgs e)
         {
-            Log(LogLevel.Debug, "Disconnected from broker!");
+            if (e.ClientWasConnected)
+                Log(LogLevel.Information, "Disconnected from broker.", e.Exception);
+            else
+                Log(LogLevel.Warning, "Not able to connect to broker.", e.Exception);
+
             _connected = false;
             OnDisconnected?.Invoke();
             await Task.CompletedTask;
@@ -169,7 +177,11 @@ namespace backend.communication.mqtt
 
         private static void Log(LogLevel logLevel, string message)
         {
-            Logger.Log(logLevel, LogContext.MQTT_CLIENT, $"{message}");
+            Logger.Log(logLevel, LogContext.MQTT_CLIENT, message);
+        }
+        private static void Log(LogLevel logLevel, string message, Exception e)
+        {
+            Logger.Log(logLevel, LogContext.MQTT_CLIENT, message, e);
         }
 
         protected override void OnDispose()

@@ -38,14 +38,14 @@
 
         public static void Log(LogLevel logLevel, LogContext context, string message)
         {
-            if (context == LogContext.ENTITY_FRAMEWORK)
+            if (context == LogContext.ENTITY_FRAMEWORK && (logLevel == LogLevel.Information || logLevel == LogLevel.Debug))
                 return;
 
             Log(logLevel, $"{Convert.ToString(context)}: {message}");
         }
         public static void Log(LogLevel logCase, LogContext context, string message, Exception exception)
         {
-            Log(logCase, context, $"{message} INNER_MESSAGE: {exception.Message}");
+            Log(logCase, context, $"{message} DETAILS: {exception.Message}");
         }
     }
 }

@@ -17,10 +17,10 @@ namespace backend
 {
     public class Startup
     {
-        public Startup()
-        {
-            DotNetEnv.Env.Load();
-        }
+        //public Startup()
+        //{
+        //    DotNetEnv.Env.Load();
+        //}
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -46,11 +46,31 @@ namespace backend
 
             services.AddSingleton<MQTTNetTopicClient>(services =>
             {
-                var borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI");
-                var username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME");
-                var password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD");
+                string? borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI");
+                string? username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME");
+                string? password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD");
 
-                return new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
+                //bool hasValidConfigData = true;
+                //if (string.IsNullOrEmpty(borkerUri))
+                //{
+                //    _logger.LogCritical("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_BROKER_URI' not provided.");
+                //    hasValidConfigData = false;
+                //}
+                //if (username == null)
+                //{
+                //    _logger.LogCritical("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_USERNAME' not provided. Must be at least an empty string.");
+                //    hasValidConfigData = false;
+                //}
+                //if (password == null)
+                //{
+                //    _logger.LogCritical("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_PASSWORD' not provided. Must be at least an empty string.");
+                //    hasValidConfigData = false;
+                //}
+
+                //if (!hasValidConfigData)
+                //    throw new ArgumentException("Configration for MQTTNetTopicClient is correct.");
+
+                return new MQTTNetTopicClient(borkerUri, username!, password!);
             });
             services.AddSingleton<RoboterAPI, MQTTRoboterAPI>();
 
@@ -169,7 +189,6 @@ namespace backend
             services.AddAuthorization();
             services.AddAuthentication();
                 
-
             services.AddIdentityCore<PlayerIdentity>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
@@ -213,5 +232,7 @@ namespace backend
 
             services.AddScoped<Func<UserManager<PlayerIdentity>>>(s => () => s.GetRequiredService<UserManager<PlayerIdentity>>());
         }
+
+        //private readonly ILogger<Startup> _logger;
     }
 }
