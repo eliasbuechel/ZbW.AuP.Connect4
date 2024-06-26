@@ -19,7 +19,7 @@ namespace backend.Infrastructure
             }
 
             _disposed = true;
-
+            OnDispose();
         }
 
         protected abstract void OnDispose();
