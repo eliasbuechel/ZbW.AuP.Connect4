@@ -11,6 +11,11 @@
         public readonly ICollection<MatchRequest> MatchingRequests = new List<MatchRequest>();
         public Player? Matching { get; set; }
 
+        public bool Equals(Player? other)
+        {
+            return other != null
+                && Id == other.Id;
+        }
         public override bool Equals(object? obj)
         {
             return obj is Player player && Equals(player);
@@ -18,11 +23,6 @@
         public override int GetHashCode()
         {
             return HashCode.Combine(Id);
-        }
-        public bool Equals(Player? other)
-        {
-            return other != null
-                && Id == other.Id;
         }
     }
 }

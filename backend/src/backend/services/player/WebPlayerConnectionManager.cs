@@ -25,8 +25,7 @@ namespace backend.services.player
         protected override void CreateOrConnectPlayer(PlayerIdentity playerIdentity, string connectionId)
         {
             WebPlayer? player = GetConnectedPlayerByIdentificationOrDefault(playerIdentity);
-            if (player == null)
-                player = new WebPlayer(playerIdentity);
+            player ??= new WebPlayer(playerIdentity);
 
             ConnectPlayer(player, playerIdentity, connectionId);
         }
@@ -34,7 +33,7 @@ namespace backend.services.player
         {
             base.PlayerConnected(player);
 
-            ConnectedPlayerDto playerDTO = new ConnectedPlayerDto(player);
+            ConnectedPlayerDto playerDTO = new(player);
             ForeachConnectedPlayerConnectionExcept(player, async (connectionId) => await _frontendApi.PlayerConnected(connectionId, playerDTO));
         }
         protected override void PlayerDisconnected(WebPlayer player)
@@ -54,7 +53,7 @@ namespace backend.services.player
 
         private void OnOpponentRoboterPlayerConnected(OpponentRoboterPlayer opponentRoboterPlayer)
         {
-            ConnectedPlayerDto opponentRoboterPlayerDTO = new ConnectedPlayerDto(opponentRoboterPlayer);
+            ConnectedPlayerDto opponentRoboterPlayerDTO = new(opponentRoboterPlayer);
             ForeachConnectedPlayerConnection(async (connectionId) => await _frontendApi.OpponentRoboterPlayerConnected(connectionId, opponentRoboterPlayerDTO));
         }
         private void OnOpponentRoboterPlayerDisconnected(OpponentRoboterPlayer opponentRoboterPlayer)

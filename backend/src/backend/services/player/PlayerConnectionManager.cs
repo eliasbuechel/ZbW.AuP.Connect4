@@ -26,7 +26,7 @@ namespace backend.services.player
         public TPlayer GetConnectedPlayerByConnectionId(string connectionId)
         {
             return _connections
-                .Where(x => x.ConnectionIds.Any(c => c.Equals(connectionId)))
+                .Where(x => x.ConnectionIds.Contains(connectionId))
                 .Select(x => x.Player)
                 .First();
         }

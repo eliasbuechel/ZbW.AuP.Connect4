@@ -10,10 +10,10 @@ namespace backend.game
         public Game(Match match, Board board)
         {
             _match = match;
-            _gameBoard = board;
+            _board = board;
 
-            _gameBoard.OnStonePlaced += OnStonePlaced;
-            _gameBoard.OnBoardReset += OnBoardReset;
+            _board.OnStonePlaced += OnStonePlaced;
+            _board.OnBoardReset += OnBoardReset;
 
 
             if (match.Player1 is WebPlayer || match.Player2 is WebPlayer)
@@ -36,13 +36,13 @@ namespace backend.game
 
         public Match Match => _match;
         public Player ActivePlayer => _activePlayer;
-        public string[][] FieldAsIds => _gameBoard.FieldAsIds;
+        public string[][] FieldAsIds => _board.FieldAsIds;
         public bool GameEnded => _gameEnded;
         public DateTime? MoveStartTime => _moveStartingTime;
         public DateTime? GameStartTime => _gameStartTime;
 
 
-        public Field? PlacingField => _gameBoard.PlacingField;
+        public Field? PlacingField => _board.PlacingField;
         public Field? LastPlacedStone { get; private set; }
         public bool IsQuittableByEveryone => _match.Player1 is OpponentRoboterPlayer || _match.Player2 is OpponentRoboterPlayer;
 
@@ -68,7 +68,7 @@ namespace backend.game
             if (column < 0 || column > Board.Columns)
                 throw new InvalidPlayerRequestException($"Play move exception [player:{player.Username} column:{column}]. Column is not in valid range");
 
-            _gameBoard.PlaceStone(player, column);
+            _board.PlaceStone(player, column);
 
             Debug.Assert(_moveStartingTime != null);
 
@@ -99,52 +99,14 @@ namespace backend.game
         }
         public void Initialize()
         {
-            _gameBoard.Reset();
+            _board.Reset();
         }
         public int GetBestMove(Player player)
         {
-            const int LOOK_AHEAD_MOVES = 10;
-            const int INVALID_BEST_MOVE = -1;
+            BoardValidator validator = new(_board.GameBoard);
 
             Player opponent = _match.Player1 == player ? _match.Player2 : _match.Player1;
-
-            int value = int.MinValue;
-            int bestMove = INVALID_BEST_MOVE;
-            int alpha = int.MinValue;
-            int beta = int.MaxValue;
-
-            foreach (int col in _columnOrder)
-            {
-                if (!GetNextFreeRow(col, out int row))
-                    continue;
-
-                Debug.Assert(row >= 0);
-
-                _gameBoard[col][row] = player;
-
-                int miniMaxValue;
-
-                if (NoMoveLeft())
-                    miniMaxValue = 0;
-                else if (HasWon(player, col, row))
-                    miniMaxValue = LOOK_AHEAD_MOVES * 1000;
-                else
-                    miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
-
-                _gameBoard[col][row] = null;
-
-                if (miniMaxValue > value)
-                {
-                    bestMove = col;
-                    value = miniMaxValue;
-                }
-
-                alpha = Math.Max(alpha, value);
-                if (alpha >= beta)
-                    break;
-            }
-
-            return bestMove;
+            return validator.GetBestMove(player, opponent);
         }
         public void PlayManualMove(int column)
         {
@@ -154,8 +116,8 @@ namespace backend.game
 
         protected override void OnDispose()
         {
-            _gameBoard.OnStonePlaced -= OnStonePlaced;
-            _gameBoard.OnBoardReset -= OnBoardReset;
+            _board.OnStonePlaced -= OnStonePlaced;
+            _board.OnBoardReset -= OnBoardReset;
         }
 
         private void OnBoardReset()
@@ -170,178 +132,13 @@ namespace backend.game
             if (OnMovePlayed != null)
                 await OnMovePlayed.Invoke(player, field);
 
-            CheckForWin(field, player);
+            BoardValidator validator = new(_board.GameBoard);
+            validator.CheckForWin(field, player, OnNoMoveLeft, (line) => OnConnect4(line, player));
         }
         private void SwapActivePlayer()
         {
             _activePlayer = _activePlayer == _match.Player1 ? _match.Player2 : _match.Player1;
             _activePlayerPlacedStone = false;
-        }
-        private void CheckForWin(Field field, Player player)
-        {
-            Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Check for win. Player: {player.Username} Column: {field.Column}");
-            if (CheckForWinInColumn(field, player))
-                return;
-            if (CheckForWinInRow(field, player))
-                return;
-            if (CheckForWinDiagonallyUp(field, player))
-                return;
-            if (CheckForWinDiagonallyDown(field, player))
-                return;
-            CheckForNoMoveLeft();
-        }
-        private bool CheckForWinInColumn(Field lastPlacedStone, Player player)
-        {
-            Field[] line = new Field[4];
-            int count = 0;
-
-            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
-
-            for (int rowDown = lastPlacedStone.Row - 1; rowDown >= 0; rowDown--)
-            {
-                if (_gameBoard[lastPlacedStone.Column][rowDown] != player)
-                    break;
-
-                line[count++] = new Field(lastPlacedStone.Column, rowDown);
-
-                if (count >= 4)
-                {
-                    OnConnect4(line, player);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        private bool CheckForWinInRow(Field lastPlacedStone, Player player)
-        {
-            Field[] line = new Field[4];
-            int count = 0;
-
-            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
-
-            int col = lastPlacedStone.Column - 1;
-            while (col >= 0 && count < 4)
-            {
-                if (_gameBoard[col][lastPlacedStone.Row] != player)
-                    break;
-
-                line[count++] = new Field(col, lastPlacedStone.Row);
-                col--;
-            }
-
-            col = lastPlacedStone.Column + 1;
-            while (col < Board.Columns && count < 4)
-            {
-                if (_gameBoard[col][lastPlacedStone.Row] != player)
-                    break;
-
-                line[count++] = new Field(col, lastPlacedStone.Row);
-                col++;
-            }
-
-            if (count >= 4)
-            {
-                OnConnect4(line, player);
-                return true;
-            }
-
-            return false;
-        }
-        private bool CheckForWinDiagonallyUp(Field lastPlacedStone, Player player)
-        {
-            Field[] line = new Field[4];
-            int count = 0;
-
-            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
-
-            int col = lastPlacedStone.Column - 1;
-            int row = lastPlacedStone.Row - 1;
-            while (col >= 0 && row >= 0 && count < 4)
-            {
-                if (_gameBoard[col][row] != player)
-                    break;
-                
-                line[count++] = new Field(col, row);
-                col--;
-                row--;
-            }
-
-            col = lastPlacedStone.Column + 1;
-            row = lastPlacedStone.Row + 1;
-            while (col < Board.Columns && row < Board.Rows && count < 4)
-            {
-                if (_gameBoard[col][row] != player)
-                    break;
-               
-                line[count++] = new Field(col, row);
-                col++;
-                row++;
-            }
-
-            if (count >= 4)
-            {
-                OnConnect4(line, player);
-                return true;
-            }
-
-            return false;
-        }
-        private bool CheckForWinDiagonallyDown(Field lastPlacedStone, Player player)
-        {
-            Field[] line = new Field[4];
-            int count = 0;
-
-            line[count++] = new Field(lastPlacedStone.Column, lastPlacedStone.Row);
-
-            int col = lastPlacedStone.Column - 1;
-            int row = lastPlacedStone.Row + 1;
-            while (col >= 0 && row < Board.Rows && count < 4)
-            {
-                if (_gameBoard[col][row] != player)
-                    break;
-                
-                line[count++] = new Field(col, row);
-                col--;
-                row++;
-            }
-
-            col = lastPlacedStone.Column + 1;
-            row = lastPlacedStone.Row - 1;
-            while (col < Board.Columns && row >= 0 && count < 4)
-            {
-                if (_gameBoard[col][row] != player)
-                    break;
-
-                line[count++] = new Field(col, row);
-                col++;
-                row--;
-            }
-
-            if (count >= 4)
-            {
-                OnConnect4(line, player);
-                return true;
-            }
-
-            return false;
-        }
-        private bool CheckForNoMoveLeft()
-        {
-            bool allCollumnsFull = true;
-            for (int i = 0; i  < Board.Columns; i++)
-            {
-                Player?[] column = _gameBoard[i];
-
-                if (column[_gameBoard[i].Length - 1] == null)
-                    allCollumnsFull = false;
-            }
-
-            if (!allCollumnsFull)
-                return false;
-
-            OnNoMoveLeft();
-            return true;
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
@@ -366,219 +163,6 @@ namespace backend.game
             OnGameEnded?.Invoke(gameResult);
         }
 
-        private int MiniMax(int depth, Player maxPlayer, Player minPlayer, bool maximizing, int alpha, int beta)
-        {
-            int value;
-
-            if (maximizing)
-            {
-                value = int.MinValue;
-
-
-                foreach (int col in _columnOrder)
-                {
-                    if (!GetNextFreeRow(col, out int row))
-                        continue;
-
-                    Debug.Assert(row >= 0);
-
-                    _gameBoard[col][row] = maxPlayer;
-
-                    int miniMaxValue;
-
-                    if (NoMoveLeft())
-                        miniMaxValue = 0;
-                    else if (HasWon(maxPlayer, col, row))
-                        miniMaxValue = depth * 1000;
-                    else if (depth <= 1)
-                        miniMaxValue = CalculateBoardValue(maxPlayer);
-                    else
-                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, false, alpha, beta);
-
-                    _gameBoard[col][row] = null;
-
-                    value = Math.Max(value, miniMaxValue);
-                    alpha = Math.Max(alpha, value);
-                    if (alpha >= beta)
-                        break;
-                }
-            }
-            else
-            {
-                value = int.MaxValue;
-
-                foreach (int col in _columnOrder)
-                {
-                    if (!GetNextFreeRow(col, out int row))
-                        continue;
-
-                    Debug.Assert(row >= 0);
-
-                    _gameBoard[col][row] = minPlayer;
-
-                    int miniMaxValue;
-
-                    if (NoMoveLeft())
-                        miniMaxValue = 0;
-                    else if (HasWon(minPlayer, col, row))
-                        miniMaxValue = depth * -1000;
-                    else if (depth <= 1)
-                        miniMaxValue = CalculateBoardValue(maxPlayer);
-                    else
-                        miniMaxValue = MiniMax(depth - 1, maxPlayer, minPlayer, true, alpha, beta);
-
-                    _gameBoard[col][row] = null;
-
-                    value = Math.Min(value, miniMaxValue);
-                    beta = Math.Min(beta, value);
-                    if (alpha >= beta)
-                        break;
-                }
-            }
-
-            return value;
-        }
-        private bool GetNextFreeRow(int col, out int row)
-        {
-            int j = 0;
-            while (j < Board.Rows)
-            {
-                if (_gameBoard[col][j] == null)
-                {
-                    row = j;
-                    return true;
-                }
-
-                j++;
-            }
-
-            row = -1;
-            return false;
-        }
-        private int CalculateBoardValue(Player maxPlayer)
-        {
-            int boardValue = 0;
-
-            for (int i = 0; i < Board.Columns; i++)
-            {
-                for (int j = 0; j < Board.Rows; j++)
-                {
-                    if (_gameBoard[i][j] == maxPlayer)
-                        boardValue += _propabilityMatrix[i][j];
-                    else if (_gameBoard[i][j] != null)
-                        boardValue -= _propabilityMatrix[i][j];
-                    else
-                        break;
-                }
-            }
-
-            return boardValue;
-        }
-        private bool NoMoveLeft()
-        {
-            for (int i = 0; i < Board.Columns; i++)
-                if (_gameBoard[i][Board.Rows - 1] == null)
-                    return false;
-
-            return true;
-        }
-        private bool HasWon(Player player, int col, int row)
-        {
-            // vertically
-
-            int count = 1;
-            int j = row - 1;
-            while (j >= 0)
-            {
-                if (_gameBoard[col][j] != player)
-                    break;
-
-                j--;
-                count++;
-            }
-            if (count >= 4)
-                return true;
-
-            // horizontally
-            count = 1;
-            int i = col - 1;
-            while (i >= 0)
-            {
-                if (_gameBoard[i][row] != player)
-                    break;
-
-                i--;
-                count++;
-            }
-            i = col + 1;
-            while(i < Board.Columns)
-            {
-                if (_gameBoard[i][row] != player)
-                    break;
-
-                i++;
-                count++;
-            }
-            if (count >= 4)
-                return true;
-
-            // diagonally up
-            count = 1;
-            i = col - 1;
-            j = row - 1;
-            while (i >= 0 && j >= 0)
-            {
-                if (_gameBoard[i][j] != player)
-                    break;
-
-                i--;
-                j--;
-                count++;
-            }
-            i = col + 1;
-            j = row + 1;
-            while (i < Board.Columns && j < Board.Rows)
-            {
-                if (_gameBoard[i][j] != player)
-                    break;
-
-                i++;
-                j++;
-                count++;
-            }
-            if (count >= 4)
-                return true;
-
-            // diagonally down
-            count = 1;
-            i = col - 1;
-            j = row + 1;
-            while (i >= 0 && j < Board.Rows)
-            {
-                if (_gameBoard[i][j] != player)
-                    break;
-
-                i--;
-                j++;
-                count++;
-            }
-            i = col + 1;
-            j = row - 1;
-            while (i < Board.Columns && j >= 0)
-            {
-                if (_gameBoard[i][j] != player)
-                    break;
-
-                i++;
-                j--;
-                count++;
-            }
-            if (count >= 4)
-                return true;
-
-            return false;
-        }
-
 
         private DateTime? _moveStartingTime;
         private readonly Stopwatch _moveDurationStopWatch = new();
@@ -588,15 +172,7 @@ namespace backend.game
         private bool _activePlayerPlacedStone;
         private readonly Player _startingPlayer;
         private readonly Match _match;
-        private readonly Board _gameBoard;
+        private readonly Board _board;
         private readonly List<PlayedMove> _playedMoves = [];
-        private readonly int[] _columnOrder = [3, 2, 4, 1, 5, 0, 6];
-        private readonly int[][] _propabilityMatrix = [[3, 4, 5, 5, 4, 3],
-                                                       [4, 6, 8, 8, 6, 4],
-                                                       [5, 8, 11, 11, 8, 5],
-                                                       [7, 10, 13, 13, 10, 7],
-                                                       [5, 8, 11, 11, 8, 5],
-                                                       [4, 6, 8, 8, 6, 4],
-                                                       [3, 4, 5, 5, 4, 3]];
     }
 }

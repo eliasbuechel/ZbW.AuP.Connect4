@@ -9,10 +9,10 @@ namespace backend.game
     {
         public Board(RoboterApi roboterAPI)
         {
-            _field = new Player?[COLUMNS][];
+            _gameBoard = new Player?[COLUMNS][];
 
-            for (int i = 0; i < _field.Length; i++)
-                _field[i] = new Player?[ROWS];
+            for (int i = 0; i < _gameBoard.Length; i++)
+                _gameBoard[i] = new Player?[ROWS];
             _roboterAPI = roboterAPI;
 
             _roboterAPI.OnStonePlaced += OnStonePlacedOnRoboter;
@@ -31,15 +31,15 @@ namespace backend.game
         {
             get
             {
-                string[][] fieldAsIds = new string[_field.Length][];
+                string[][] fieldAsIds = new string[_gameBoard.Length][];
 
-                for (int i = 0; i < _field.Length; i++)
+                for (int i = 0; i < _gameBoard.Length; i++)
                 {
-                    fieldAsIds[i] = new string[_field[i].Length];
+                    fieldAsIds[i] = new string[_gameBoard[i].Length];
 
-                    for (int j = 0; j < _field[i].Length; j++)
+                    for (int j = 0; j < _gameBoard[i].Length; j++)
                     {
-                        Player? player = _field[i][j];
+                        Player? player = _gameBoard[i][j];
                         fieldAsIds[i][j] = player == null ? "" : player.Id;
                     }
                 }
@@ -49,12 +49,13 @@ namespace backend.game
         }
         public static int Columns => COLUMNS;
         public static int Rows => ROWS;
+        public Player?[][] GameBoard => _gameBoard;
         public Field? PlacingField { get; private set; }
 
 
         public Player?[] this[int index]
         {
-            get { return _field[index]; }
+            get { return _gameBoard[index]; }
         }
 
         public void PlaceStone(Player player, int column)
@@ -62,7 +63,7 @@ namespace backend.game
             if (column < 0 || column >= COLUMNS)
                 throw new InvalidPlayerRequestException($"Exception while playing move. {column} is not a valid column for a move.");
 
-            Player?[] col = _field[column];
+            Player?[] col = _gameBoard[column];
             if (col[^1] != null)
                 throw new InvalidPlayerRequestException($"Exception while playing move. Cannot play move in full column {column}.");
 
@@ -82,9 +83,9 @@ namespace backend.game
         }
         public void Reset()
         {
-            for (int i = 0; i < _field.Length; i++)
-                for (int j = 0 ; j < _field[i].Length; j++)
-                    _field[i][j] = null;
+            for (int i = 0; i < _gameBoard.Length; i++)
+                for (int j = 0 ; j < _gameBoard[i].Length; j++)
+                    _gameBoard[i][j] = null;
 
             _roboterAPI.ResetConnect4Board();
         }
@@ -100,7 +101,7 @@ namespace backend.game
             OnBoardReset?.Invoke();
         }
 
-        private readonly Player?[][] _field;
+        private readonly Player?[][] _gameBoard;
         private readonly RoboterApi _roboterAPI;
         private const int ROWS = 6;
         private const int COLUMNS = 7;

@@ -4,11 +4,11 @@ namespace backend.communication.dtos
 {
     internal abstract class EntityDto
     {
-        public EntityDto(string id)
+        protected EntityDto(string id)
         {
             Id = id;
         }
-        public EntityDto(Entity entity)
+        protected EntityDto(Entity entity)
         {
             Id = entity.Id;
         }
