@@ -23,11 +23,10 @@ router.beforeEach(async (to, from, next) => {
     } else {
       next("/login");
     }
-  } else if (!store.state.isAuthenticated && !to.meta.requiresAuth) {
-    next("/home");
+  } else {
+    next();
   }
 });
-
 
 // Register (main)App
 const app: App = createApp(AppVue);
@@ -38,8 +37,8 @@ declare module "@vue/runtime-core" {
   }
 }
 app.config.globalProperties.$axios = axios;
-// axios.defaults.baseURL = "https://api.r4d4.work";
-axios.defaults.baseURL = "http://localhost:8082";
+axios.defaults.baseURL = "https://api.r4d4.work";
+// axios.defaults.baseURL = "http://localhost:8082";
 
 app.use(router);
 app.use(VueCookies);

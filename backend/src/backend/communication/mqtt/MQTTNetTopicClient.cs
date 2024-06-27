@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using backend.infrastructure;
+using MQTTnet;
 using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
@@ -8,9 +9,9 @@ using System.Text;
 
 namespace backend.communication.mqtt
 {
-    internal class MQTTNetTopicClient : IDisposable
+    internal class MqttNetTopicClient : DisposingObject
     {
-        public MQTTNetTopicClient(string brokerUri, string username, string password)
+        public MqttNetTopicClient(string brokerUri, string username, string password)
         {
             _brokerUri = brokerUri;
             _username = username;
@@ -32,7 +33,7 @@ namespace backend.communication.mqtt
             _managedClient.UseDisconnectedHandler(OnDisonnectedFromBroker);
             _managedClient.UseApplicationMessageReceivedHandler(OnMessageRecivedFromBroker);
         }
-        internal MQTTNetTopicClient(string brokerUri)
+        internal MqttNetTopicClient(string brokerUri)
         {
             _brokerUri = brokerUri;
             _username = "";
@@ -68,24 +69,11 @@ namespace backend.communication.mqtt
         {
             await _managedClient.StopAsync();
         }
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _managedClient.Dispose();
-        }
 
         public async Task PublishAsync(string topic, string message)
         {
             if (!IsConnected)
-            {
-                Debug.Assert(false);
                 return;
-            }
 
             var applicationMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
@@ -96,7 +84,7 @@ namespace backend.communication.mqtt
 
             await _managedClient.PublishAsync(applicationMessage);
 
-            Log($"Sent data to server on {topic}: '{message}'");
+            Log(LogLevel.Debug, $"Send on [{topic}]:'{message}'");
         }
         public async Task SubscribeToAsync(string topic, Func<string, Task> callback)
         {
@@ -110,9 +98,7 @@ namespace backend.communication.mqtt
         }
         public async Task UnsubscribeFromAsync(string topic, Func<string, Task> callback)
         {
-            ICollection<Func<string, Task>>? callbacks;
-
-            if (!_topicCallbackMappings.TryGetValue(topic, out callbacks))
+            if (!_topicCallbackMappings.TryGetValue(topic, out ICollection<Func<string, Task>>? callbacks))
             {
                 Debug.Assert(false);
                 return;
@@ -132,17 +118,25 @@ namespace backend.communication.mqtt
                 _topicValueMappings.Remove(topic);
             }
         }
-
+            
         private async Task OnConnectedToBorker(MqttClientConnectedEventArgs e)
         {
-            Console.WriteLine("Connected to broker!");
+            if (string.IsNullOrEmpty(_username))
+                Log(LogLevel.Information, $"Connected to broker at '{_brokerUri}'.");
+            else
+                Log(LogLevel.Information, $"Connected as '{_username}' to broker at '{_brokerUri}'.");
+
             _connected = true;
             OnConnected?.Invoke();
             await Task.CompletedTask;
         }
         private async Task OnDisonnectedFromBroker(MqttClientDisconnectedEventArgs e)
         {
-            Console.WriteLine("Disconnected from broker!");
+            if (e.ClientWasConnected)
+                Log(LogLevel.Information, "Disconnected from broker.", e.Exception);
+            else
+                Log(LogLevel.Warning, "Not able to connect to broker.", e.Exception);
+
             _connected = false;
             OnDisconnected?.Invoke();
             await Task.CompletedTask;
@@ -152,7 +146,7 @@ namespace backend.communication.mqtt
             string topic = e.ApplicationMessage.Topic;
             string message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-            Log($"Received test message for topic: {topic}");
+            Log(LogLevel.Debug, $"Recive on [{topic}]:'{message}'");
 
             if (_topicValueMappings[topic] == null)
             {
@@ -173,25 +167,33 @@ namespace backend.communication.mqtt
                 }
                 catch (Exception ex)
                 {
-                    Log($"Error while executing callback for topic {topic}: {ex.Message}");
+                    Log(LogLevel.Error, $"Error while executing callback for topic {topic}: {ex.Message}");
                 }
             }
         }
 
-        private static void Log(string message)
+        private static void Log(LogLevel logLevel, string message)
         {
-            Console.WriteLine($"MQTT-CLIENT: {message}");
+            Logger.Log(logLevel, LogContext.MQTT_CLIENT, message);
+        }
+        private static void Log(LogLevel logLevel, string message, Exception e)
+        {
+            Logger.Log(logLevel, LogContext.MQTT_CLIENT, message, e);
+        }
+
+        protected override void OnDispose()
+        {
+            _managedClient.Dispose();
         }
 
         private bool _connected;
-        private bool _disposed;
         private readonly string _brokerUri;
         private readonly string _username;
         private readonly string _password;
         private readonly Guid _clientId = Guid.NewGuid();
-        private IManagedMqttClient _managedClient;
+        private readonly IManagedMqttClient _managedClient;
         private readonly ManagedMqttClientOptions _managedOptions;
-        private readonly Dictionary<string, ICollection<Func<string, Task>>> _topicCallbackMappings = new Dictionary<string, ICollection<Func<string, Task>>>();
-        private readonly Dictionary<string, string?> _topicValueMappings = new Dictionary<string, string?>();
+        private readonly Dictionary<string, ICollection<Func<string, Task>>> _topicCallbackMappings = [];
+        private readonly Dictionary<string, string?> _topicValueMappings = [];
     }
 }

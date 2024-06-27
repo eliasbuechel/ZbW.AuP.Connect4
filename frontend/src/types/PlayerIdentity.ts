@@ -1,5 +1,5 @@
-import { Entity } from "./Entity";
+import { IEntity } from "./Entity";
 
-export interface PlayerIdentity extends Entity {
+export interface PlayerIdentity extends IEntity {
   username: string;
 }

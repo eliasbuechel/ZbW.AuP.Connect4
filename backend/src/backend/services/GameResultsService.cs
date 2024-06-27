@@ -1,30 +1,30 @@
-﻿using backend.Data;
-using backend.Data.entities;
+﻿using backend.data;
+using backend.data.entities;
 using backend.game.entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.services
 {
-    internal class GameResultsService
+    internal class GameResultsService(BackendDbContextFacory dbContextFactory)
     {
-        public GameResultsService(BackendDbContextFacory dbContextFactory)
-        {
-            _dbContextFactory = dbContextFactory;
-        }
-
         public IEnumerable<GameResult> Bestlist
         {
             get
             {
                 using BackendDbContext context = _dbContextFactory.GetDbContext();
-                IEnumerable<GameResult> gameResults = context.GameResults
+                var gameResultsQuery = context.GameResults
                     .Include(x => x.Line)
                     .Include(x => x.Match)
                     .Include(x => x.Match.Player1)
                     .Include(x => x.Match.Player2)
                     .Include(x => x.PlayedMoves)
+                    .AsEnumerable();
+
+                IEnumerable<GameResult> gameResults = gameResultsQuery
+                    .Where(x => x.Line.Count == 4)
                     .Select(x => new GameResult(x))
                     .ToArray();
+
                 return gameResults;
             }
         }
@@ -48,26 +48,96 @@ namespace backend.services
         public async Task Add(GameResult gameResult)
         {
             using BackendDbContext context = _dbContextFactory.GetDbContext();
-            DbGameResult dbGameResult = new DbGameResult();
+            DbGameResult dbGameResult = new()
+            {
+                Id = gameResult.Id,
+                WinnerId = gameResult.WinnerId,
+                Line = GetOrAdd(gameResult.Line, context),
+                PlayedMoves = GetOrAdd(gameResult.PlayedMoves),
+                StartingPlayerId = gameResult.StartingPlayerId,
+                Match = GetOrAdd(gameResult.Match, context)
+            };
 
-            dbGameResult.Id = gameResult.Id;
-            dbGameResult.WinnerId = gameResult.WinnerId;
-            dbGameResult.Line = gameResult.Line == null ? new List<DbField>() : gameResult.Line.Select(x => new DbField(x)).ToList();
-            dbGameResult.PlayedMoves = gameResult.PlayedMoves.Select(x => new DbPlayedMove(x)).ToList();
-            dbGameResult.StartingPlayerId = gameResult.StartingPlayerId;
-
-            DbGameResultMatch dbMatch = new DbGameResultMatch();
-            DbPlayerInfo player1 = context.Players.FirstOrDefault(x => x.Id == gameResult.Match.Player1.Id) ?? new DbPlayerInfo(gameResult.Match.Player1);
-            DbPlayerInfo player2 = context.Players.FirstOrDefault(x => x.Id == gameResult.Match.Player2.Id) ?? new DbPlayerInfo(gameResult.Match.Player2);
-            dbMatch.Id = gameResult.Match.Id;
-            dbMatch.Player1 = player1;
-            dbMatch.Player2 = player2;
-            dbGameResult.Match = dbMatch;
-
-            context.Add(dbGameResult);
+            context.GameResults.Add(dbGameResult);
             await context.SaveChangesAsync();
         }
 
-        private readonly BackendDbContextFacory _dbContextFactory;
+        private static List<DbPlayedMove> GetOrAdd(ICollection<PlayedMove> playedMoves)
+        {
+            List<DbPlayedMove> dbPlayedMoves = [];
+
+            for (int i = 0; i < playedMoves.Count; i++)
+            {
+                PlayedMove playedMove = playedMoves.ElementAt(i);
+
+                dbPlayedMoves.Add(new DbPlayedMove()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Column = playedMove.Column,
+                    MoveOrderIndex = i,
+                    Duration = playedMove.Duration
+                });
+            }
+
+            return dbPlayedMoves;
+        }
+
+        private static List<DbField> GetOrAdd(ICollection<Field>? line, BackendDbContext context)
+        {
+            List<DbField> dbLine = [];
+
+            if (line == null)
+                return dbLine;
+
+            foreach (var field in line)
+                dbLine.Add(GetOrAdd(field, context));
+
+            return dbLine;
+        }
+
+        private static DbField GetOrAdd(Field field, BackendDbContext context)
+        {
+            DbField? dbField = context.Fields.Where(x => x.Column == field.Column && x.Row == field.Row).FirstOrDefault();
+
+            dbField ??= new DbField()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Column = field.Column,
+                Row = field.Row
+            };
+
+            return dbField;
+        }
+
+        private static DbPlayerInfo GetOrAdd(PlayerInfo player, BackendDbContext context)
+        {
+            DbPlayerInfo? dbPlayer = context.Players.FirstOrDefault(x => x.Id == player.Id);
+
+            dbPlayer ??= new DbPlayerInfo
+            {
+                Id = player.Id,
+                Username = player.Username
+            };
+
+            return dbPlayer;
+        }
+        private static DbGameResultMatch GetOrAdd(GameResultMatch match, BackendDbContext context)
+        {
+            DbPlayerInfo dbPlayer1 = GetOrAdd(match.Player1, context);
+            DbPlayerInfo dbPlayer2 = GetOrAdd(match.Player2, context);
+
+            DbGameResultMatch? dbGameResultMatch = context.Matches.Where(x => (x.Player1 == dbPlayer1 && x.Player2 == dbPlayer2) || (x.Player1 == dbPlayer2 && x.Player2 == dbPlayer1)).FirstOrDefault();
+
+            dbGameResultMatch ??= new DbGameResultMatch()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Player1 = dbPlayer1,
+                Player2 = dbPlayer2
+            };
+
+            return dbGameResultMatch;
+        }
+
+        private readonly BackendDbContextFacory _dbContextFactory = dbContextFactory;
     }
 }

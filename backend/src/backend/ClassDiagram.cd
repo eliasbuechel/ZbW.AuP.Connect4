@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="backend.Data.entities.DbEntity" Collapsed="true">
+    <Position X="5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\entities\DbEntity.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="backend.Data.entities.DbField">
+    <Position X="2.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\entities\DbField.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="backend.Data.entities.DbGameResult">
+    <Position X="7.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAQAEAAAAAAAAAAEAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Data\entities\DbGameResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="backend.Data.entities.DbGameResultMatch">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\entities\DbGameResultMatch.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="backend.Data.entities.DbPlayedMove">
+    <Position X="5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\entities\DbPlayedMove.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="backend.Data.entities.DbPlayerInfo">
+    <Position X="9.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\entities\DbPlayerInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

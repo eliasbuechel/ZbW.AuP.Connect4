@@ -1,5 +1,5 @@
 import { createStore } from "vuex";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export default createStore({
   state: {
@@ -12,12 +12,13 @@ export default createStore({
   },
   actions: {
     async checkAuth({ commit }) {
+      let response: AxiosResponse<any, any> | undefined = undefined;
       try {
-        const response = await axios.get("/account/checkAuthentication", {
+        response = await axios.get("/account/checkAuthentication", {
           withCredentials: true,
         });
-        commit("setAuthenticated", response.data.isAuthenticated);
-      } catch (error) {
+        commit("setAuthenticated", response!.data.isAuthenticated);
+      } catch (error: any) {
         commit("setAuthenticated", false);
       }
     },

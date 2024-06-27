@@ -1,0 +1,55 @@
+.player-info {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  color: var(--color-light);
+  gap: 1rem;
+  font-size: 1.1rem;
+  width: 250px;
+}
+
+.player-info-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.5rem;
+}
+
+.player-info-card > label {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.9em;
+}
+
+.player-info-card > .player-info-name {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  font-size: 1.4em;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.player-info-left > .player-info-card {
+  background-color: var(--color-orange-transparent);
+}
+
+.player-info-right > .player-info-card {
+  background-color: var(--color-player-2-transparent);
+}
+
+.player-info-left > .player-info-card > .player-info-name {
+  background-color: var(--color-orange);
+  color: var(--color-dark);
+}
+.player-info-right > .player-info-card > .player-info-name {
+  background-color: var(--color-player-2);
+  color: var(--color-light);
+}
+
+@media (max-width: 800px) {
+  .player-info {
+    width: 35vw;
+    font-size: 0.7rem;
+  }
+}

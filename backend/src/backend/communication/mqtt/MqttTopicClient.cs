@@ -95,9 +95,7 @@ namespace backend.communication.mqtt
         }
         public void UnsubscribeFrom(string topic, Action<string> callback)
         {
-            ICollection<Action<string>>? callbacks;
-
-            if (!_topicCallbackMappings.TryGetValue(topic, out callbacks))
+            if (!_topicCallbackMappings.TryGetValue(topic, out ICollection<Action<string>>? callbacks))
             {
                 Debug.Assert(false);
                 return;
@@ -162,8 +160,8 @@ namespace backend.communication.mqtt
                 return;
             }
 
-            List<string> topics = new List<string>();
-            List<byte> qosLevels = new List<byte>();
+            List<string> topics = [];
+            List<byte> qosLevels = [];
 
             foreach (var topicCallbackMapping in _topicCallbackMappings)
             {
@@ -171,14 +169,14 @@ namespace backend.communication.mqtt
                 qosLevels.Add(MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE);
             }
 
-            _mqttClient.Subscribe(topics.ToArray(), qosLevels.ToArray());
+            _mqttClient.Subscribe([.. topics], [.. qosLevels]);
             Log($"Subscribed to topics '{string.Join(", ", topics)}'");
         }
         private void UnsubscribeFromAllTopics()
         {
             Log("Unsubscribing from topics...");
 
-            List<string> topics = new List<string>();
+            List<string> topics = [];
 
             foreach (var topicCallbackMapping in _topicCallbackMappings)
             {
@@ -196,7 +194,7 @@ namespace backend.communication.mqtt
         private readonly int _serverPort;
         private readonly IPAddress _brokerIpAddress;
         private readonly MqttClient _mqttClient;
-        private readonly Dictionary<string, ICollection<Action<string>>> _topicCallbackMappings = new Dictionary<string, ICollection<Action<string>>>();
-        private readonly Dictionary<string, string?> _topicValueMappings = new Dictionary<string, string?>();
+        private readonly Dictionary<string, ICollection<Action<string>>> _topicCallbackMappings = [];
+        private readonly Dictionary<string, string?> _topicValueMappings = [];
     }
 }

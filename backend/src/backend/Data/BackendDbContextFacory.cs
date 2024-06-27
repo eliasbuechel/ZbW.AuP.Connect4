@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace backend.Data
+namespace backend.data
 {
     internal class BackendDbContextFacory
     {

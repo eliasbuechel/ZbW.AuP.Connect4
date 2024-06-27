@@ -6,27 +6,30 @@ type Callback = (...arg: any[]) => void;
 class SignalRHub {
   constructor() {
     this._client = new HubConnectionBuilder()
-      // .withUrl("https://api.r4d4.work/playerHub", { withCredentials: true })
-      .withUrl("http://localhost:8082/playerHub", { withCredentials: true })
+      .withUrl("https://api.r4d4.work/playerHub", { withCredentials: true })
+      // .withUrl("http://localhost:8082/playerHub", { withCredentials: true })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Error)
       .build();
 
-    this._client.onreconnected(this.onReconnected.bind(this));
     this._client.onclose(this.onDisconnected.bind(this));
+    this._client.onreconnected(this.onReconnected.bind(this));
   }
 
   public start(): void {
+    this._closingNormally = false;
     this._client
       .start()
       .then(() => this.onConnected())
       .catch((error) => {
-        console.error("Error starting SignalR connection: ", error);
-        // setTimeout(() => this.start(), 10000);
+        const errorType = "Not able to connect to backend with SignalR!";
+        console.error(errorType, error);
+        eventBus.emit("error", errorType, error);
       });
   }
 
   public stop(): void {
+    this._closingNormally = true;
     this._client
       .stop()
       .then(() => this.onDisconnected())
@@ -58,24 +61,26 @@ class SignalRHub {
   private onReconnected(connectionId?: string | undefined): void {
     this._isConnected = true;
     eventBus.emit("signalr-connected", true);
-    console.log("SignalR reconneected to server ", connectionId);
+    console.log("SignalR reconneected to server!");
   }
 
   private onConnected(): void {
     this._isConnected = true;
     eventBus.emit("signalr-connected", true);
-    console.log("SignalR connected to server");
   }
 
   private onDisconnected(error?: Error | undefined): void {
     this._isConnected = false;
-    console.log("SignalR disconnected");
+    if (this._closingNormally) {
+      return;
+    }
     eventBus.emit("signalr-connected", false);
-    this.start();
+    eventBus.emit("error", "Lost connection to backen via SignalR!", "Try again by reloading");
   }
 
   private _isConnected: boolean = false;
   private _client: HubConnection;
+  private _closingNormally: boolean = false;
 }
 
 export default new SignalRHub();

@@ -1,25 +1,22 @@
 using backend.communication.mqtt;
-using backend.communication.signalR;
-using backend.Data;
+using backend.data;
 using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.services;
-using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using backend.services.player;
+using backend.communication.signalR.frontendApi;
+using backend.communication.signalR.opponentRoboterApi;
+using backend.utilities;
 
 namespace backend
 {
     public class Startup
     {
-        public Startup()
-        {
-            DotNetEnv.Env.Load();
-        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -27,7 +24,7 @@ namespace backend
             {
                 options.AddPolicy("MyCorsPolicy", builder =>
                 {
-                    string cors = DotNetEnv.Env.GetString("CORS");
+                    string[] cors = [DotNetEnv.Env.GetString("CORS"), "https://game.rowbot4.xyz"];
                     builder.WithOrigins(cors)
                            .AllowAnyHeader()
                            .AllowAnyMethod()
@@ -43,15 +40,15 @@ namespace backend
             services.AddControllers();
 
 
-            services.AddSingleton<MQTTNetTopicClient>(services =>
+            services.AddSingleton<MqttNetTopicClient>(services =>
             {
-                var borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI");
-                var username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME");
-                var password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD");
+                string borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI") ?? throw new ArgumentException("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_BROKER_URI' not provided.");
+                string username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME") ?? throw new ArgumentException("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_USERNAME' not provided. Must be at least an empty string.");
+                string password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD") ?? throw new ArgumentException("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_PASSWORD' not provided. Must be at least an empty string.");
 
-                return new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
+                return new MqttNetTopicClient(borkerUri, username, password);
             });
-            services.AddSingleton<IRoboterAPI, MQTTRoboterAPI>();
+            services.AddSingleton<RoboterApi, MqttRoboterApi>();
 
             services.AddDbContext<BackendDbContext>(options =>
             {
@@ -61,7 +58,7 @@ namespace backend
             services.AddSingleton<BackendDbContextFacory>(s =>
             {
                 var connectionString = DotNetEnv.Env.GetString("CONNECTIONSTRING");
-                DbContextOptionsBuilder options = new DbContextOptionsBuilder();
+                DbContextOptionsBuilder options = new();
                 options.UseMySQL(connectionString);
                 return new BackendDbContextFacory(options.Options);
             });
@@ -71,55 +68,54 @@ namespace backend
 
             services.AddTransient<EmailSettings>( services =>
             {
-                EmailSettings settings = new EmailSettings();
-                settings.Host = DotNetEnv.Env.GetString("SMTP_HOST");
-                settings.Port = DotNetEnv.Env.GetInt("SMTP_PORT");
-                settings.Username = DotNetEnv.Env.GetString("SMTP_USERNAME");
-                settings.Password = DotNetEnv.Env.GetString("SMTP_PASSWORD");
-                settings.FromAddress = DotNetEnv.Env.GetString("SMTP_FROM_ADDRESS");
+                EmailSettings settings = new()
+                {
+                    Host = DotNetEnv.Env.GetString("SMTP_HOST"),
+                    Port = DotNetEnv.Env.GetInt("SMTP_PORT"),
+                    Username = DotNetEnv.Env.GetString("SMTP_USERNAME"),
+                    Password = DotNetEnv.Env.GetString("SMTP_PASSWORD"),
+                    FromAddress = DotNetEnv.Env.GetString("SMTP_FROM_ADDRESS")
+                };
                 return settings;
             });
 
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton<Func<PlayerIdentity, ToPlayerHub<WebPlayerHub>>>(s => {
-                GameManager gameManager = s.GetRequiredService<GameManager>();
-                IHubContext<WebPlayerHub> hubContext = s.GetRequiredService<IHubContext<WebPlayerHub>>();
-                return (identity) => new ToPlayerHub<WebPlayerHub>(identity.Id, identity.UserName == null ? "" : identity.UserName, gameManager, hubContext);
-            });
-
-            services.AddSingleton<ToPlayerHub<OpponentRoboterPlayerHub>>(s =>
-            {
-                GameManager gameManager = s.GetRequiredService<GameManager>();
-                IHubContext<OpponentRoboterPlayerHub> hubContext = s.GetRequiredService<IHubContext<OpponentRoboterPlayerHub>>();
-                string roboterName = "Opponent roboter";
-                string roboterId = Guid.NewGuid().ToString();
-                return new ToPlayerHub<OpponentRoboterPlayerHub>(roboterId, roboterName, gameManager, hubContext);
-            });
-
-            services.AddSingleton<Func<AlgorythmPlayer>>(s => () =>
-            {
-                GameManager gameManager = s.GetRequiredService<GameManager>();
-                return new AlgorythmPlayer(gameManager);
-            });
-            services.AddSingleton<AlgorythmPlayerProvider>();
 
             services.AddSingleton<GameResultsService>();
-            services.AddSingleton<IOnlinePlayerProvider>(s => s.GetRequiredService<PlayerConnectionManager>());
-            services.AddSingleton<PlayerConnectionManager>(s =>
+
+            // connection management
+            services.AddSingleton<WebPlayerConnectionManager>();
+            services.AddSingleton<AlgorythmPlayerConnectionManager>();
+            services.AddSingleton<OpponentRoboterPlayerConnectionManager>();
+            services.AddTransient<PlayerConnectionService>();
+
+            services.AddSingleton<FrontendCommunicationManager>();
+            services.AddSingleton<AlgorythmPlayerCommunicationManager>();
+            services.AddSingleton<OpponentRoboterCommunicationManager>();
+
+            services.AddSingleton<FrontendApi>();
+            services.AddSingleton<OpponentRoboterHubApi>();
+
+            services.AddSingleton<OpponentRoboterClientApiManager>();
+            services.AddTransient<Func<string, OpponentRoboterClientApi>>(s => hubUrl =>
             {
-                return new PlayerConnectionManager();
-            });
+                RequestHandlerManager<string> requestHandlerManager = s.GetRequiredService<RequestHandlerManager<string>>();
+                return new OpponentRoboterClientApi(requestHandlerManager, hubUrl);
+            }
+            );
+
+
             services.AddSingleton<GameManager>();
-            services.AddSingleton<Connect4Board>();
-            services.AddSingleton<GameTimeService>();
+            services.AddSingleton<Board>();
 
-
-            services.AddSingleton<Func<Match, Connect4Game >> (s => match =>
+            services.AddSingleton<Func<Match, Game>>(s => m =>
             {
-                return new Connect4Game(match, s.GetRequiredService<Connect4Board>());
+                Board gameBoard = s.GetRequiredService<Board>();
+                return new Game(m, gameBoard);
             });
 
-            services.AddSingleton<PlayerRequestHandlerManager>();
+            services.AddSingleton<RequestHandlerManager<string>>();
+            services.AddSingleton<RequestHandlerManager<PlayerIdentity>>();
         }
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -140,7 +136,7 @@ namespace backend
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(LogCase.ERROR, "Not able to migrate database.", e);
+                    Logger.Log(LogLevel.Error, LogContext.ENTITY_FRAMEWORK, "Not able to migrate database.", e);
                 }
             }
 
@@ -155,8 +151,13 @@ namespace backend
                 endpoints.MapControllers();
 
                 endpoints.MapGroup("/account").MapIdentityApi<PlayerIdentity>();
-                endpoints.MapHub<WebPlayerHub>("/playerHub");
+                endpoints.MapHub<FrontendHub>("/playerHub");
+                endpoints.MapHub<OpponentRoboterHub>("/opponentRoboterApi");
             });
+
+            app.ApplicationServices.GetRequiredService<FrontendCommunicationManager>();
+            app.ApplicationServices.GetRequiredService<AlgorythmPlayerCommunicationManager>();
+            app.ApplicationServices.GetRequiredService<OpponentRoboterCommunicationManager>();
         }
 
         private static void ConfigureIdentity(IServiceCollection services)
@@ -164,7 +165,6 @@ namespace backend
             services.AddAuthorization();
             services.AddAuthentication();
                 
-
             services.AddIdentityCore<PlayerIdentity>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;

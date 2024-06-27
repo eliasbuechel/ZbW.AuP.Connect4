@@ -1,9 +1,9 @@
-﻿using backend.Data.entities;
-using backend.Infrastructure;
+﻿using backend.data.entities;
+using backend.infrastructure;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Data
+namespace backend.data
 {
     internal class BackendDbContext : IdentityDbContext<PlayerIdentity>
     {
@@ -17,7 +17,7 @@ namespace backend.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.LogTo(message => Logger.Log(LogCase.DEBUG, $"ENTITY_FRAMEWORK: {message}"));
+            optionsBuilder.LogTo(message => Logger.Log(LogLevel.Debug, LogContext.ENTITY_FRAMEWORK, message));
             base.OnConfiguring(optionsBuilder);
         }
         protected override void OnModelCreating(ModelBuilder builder)

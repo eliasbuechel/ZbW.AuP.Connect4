@@ -1,15 +1,15 @@
-﻿using backend.Data.entities;
+﻿using backend.data.entities;
 
 namespace backend.game.entities
 {
-    internal class Field : Entity
+    internal class Field
     {
         public Field(int column, int row)
         {
             Column = column;
             Row = row;
         }
-        public Field(DbField field) : base(field)
+        public Field(DbField field)
         {
             Column = field.Column;
             Row = field.Row;

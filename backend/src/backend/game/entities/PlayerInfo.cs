@@ -1,10 +1,10 @@
-﻿using backend.Data.entities;
+﻿using backend.data.entities;
 
 namespace backend.game.entities
 {
     internal class PlayerInfo : Entity
     {
-        public PlayerInfo(IPlayer player) : base(player.Id)
+        public PlayerInfo(Player player) : base(player.Id)
         {
             Username = player.Username;
         }

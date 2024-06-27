@@ -3,19 +3,18 @@ using backend.game.entities;
 
 namespace backend.communication.mqtt
 {
-    internal class TestingRoboterAPI : IRoboterAPI
+    internal class TestingRoboterAPI : RoboterApi
     {
-        public event Action<IPlayer, Field>? OnStonePlaced;
-        public event Action? OnBoardReset;
-        public event Action<int>? OnManualMove;
+        public override void ResetConnect4Board()
+        {
+            BoardReset();
+        }
 
-        public void PlaceStone(IPlayer player, Field field)
+        protected override void PlaceStoneOnApi(Player player, Field field)
         {
-            OnStonePlaced?.Invoke(player, field);
+            StonePlaced(player, field);
         }
-        public void ResetConnect4Board()
-        {
-            OnBoardReset?.Invoke();
-        }
+        protected override void OnDispose()
+        {}
     }
 }

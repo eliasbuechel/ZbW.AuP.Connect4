@@ -1,0 +1,113 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.game-header {
+  display: flex;
+  padding: 2rem;
+  justify-content: space-between;
+  min-height: 215px;
+}
+
+@media (max-width: 800px) {
+  .game-header {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .game-header > .game-info-container {
+    order: 3;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .game-header > .game-info-container > h2 {
+    display: none;
+  }
+
+  .total-game-time {
+    font-size: 1.2rem;
+  }
+}
+
+.game-info-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-board-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100%;
+}
+
+.grid-item-leave-game-view-button {
+  grid-column: 4 / span 6;
+  grid-row: 2 / span 1;
+  width: fit-content;
+  height: fit-content;
+  align-self: center;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.confirm-game-start-button {
+  height: 3rem;
+  padding: 1rem;
+  width: fit-content;
+}
+
+.game-board {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.game-board-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 115px;
+}
+
+.game-board-bar > button {
+  margin-bottom: 1rem;
+}
+
+.playing-move-info-container {
+  display: flex;
+}
+
+.playing-move-info-container > .loadingCube {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 25%;
+  border: 1px solid white;
+  margin-right: 0.8rem;
+  transition: 0.1s ease-in-out;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loadingCubeLeft {
+  background-color: var(--color-orange);
+}
+
+.loadingCubeRight {
+  background-color: var(--color-player-2);
+}
+
+.total-game-time {
+  font-size: x-large;
+  margin: 1rem;
+}

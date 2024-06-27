@@ -1,6 +1,4 @@
-import { Entity } from "./Entity";
-
-export interface PlayedMove extends Entity {
-    column: number;
-    duration: number;
+export interface PlayedMove {
+  column: number;
+  duration: number;
 }
