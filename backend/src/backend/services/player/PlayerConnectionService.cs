@@ -1,6 +1,6 @@
-﻿using backend.communication.DOTs;
+﻿using backend.communication.dtos;
 using backend.game;
-using backend.Infrastructure;
+using backend.infrastructure;
 using System.Diagnostics;
 
 namespace backend.services.player
@@ -59,19 +59,19 @@ namespace backend.services.player
                 return null;
             }
         }
-        public ConnectedPlayersDTO GetConnectedPlayersExcept(WebPlayer requestingWebPlayer)
+        public ConnectedPlayersDto GetConnectedPlayersExcept(WebPlayer requestingWebPlayer)
         {
-            IEnumerable<ConnectedPlayerDTO> connectedWebPlayers = WebPlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x => new ConnectedPlayerDTO(x, requestingWebPlayer));
-            IEnumerable<ConnectedPlayerDTO> connectedOpponentRoboterPlayers = OpponentRoboterePlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x =>
+            IEnumerable<ConnectedPlayerDto> connectedWebPlayers = WebPlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x => new ConnectedPlayerDto(x, requestingWebPlayer));
+            IEnumerable<ConnectedPlayerDto> connectedOpponentRoboterPlayers = OpponentRoboterePlayers.Where(x => x.Id != requestingWebPlayer.Id).Select(x =>
             {
                 AlgorythmPlayer? algorythmPlayer = AlgorythmPlayerConnectionManager.GetConnectedPlayerByIdentificationOrDefault(x);
                 if (algorythmPlayer == null)
-                    return new ConnectedPlayerDTO(x);
+                    return new ConnectedPlayerDto(x);
 
-                return new ConnectedPlayerDTO(x, algorythmPlayer);
+                return new ConnectedPlayerDto(x, algorythmPlayer);
             });
 
-            ConnectedPlayersDTO connectedPlayers = new(connectedWebPlayers, connectedOpponentRoboterPlayers);
+            ConnectedPlayersDto connectedPlayers = new(connectedWebPlayers, connectedOpponentRoboterPlayers);
             return connectedPlayers;
         }
         public void ForeachConnectedPlayer(Action<Player> action)

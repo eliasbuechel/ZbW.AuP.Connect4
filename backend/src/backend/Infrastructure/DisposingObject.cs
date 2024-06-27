@@ -1,16 +1,21 @@
 ﻿using System.Diagnostics;
 
-namespace backend.Infrastructure
+namespace backend.infrastructure
 {
     internal abstract class DisposingObject : IDisposable
     {
         ~DisposingObject()
         {
-            if (!_disposed)
-                Debug.Assert(false);
+            Dispose(false);
         }
 
         public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
         {
             if (_disposed)
             {
@@ -18,8 +23,10 @@ namespace backend.Infrastructure
                 return;
             }
 
+            if (disposing)
+                OnDispose();
+
             _disposed = true;
-            OnDispose();
         }
 
         protected abstract void OnDispose();

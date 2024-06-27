@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace backend.Data.entities
+namespace backend.data.entities
 {
     internal abstract class DbEntity
     {

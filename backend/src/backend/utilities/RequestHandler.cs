@@ -1,4 +1,4 @@
-﻿using backend.Infrastructure;
+﻿using backend.infrastructure;
 using System.Collections.Concurrent;
 
 namespace backend.utilities

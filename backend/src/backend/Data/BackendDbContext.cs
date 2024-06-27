@@ -1,9 +1,9 @@
-﻿using backend.Data.entities;
-using backend.Infrastructure;
+﻿using backend.data.entities;
+using backend.infrastructure;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Data
+namespace backend.data
 {
     internal class BackendDbContext : IdentityDbContext<PlayerIdentity>
     {

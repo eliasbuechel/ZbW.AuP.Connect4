@@ -1,8 +1,8 @@
 ﻿using backend.game.entities;
 
-namespace backend.communication.DOTs
+namespace backend.communication.dtos
 {
-    internal class PlayedMoveDTO(PlayedMove playedMove)
+    internal class PlayedMoveDto(PlayedMove playedMove)
     {
         public int Column { get; set; } = playedMove.Column;
         public double Duration { get; set; } = playedMove.Duration.TotalMilliseconds;

@@ -40,6 +40,6 @@
             _topicClient?.Dispose();
         }
 
-        private readonly MQTTNetTopicClient _topicClient = new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
+        private readonly MqttNetTopicClient _topicClient = new MqttNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
     }
 }

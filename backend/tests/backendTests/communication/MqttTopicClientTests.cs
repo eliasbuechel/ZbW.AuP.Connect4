@@ -9,7 +9,7 @@ namespace backendTests.communication
         public void MqttTopicBroker_ComunicateOverToppics_NoErrors()
         {
             // arrange
-            MQTTNetTopicClient client = new MQTTNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
+            MqttNetTopicClient client = new MqttNetTopicClient("ws://mqtt.r4d4.work", "ardu", "Pw12ArduR4D4!");
             //MQTTnetTopicClient client = new MQTTnetTopicClient("ws://mqtt.r4d4.work");
             const string TOPIC = "test/gabor";
             const string MESSAGE = "My own test message!";

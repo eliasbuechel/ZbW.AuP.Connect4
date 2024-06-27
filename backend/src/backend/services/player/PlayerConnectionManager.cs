@@ -1,9 +1,7 @@
 ﻿using backend.game;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.utilities;
-using Org.BouncyCastle.Asn1.Mozilla;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace backend.services.player
@@ -13,7 +11,7 @@ namespace backend.services.player
         public event Action<TPlayer>? OnPlayerConnected;
         public event Action<TPlayer>? OnPlayerDisconnected;
 
-        public IEnumerable<TPlayer> ConnectedPlayers => _connections.Select(x => x.Player).ToArray();
+        public IEnumerable<TPlayer> ConnectedPlayers => _connections.Select(x => x.Player);
 
         public TPlayer GetConnectedPlayer(string playerId)
         {
@@ -28,7 +26,7 @@ namespace backend.services.player
         public TPlayer GetConnectedPlayerByConnectionId(string connectionId)
         {
             return _connections
-                .Where(x => x.ConnectionIds.Where(c => c.Equals(connectionId)).Count() > 0)
+                .Where(x => x.ConnectionIds.Any(c => c.Equals(connectionId)))
                 .Select(x => x.Player)
                 .First();
         }
@@ -82,18 +80,18 @@ namespace backend.services.player
 
         protected void DisconnectPlayer(TPlayer player, TIdentitfication identitfication, string connectionId)
         {
-            PlayerConnection connection = _connections.Where(x => x.Identification.Equals(identitfication)).First();
-            connection.ConnectionIds.Remove(connection.ConnectionIds.Where(x => x.Equals(connectionId)).First());
+            PlayerConnection connection = _connections.First(x => x.Identification.Equals(identitfication));
+            connection.ConnectionIds.Remove(connection.ConnectionIds.First(x => x.Equals(connectionId)));
 
             if (connection.ConnectionIds.Count > 0)
                 return;
 
             connection.TimeoutCounter++;
-            Thread thread = new Thread(async () =>
+            Thread thread = new(async () =>
             {
                 await Task.Delay(DISCONECCTING_TIMOUT_TIME_IN_MS);
 
-                PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identitfication)).FirstOrDefault();
+                PlayerConnection? connection = _connections.FirstOrDefault(x => x.Identification.Equals(identitfication));
 
                 if (connection == null)
                     return;
@@ -110,7 +108,10 @@ namespace backend.services.player
                 {
                     PlayerDisconnected(player);
                 }
-                catch (InvalidPlayerRequestException) { }
+                catch (InvalidPlayerRequestException)
+                {
+                    Logger.Log(LogLevel.Information, LogContext.CONNECTION_MANAGER, $"Not able to disconnect. Player: '{player.Username}' Identification: '{identitfication}' ConnectionId: '{connection}'");
+                }
             });
             thread.Start();
         }
@@ -138,7 +139,7 @@ namespace backend.services.player
 
         protected void ConnectPlayer(TPlayer player, TIdentitfication identification, string connectionId)
         {
-            PlayerConnection? connection = _connections.Where(x => x.Identification.Equals(identification)).FirstOrDefault();
+            PlayerConnection? connection = _connections.FirstOrDefault(x => x.Identification.Equals(identification));
 
             if (connection != null)
             {
@@ -150,20 +151,13 @@ namespace backend.services.player
             PlayerConnected(player);
         }
 
-        protected ConcurrentBag<PlayerConnection> _connections = new ConcurrentBag<PlayerConnection>();
+        protected ConcurrentBag<PlayerConnection> _connections = [];
 
-        protected class PlayerConnection
+        protected class PlayerConnection(TPlayer player, TIdentitfication identification, string connectionId)
         {
-            public PlayerConnection(TPlayer player, TIdentitfication identification, string connectionId)
-            {
-                Player = player;
-                Identification = identification;
-                ConnectionIds = new List<string>() { connectionId };
-            }
-
-            public TPlayer Player { get; }
-            public TIdentitfication Identification { get; }
-            public List<string> ConnectionIds { get; }
+            public TPlayer Player { get; } = player;
+            public TIdentitfication Identification { get; } = identification;
+            public List<string> ConnectionIds { get; } = [connectionId];
             public int TimeoutCounter { get; set; }
 
             public override bool Equals(object? obj)

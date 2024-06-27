@@ -1,4 +1,4 @@
-﻿namespace backend.Infrastructure
+﻿namespace backend.infrastructure
 {
     internal enum LogContext
     {
@@ -7,7 +7,9 @@
         OPPONENT_ROBOTER_CLIENT_API,
         OPPONENT_ROBOTER_HUB_API,
         PLAYER_REQUEST,
-        GAME_PLAY
+        GAME_PLAY,
+        EMAIL_SENDER,
+        CONNECTION_MANAGER
     }
 
     internal static class Logger

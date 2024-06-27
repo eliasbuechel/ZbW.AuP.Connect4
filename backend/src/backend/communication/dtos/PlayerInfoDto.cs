@@ -1,15 +1,15 @@
 ﻿using backend.game;
 using backend.game.entities;
 
-namespace backend.communication.DOTs
+namespace backend.communication.dtos
 {
-    internal class PlayerInfoDTO : EntityDTO
+    internal class PlayerInfoDto : EntityDto
     {
-        public PlayerInfoDTO(Player player) : base(player.Id)
+        public PlayerInfoDto(Player player) : base(player.Id)
         {
             Username = player.Username;
         }
-        public PlayerInfoDTO(PlayerInfo playerInfo) : base(playerInfo)
+        public PlayerInfoDto(PlayerInfo playerInfo) : base(playerInfo)
         {
             Username = playerInfo.Username;
         }

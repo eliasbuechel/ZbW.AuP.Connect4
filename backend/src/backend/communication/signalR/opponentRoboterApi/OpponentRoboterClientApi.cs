@@ -1,4 +1,4 @@
-﻿using backend.Infrastructure;
+﻿using backend.infrastructure;
 using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace backend.communication.signalR.opponentRoboterApi
 {
-    internal class OpponentRoboterClientApi : OpponentRoboterApi, IDisposable
+    internal class OpponentRoboterClientApi : OpponentRoboterApi
     {
         public OpponentRoboterClientApi(RequestHandlerManager<string> requestHandlerManager, string hubUrl) : base(requestHandlerManager)
         {
@@ -56,32 +56,32 @@ namespace backend.communication.signalR.opponentRoboterApi
         }
 
         // sending
-        public async void Send_RequestMatch()
+        public async Task Send_RequestMatch()
         {
             LogSend(nameof(RequestMatch), _hubUrl);
             await _connection.SendAsync(nameof(RequestMatch), _hubUrl);
         }
-        public async void Send_AcceptMatch()
+        public async Task Send_AcceptMatch()
         {
             LogSend(nameof(AcceptMatch));
             await _connection.SendAsync(nameof(AcceptMatch));
         }
-        public async void Send_RejectMatch()
+        public async Task Send_RejectMatch()
         {
             LogSend(nameof(RejectMatch));
             await _connection.SendAsync(nameof(RejectMatch));
         }
-        public async void Send_ConfirmGameStart()
+        public async Task Send_ConfirmGameStart()
         {
             LogSend(nameof(ConfirmGameStart));
             await _connection.SendAsync(nameof(ConfirmGameStart));
         }
-        public async void Send_PlayMove(int column)
+        public async Task Send_PlayMove(int column)
         {
             LogSend(nameof(PlayMove), column.ToString());
             await _connection.SendAsync(nameof(PlayMove), column);
         }
-        public async void Send_QuitGame()
+        public async Task Send_QuitGame()
         {
             LogSend(nameof(QuitGame));
             await _connection.SendAsync(nameof(QuitGame));
@@ -111,7 +111,7 @@ namespace backend.communication.signalR.opponentRoboterApi
             }
 
         }
-        private async void Disconnect()
+        private async Task Disconnect()
         {
             await _connection.StopAsync();
             Disconnected(_hubUrl, _connectionId);
@@ -122,17 +122,9 @@ namespace backend.communication.signalR.opponentRoboterApi
             return Task.CompletedTask;
         }
 
-        public async void Dispose()
+        protected override async void OnDispose()
         {
-            if (_disposed)
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            _disposed = true;
-
-            Disconnect();
+            await Disconnect();
             _connection.Closed -= OnConnectionClosed;
 
             _requestMatchHandler.Dispose();
@@ -147,7 +139,6 @@ namespace backend.communication.signalR.opponentRoboterApi
 
         protected override LogContext LogContext => LogContext.OPPONENT_ROBOTER_CLIENT_API;
 
-        private bool _disposed;
         private readonly string _hubUrl;
         private readonly HubConnection _connection;
         private string _connectionId = "";

@@ -3,37 +3,31 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace backend.communication.signalR
 {
-    internal delegate void Connected<TIdentification>(TIdentification identification, string connectionId);
-    internal delegate void Disconnected<TIdentification>(TIdentification identification, string connectionId);
+    internal delegate void Connected<in TIdentification>(TIdentification identification, string connectionId);
+    internal delegate void Disconnected<in TIdentification>(TIdentification identification, string connectionId);
 
-    internal class SignalRApi<THub, TIdentification> where THub : Hub where TIdentification : class
+    internal class SignalRApi<THub, TIdentification>(IHubContext<THub> hubClient, RequestHandlerManager<TIdentification> requestHandlerManager) where THub : Hub where TIdentification : class
     {
-        public SignalRApi(IHubContext<THub> hubClient, RequestHandlerManager<TIdentification> requestHandlerManager)
-        {
-            _hubConetext = hubClient;
-            _requestHandlerManager = requestHandlerManager;
-        }
-
         public event Connected<TIdentification>? OnConnected;
         public event Disconnected<TIdentification>? OnDisconnected;
 
         public void Connected(TIdentification identification, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnConnected?.Invoke(identification, connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(identification, methode, connectionId);
         }
         public void Disconnected(TIdentification identification, string connectionId)
         {
-            Func<Task> methode = () =>
+            Task methode()
             {
                 OnDisconnected?.Invoke(identification, connectionId);
                 return Task.CompletedTask;
-            };
+            }
 
             Request(identification, methode, connectionId);
         }
@@ -47,7 +41,7 @@ namespace backend.communication.signalR
         protected virtual void RequestError(string connectionId)
         { }
 
-        protected readonly IHubContext<THub> _hubConetext;
-        private readonly RequestHandlerManager<TIdentification> _requestHandlerManager;
+        protected readonly IHubContext<THub> _hubConetext = hubClient;
+        private readonly RequestHandlerManager<TIdentification> _requestHandlerManager = requestHandlerManager;
     }
 }

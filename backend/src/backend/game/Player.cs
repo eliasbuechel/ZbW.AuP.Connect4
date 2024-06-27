@@ -13,8 +13,7 @@
 
         public override bool Equals(object? obj)
         {
-            return obj is Player player &&
-                   Id == player.Id;
+            return obj is Player player && Equals(player);
         }
         public override int GetHashCode()
         {

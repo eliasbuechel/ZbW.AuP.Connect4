@@ -1,4 +1,4 @@
-﻿using backend.Infrastructure;
+﻿using backend.infrastructure;
 using backend.utilities;
 
 namespace backend.communication.signalR.opponentRoboterApi
@@ -12,7 +12,7 @@ namespace backend.communication.signalR.opponentRoboterApi
     internal delegate void PlayMove(string connectionId, int column);
     internal delegate void QuitGame(string connectionId);
 
-    internal abstract class OpponentRoboterApi(RequestHandlerManager<string> requestHandlerManager)
+    internal abstract class OpponentRoboterApi(RequestHandlerManager<string> requestHandlerManager) : DisposingObject
     {
         public event Connected? OnConnected;
         public event Disconnected? OnDisconnected;
@@ -115,6 +115,8 @@ namespace backend.communication.signalR.opponentRoboterApi
             else
                 Log($"Recive on '{methodeName}':[{data}]");
         }
+        protected override void OnDispose()
+        { }
 
         protected abstract LogContext LogContext {get;}
 

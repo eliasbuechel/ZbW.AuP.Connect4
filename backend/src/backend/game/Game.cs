@@ -1,8 +1,7 @@
 ﻿using backend.game.entities;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.utilities;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace backend.game
 {
@@ -35,7 +34,6 @@ namespace backend.game
         public event Func<Player, Field, Task>? OnMovePlayed;
         public event Action<Game>? OnGameStarted;
 
-        public Guid Id { get; } = new Guid();
         public Match Match => _match;
         public Player ActivePlayer => _activePlayer;
         public string[][] FieldAsIds => _gameBoard.FieldAsIds;
@@ -54,6 +52,7 @@ namespace backend.game
             {
                 _gameStartTime = DateTime.Now;
                 _moveStartingTime = DateTime.Now;
+                _moveDurationStopWatch.Restart();
                 _match.Player1.TotalPlayTime = new TimeSpan(0);
                 _match.Player2.TotalPlayTime = new TimeSpan(0);
             }
@@ -73,13 +72,13 @@ namespace backend.game
 
             Debug.Assert(_moveStartingTime != null);
 
-            TimeSpan duration = DateTime.Now - _moveStartingTime.Value;
-            PlayedMove playedMove = new(column, duration);
+            PlayedMove playedMove = new(column, _moveDurationStopWatch.Elapsed);
 
-            _activePlayer.TotalPlayTime = _activePlayer.TotalPlayTime == null ? duration : _activePlayer.TotalPlayTime.Value + duration;
+            _activePlayer.TotalPlayTime = _activePlayer.TotalPlayTime == null ? _moveDurationStopWatch.Elapsed : _activePlayer.TotalPlayTime.Value + _moveDurationStopWatch.Elapsed;
 
             _playedMoves.Add(playedMove);
             _moveStartingTime = DateTime.Now;
+            _moveDurationStopWatch.Restart();
             _activePlayerPlacedStone = true;
         }
         public void PlayerQuit(Player player)
@@ -93,7 +92,7 @@ namespace backend.game
                 throw new InvalidPlayerRequestException($"Quit game exception [player:{player.Username}]. Quitting player is not part of the active game.");
 
             Player winner = quittingPlayer == _match.Player1 ? _match.Player2 : _match.Player1;
-            GameResult gameResult = new GameResult(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new(winner, null, _playedMoves.ToArray(), _startingPlayer, _match);
 
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Player quit during game. Player: {player.Username}");
             OnGameEndet(gameResult);
@@ -129,8 +128,6 @@ namespace backend.game
                     miniMaxValue = 0;
                 else if (HasWon(player, col, row))
                     miniMaxValue = LOOK_AHEAD_MOVES * 1000;
-                else if (LOOK_AHEAD_MOVES <= 1)
-                    miniMaxValue = CalculateBoardValue(player);
                 else
                     miniMaxValue = MiniMax(LOOK_AHEAD_MOVES - 1, player, opponent, false, alpha, beta);
 
@@ -191,8 +188,7 @@ namespace backend.game
                 return;
             if (CheckForWinDiagonallyDown(field, player))
                 return;
-            if (CheckForNoMoveLeft())
-                return;
+            CheckForNoMoveLeft();
         }
         private bool CheckForWinInColumn(Field lastPlacedStone, Player player)
         {
@@ -349,14 +345,14 @@ namespace backend.game
         }
         private void OnConnect4(ICollection<Field> connect4Line, Player player)
         {
-            GameResult gameResult = new GameResult(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new(player, connect4Line, _playedMoves.ToArray(), _startingPlayer, _match);
 
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Game ended with connect4. Player: {player.Username}");
             OnGameEndet(gameResult);
         }
         private void OnNoMoveLeft()
         {
-            GameResult gameResult = new GameResult(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
+            GameResult gameResult = new(null, null, _playedMoves.ToArray(), _startingPlayer, _match);
 
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Game ended with no move left.");
             OnGameEndet(gameResult);
@@ -585,6 +581,7 @@ namespace backend.game
 
 
         private DateTime? _moveStartingTime;
+        private readonly Stopwatch _moveDurationStopWatch = new();
         private DateTime? _gameStartTime;
         private bool _gameEnded;
         private Player _activePlayer;

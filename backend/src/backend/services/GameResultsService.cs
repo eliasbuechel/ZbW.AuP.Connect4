@@ -1,5 +1,5 @@
-﻿using backend.Data;
-using backend.Data.entities;
+﻿using backend.data;
+using backend.data.entities;
 using backend.game.entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +21,7 @@ namespace backend.services
                     .AsEnumerable();
 
                 IEnumerable<GameResult> gameResults = gameResultsQuery
-                    .Where(x => x.Line.Count() == 4)
+                    .Where(x => x.Line.Count == 4)
                     .Select(x => new GameResult(x))
                     .ToArray();
 
@@ -53,7 +53,7 @@ namespace backend.services
                 Id = gameResult.Id,
                 WinnerId = gameResult.WinnerId,
                 Line = GetOrAdd(gameResult.Line, context),
-                PlayedMoves = GetOrAdd(gameResult.PlayedMoves, context),
+                PlayedMoves = GetOrAdd(gameResult.PlayedMoves),
                 StartingPlayerId = gameResult.StartingPlayerId,
                 Match = GetOrAdd(gameResult.Match, context)
             };
@@ -62,7 +62,7 @@ namespace backend.services
             await context.SaveChangesAsync();
         }
 
-        private List<DbPlayedMove> GetOrAdd(ICollection<PlayedMove> playedMoves, BackendDbContext context)
+        private static List<DbPlayedMove> GetOrAdd(ICollection<PlayedMove> playedMoves)
         {
             List<DbPlayedMove> dbPlayedMoves = [];
 
@@ -82,7 +82,7 @@ namespace backend.services
             return dbPlayedMoves;
         }
 
-        private List<DbField> GetOrAdd(ICollection<Field>? line, BackendDbContext context)
+        private static List<DbField> GetOrAdd(ICollection<Field>? line, BackendDbContext context)
         {
             List<DbField> dbLine = [];
 

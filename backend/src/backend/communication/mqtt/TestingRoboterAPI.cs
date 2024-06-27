@@ -3,7 +3,7 @@ using backend.game.entities;
 
 namespace backend.communication.mqtt
 {
-    internal class TestingRoboterAPI : RoboterAPI
+    internal class TestingRoboterAPI : RoboterApi
     {
         public override void ResetConnect4Board()
         {

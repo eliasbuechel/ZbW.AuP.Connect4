@@ -1,31 +1,31 @@
 ﻿using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.utilities;
 using System.Diagnostics;
 
 namespace backend.communication.mqtt
 {
-    internal class MQTTRoboterAPI : RoboterAPI
+    internal class MqttRoboterApi : RoboterApi
     {
-        public MQTTRoboterAPI(MQTTNetTopicClient mqttTopicClient)
+        public MqttRoboterApi(MqttNetTopicClient mqttTopicClient)
         {
             _mqttTopicClient = mqttTopicClient;
-            Connect();
+            Connect().Wait();
         }
 
         public override async void ResetConnect4Board()
         {
             StartRequestTimeout(async () =>
             {
-                string originalTopicValue = false.ToString();
-                //await _mqttTopicClient.PublishAsync(TOPIC_RESET, originalTopicValue);
                 try
                 {
-                    await TopicResetChanged(originalTopicValue);
+                    await TopicResetChanged(false.ToString());
                 }
-                catch (InvalidPlayerRequestException)
-                { }
+                catch (InvalidPlayerRequestException e)
+                {
+                    Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "BoardReset reqeust after timeout failed.", e);
+                }
             });
 
             _resettingBoard = true;
@@ -40,18 +40,19 @@ namespace backend.communication.mqtt
 
         protected override async void PlaceStoneOnApi(Player player, Field field)
         {
-            StartRequestTimeout(async () =>
+            StartRequestTimeout(() =>
             {
                 _placingField = null;
                 _placingPlayer = null;
 
-                //await _mqttTopicClient.PublishAsync(TOPIC_COLUMN, "-1");
                 try
                 {
                     StonePlaced(player, field);
                 }
-                catch (InvalidPlayerRequestException)
-                { }
+                catch (InvalidPlayerRequestException e)
+                {
+                    Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "StonePlaced reqeust after timeout failed.", e);
+                }
             });
 
             Debug.Assert(_placingPlayer == null && _placingField == null);
@@ -68,7 +69,7 @@ namespace backend.communication.mqtt
             await _mqttTopicClient.DisconnectAsync();
         }
 
-        private async void Connect()
+        private async Task Connect()
         {
             await _mqttTopicClient.SubscribeToAsync(TOPIC_COLUMN, TopicColumnChanged);
             await _mqttTopicClient.SubscribeToAsync(TOPIC_RESET, TopicResetChanged);
@@ -95,16 +96,9 @@ namespace backend.communication.mqtt
 
             if (column == -1)
             {
-                if (_placingField == null)
-                {
-                    //Debug.Assert(false);
+                if (_placingField == null || _placingPlayer == null)
                     return Task.CompletedTask;
-                }
-                if (_placingPlayer == null)
-                {
-                    //Debug.Assert(false);
-                    return Task.CompletedTask;
-                }
+
                 Field placingField = _placingField;
                 Player placingPlayer = _placingPlayer;
 
@@ -170,8 +164,6 @@ namespace backend.communication.mqtt
                     Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "Not able to process manual move from roboter.", e);
                 }
             }
-
-            return;
         }
         private void StartRequestTimeout(Action onTimeout)
         {
@@ -202,7 +194,7 @@ namespace backend.communication.mqtt
         private bool _resettingBoard;
         private Field? _placingField;
         private Player? _placingPlayer;
-        private readonly MQTTNetTopicClient _mqttTopicClient;
+        private readonly MqttNetTopicClient _mqttTopicClient;
         private Guid _currentRequestId = Guid.Empty;
     }
 }

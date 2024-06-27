@@ -1,8 +1,8 @@
 ﻿using backend.game.entities;
 
-namespace backend.communication.DOTs
+namespace backend.communication.dtos
 {
-    internal class FieldDTO(Field field)
+    internal class FieldDto(Field field)
     {
         public int Column { get; } = field.Column;
         public int Row { get; } = field.Row;

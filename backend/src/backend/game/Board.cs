@@ -1,13 +1,13 @@
 ﻿using backend.communication.mqtt;
 using backend.game.entities;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.utilities;
 
 namespace backend.game
 {
     internal class Board
     {
-        public Board(RoboterAPI roboterAPI)
+        public Board(RoboterApi roboterAPI)
         {
             _field = new Player?[COLUMNS][];
 
@@ -63,7 +63,7 @@ namespace backend.game
                 throw new InvalidPlayerRequestException($"Exception while playing move. {column} is not a valid column for a move.");
 
             Player?[] col = _field[column];
-            if (col[col.Length - 1] != null)
+            if (col[^1] != null)
                 throw new InvalidPlayerRequestException($"Exception while playing move. Cannot play move in full column {column}.");
 
             for (int i = 0; i < col.Length; i++)
@@ -101,7 +101,7 @@ namespace backend.game
         }
 
         private readonly Player?[][] _field;
-        private readonly RoboterAPI _roboterAPI;
+        private readonly RoboterApi _roboterAPI;
         private const int ROWS = 6;
         private const int COLUMNS = 7;
     }

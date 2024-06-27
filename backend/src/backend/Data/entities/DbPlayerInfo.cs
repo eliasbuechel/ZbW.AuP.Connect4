@@ -1,4 +1,4 @@
-﻿namespace backend.Data.entities
+﻿namespace backend.data.entities
 {
     internal class DbPlayerInfo : DbEntity
     {

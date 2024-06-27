@@ -1,5 +1,5 @@
-﻿using backend.communication.DOTs;
-using backend.Data;
+﻿using backend.communication.dtos;
+using backend.data;
 using backend.game;
 using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
@@ -254,23 +254,23 @@ namespace backend.communication.signalR.frontendApi
 
 
         // sending
-        public async Task SendUserData(string connectionId, PlayerInfoDTO userData)
+        public async Task SendUserData(string connectionId, PlayerInfoDto userData)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendUserData), userData);
         }
-        public async Task SendConnectedPlayers(string connectionId, ConnectedPlayersDTO connectedPlayers)
+        public async Task SendConnectedPlayers(string connectionId, ConnectedPlayersDto connectedPlayers)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendConnectedPlayers), connectedPlayers);
         }
-        public async Task SendGamePlan(string connectionId, IEnumerable<MatchDTO> gamePlan)
+        public async Task SendGamePlan(string connectionId, IEnumerable<MatchDto> gamePlan)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendGamePlan), gamePlan);
         }
-        public async Task SendGame(string connectionId, GameDTO game)
+        public async Task SendGame(string connectionId, GameDto game)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendGame), game);
         }
-        public async Task SendBestList(string connectionId, IEnumerable<GameResultDTO> bestlist)
+        public async Task SendBestList(string connectionId, IEnumerable<GameResultDto> bestlist)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendBestList), bestlist);
         }
@@ -279,7 +279,7 @@ namespace backend.communication.signalR.frontendApi
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendHint), column);
         }
 
-        public async Task PlayerConnected(string connectionId, ConnectedPlayerDTO onlinePlayer)
+        public async Task PlayerConnected(string connectionId, ConnectedPlayerDto onlinePlayer)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlayerConnected), onlinePlayer);
         }
@@ -287,7 +287,7 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlayerDisconnected), playerId);
         }
-        public async Task OpponentRoboterPlayerConnected(string connectionId, ConnectedPlayerDTO opponentRoboterPlayer)
+        public async Task OpponentRoboterPlayerConnected(string connectionId, ConnectedPlayerDto opponentRoboterPlayer)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(OpponentRoboterPlayerConnected), opponentRoboterPlayer);
         }
@@ -312,15 +312,15 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouRejectedMatch), playerId);
         }
-        public async Task Matched(string connectionId, MatchDTO match)
+        public async Task Matched(string connectionId, MatchDto match)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(Matched), match);
         }
-        public async Task GameStarted(string connectionId, GameDTO connect4Game)
+        public async Task GameStarted(string connectionId, GameDto connect4Game)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(GameStarted), connect4Game);
         }
-        public async Task GameEnded(string connectionId, GameResultDTO gameResult)
+        public async Task GameEnded(string connectionId, GameResultDto gameResult)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(GameEnded), gameResult);
         }
@@ -328,11 +328,11 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(ConfirmedGameStart), playerId);
         }
-        public async Task MovePlayed(string connectionId, string playerId, FieldDTO field)
+        public async Task MovePlayed(string connectionId, string playerId, FieldDto field)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(MovePlayed), playerId, field);
         }
-        public async Task PlacingStone(string connectionId, string playerId, FieldDTO field)
+        public async Task PlacingStone(string connectionId, string playerId, FieldDto field)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(PlacingStone), playerId, field);
         }

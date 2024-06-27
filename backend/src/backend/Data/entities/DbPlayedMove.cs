@@ -1,6 +1,6 @@
 ﻿using backend.game.entities;
 
-namespace backend.Data.entities
+namespace backend.data.entities
 {
     internal class DbPlayedMove : DbEntity
     {

@@ -1,11 +1,11 @@
-﻿using backend.communication.DOTs;
+﻿using backend.communication.dtos;
 using backend.communication.signalR.frontendApi;
-using backend.Data;
+using backend.data;
 using backend.game;
 
 namespace backend.services.player
 {
-    internal class WebPlayerConnectionManager : PlayerConnectionManager<WebPlayer, PlayerIdentity>, IDisposable
+    internal class WebPlayerConnectionManager : PlayerConnectionManager<WebPlayer, PlayerIdentity>
     {
         public WebPlayerConnectionManager(
             FrontendApi frontendApi,
@@ -34,7 +34,7 @@ namespace backend.services.player
         {
             base.PlayerConnected(player);
 
-            ConnectedPlayerDTO playerDTO = new ConnectedPlayerDTO(player);
+            ConnectedPlayerDto playerDTO = new ConnectedPlayerDto(player);
             ForeachConnectedPlayerConnectionExcept(player, async (connectionId) => await _frontendApi.PlayerConnected(connectionId, playerDTO));
         }
         protected override void PlayerDisconnected(WebPlayer player)
@@ -54,7 +54,7 @@ namespace backend.services.player
 
         private void OnOpponentRoboterPlayerConnected(OpponentRoboterPlayer opponentRoboterPlayer)
         {
-            ConnectedPlayerDTO opponentRoboterPlayerDTO = new ConnectedPlayerDTO(opponentRoboterPlayer);
+            ConnectedPlayerDto opponentRoboterPlayerDTO = new ConnectedPlayerDto(opponentRoboterPlayer);
             ForeachConnectedPlayerConnection(async (connectionId) => await _frontendApi.OpponentRoboterPlayerConnected(connectionId, opponentRoboterPlayerDTO));
         }
         private void OnOpponentRoboterPlayerDisconnected(OpponentRoboterPlayer opponentRoboterPlayer)

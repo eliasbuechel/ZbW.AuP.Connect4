@@ -1,4 +1,4 @@
-﻿using backend.Infrastructure;
+﻿using backend.infrastructure;
 using backend.services;
 using backend.game.entities;
 

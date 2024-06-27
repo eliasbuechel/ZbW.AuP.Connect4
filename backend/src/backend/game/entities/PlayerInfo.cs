@@ -1,4 +1,4 @@
-﻿using backend.Data.entities;
+﻿using backend.data.entities;
 
 namespace backend.game.entities
 {

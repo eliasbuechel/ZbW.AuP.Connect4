@@ -1,7 +1,7 @@
 ﻿using backend.communication.mqtt;
 using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.services.player;
 using backend.utilities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,7 +17,7 @@ namespace backend.services
         public GameManager(
             Func<Match, Game> getConnect4Game,
             GameResultsService gameResultsService,
-            RoboterAPI roboterAPI,
+            RoboterApi roboterAPI,
             PlayerConnectionService playerConnectionService
             )
         {
@@ -67,11 +67,11 @@ namespace backend.services
                 if (p.Equals(requester))
                     return;
 
-                if (p.MatchingRequests.Where(x => x.Player.Equals(requester)).Any())
+                if (p.MatchingRequests.Any(x => x.Player.Equals(requester)))
                     throw new InvalidPlayerRequestException($"Matcing request exception. {requester.Username} has already requested {p.Username}.");
             });
 
-            MatchRequest matchRequest = new MatchRequest(requester);
+            MatchRequest matchRequest = new(requester);
             opponent.MatchingRequests.Add(matchRequest);
             RequestedMatch(requester, opponent);
             StartMatchRequestTimeout(requester, opponent, matchRequest.Id);
@@ -79,10 +79,10 @@ namespace backend.services
 
         private void StartMatchRequestTimeout(Player requester, Player opponent, string id)
         {
-            Thread thread = new Thread(async () =>
+            Thread thread = new(async () =>
             {
                 await Task.Delay(REQUEST_TIMEOUT_DURATION_IN_MS);
-                if (opponent.MatchingRequests.Where(x => x.Id == id).Any())
+                if (opponent.MatchingRequests.Any(x => x.Id == id))
                     RejectedMatch(opponent, requester);
             });
             thread.Start();
@@ -90,10 +90,7 @@ namespace backend.services
 
         public void AcceptMatch(Player accepter, Player opponent)
         {
-            MatchRequest? matchRequest = accepter.MatchingRequests.Where(x => x.Player.Equals(opponent)).FirstOrDefault();
-
-            if (matchRequest == null)
-                throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. There is no matching request to accept.");
+            MatchRequest? matchRequest = accepter.MatchingRequests.FirstOrDefault(x => x.Player.Equals(opponent)) ?? throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. There is no matching request to accept.");
 
             if (accepter.Matching != null)
                 throw new InvalidPlayerRequestException($"Accept macht exception [accepter:{accepter.Username} opponent:{opponent.Username}]. Accepting player already has matched with {accepter.Matching.Username}.");
@@ -114,16 +111,16 @@ namespace backend.services
         }
         public void RejectMatch(Player rejecter, Player opponent)
         {
-            if (!rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).Any())
+            if (!rejecter.MatchingRequests.Any(x => x.Player.Equals(opponent)))
                 throw new InvalidPlayerRequestException($"Reject macht exception [rejecter:{rejecter.Username} opponent:{opponent.Username}]. There is no matching request to reject.");
 
-            MatchRequest matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).First();
+            MatchRequest matchRequest = rejecter.MatchingRequests.First(x => x.Player.Equals(opponent));
             rejecter.MatchingRequests.Remove(matchRequest);
             RejectedMatch(rejecter, opponent);
         }
         public void ConfirmGameStart(Player player)
         {
-            if (_activeGame == null && !(player is OpponentRoboterPlayer))
+            if (_activeGame == null && player is not OpponentRoboterPlayer)
                 throw new InvalidPlayerRequestException($"Confirm game start exception [player:{player.Username}]. There is no active game for the accepting player.");
 
             if (player.HasConfirmedGameStart)
@@ -197,7 +194,7 @@ namespace backend.services
         }
         private void RejectedMatch(Player rejecter, Player opponent)
         {
-            MatchRequest? matchRequest = rejecter.MatchingRequests.Where(x => x.Player.Equals(opponent)).FirstOrDefault();
+            MatchRequest? matchRequest = rejecter.MatchingRequests.FirstOrDefault(x => x.Player.Equals(opponent));
             if (matchRequest != null)
                 opponent.MatchingRequests.Remove(matchRequest);
 
@@ -205,10 +202,10 @@ namespace backend.services
         }
         private void Matched(Match match)
         {
-            MatchRequest? matchRequestPlayer1 = match.Player1.MatchingRequests.Where(x => x.Player.Equals(match.Player2)).FirstOrDefault();
+            MatchRequest? matchRequestPlayer1 = match.Player1.MatchingRequests.FirstOrDefault(x => x.Player.Equals(match.Player2));
             if (matchRequestPlayer1 != null)
                 match.Player1.MatchingRequests.Remove(matchRequestPlayer1);
-            MatchRequest? matchRequestPlayer2 = match.Player2.MatchingRequests.Where(x => x.Player.Equals(match.Player1)).FirstOrDefault();
+            MatchRequest? matchRequestPlayer2 = match.Player2.MatchingRequests.FirstOrDefault(x => x.Player.Equals(match.Player1));
             if (matchRequestPlayer2 != null)
                 match.Player1.MatchingRequests.Remove(matchRequestPlayer2);
 
@@ -270,7 +267,7 @@ namespace backend.services
             _activeGame.OnGameEnded -= GameHasEnded;
             _activeGame.OnGameStarted -= GameStarted;
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Unregister from OnMovePlayed event of game.");
-            //_activeGame.OnMovePlayed -= MovePlayed;
+            _activeGame.OnMovePlayed -= MovePlayed;
 
             _activeGame.Match.Player1.Matching = null;
             _activeGame.Match.Player2.Matching = null;
@@ -299,14 +296,10 @@ namespace backend.services
 
         private Game? _activeGame = null;
         private readonly GameResultsService _gameResultsService;
-        private readonly RoboterAPI _roboterAPI;
+        private readonly RoboterApi _roboterAPI;
         private readonly PlayerConnectionService _playerConnectionService;
         private readonly Func<Match, Game> _getConnect4Game;
         private ConcurrentQueue<Match> _gamePlan = new();
         private const int REQUEST_TIMEOUT_DURATION_IN_MS = 15000;
-    }
-
-    internal class MatchingService
-    {
     }
 }

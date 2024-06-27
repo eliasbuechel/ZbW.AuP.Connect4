@@ -1,10 +1,10 @@
 ﻿using backend.game;
 
-namespace backend.communication.DOTs
+namespace backend.communication.dtos
 {
-    internal class InGamePlayerDTO : PlayerInfoDTO
+    internal class InGamePlayerDto : PlayerInfoDto
     {
-        public InGamePlayerDTO(Player player) : base(player)
+        public InGamePlayerDto(Player player) : base(player)
         {
             HasConfirmedGameStart = player.HasConfirmedGameStart;
             TotalPlayTime = player.TotalPlayTime == null ? null : Convert.ToInt64(player.TotalPlayTime.Value.TotalMilliseconds);

@@ -1,14 +1,14 @@
 ﻿using backend.game.entities;
 
-namespace backend.communication.DOTs
+namespace backend.communication.dtos
 {
-    internal abstract class EntityDTO
+    internal abstract class EntityDto
     {
-        public EntityDTO(string id)
+        public EntityDto(string id)
         {
             Id = id;
         }
-        public EntityDTO(Entity entity)
+        public EntityDto(Entity entity)
         {
             Id = entity.Id;
         }

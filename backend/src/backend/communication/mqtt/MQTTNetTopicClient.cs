@@ -1,4 +1,4 @@
-﻿using backend.Infrastructure;
+﻿using backend.infrastructure;
 using MQTTnet;
 using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Disconnecting;
@@ -9,9 +9,9 @@ using System.Text;
 
 namespace backend.communication.mqtt
 {
-    internal class MQTTNetTopicClient : DisposingObject
+    internal class MqttNetTopicClient : DisposingObject
     {
-        public MQTTNetTopicClient(string brokerUri, string username, string password)
+        public MqttNetTopicClient(string brokerUri, string username, string password)
         {
             _brokerUri = brokerUri;
             _username = username;
@@ -33,7 +33,7 @@ namespace backend.communication.mqtt
             _managedClient.UseDisconnectedHandler(OnDisonnectedFromBroker);
             _managedClient.UseApplicationMessageReceivedHandler(OnMessageRecivedFromBroker);
         }
-        internal MQTTNetTopicClient(string brokerUri)
+        internal MqttNetTopicClient(string brokerUri)
         {
             _brokerUri = brokerUri;
             _username = "";
@@ -72,12 +72,8 @@ namespace backend.communication.mqtt
 
         public async Task PublishAsync(string topic, string message)
         {
-            return;
             if (!IsConnected)
-            {
-                //Debug.Assert(false);
                 return;
-            }
 
             var applicationMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)

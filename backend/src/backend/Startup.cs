@@ -1,8 +1,8 @@
 using backend.communication.mqtt;
-using backend.Data;
+using backend.data;
 using backend.game;
 using backend.game.entities;
-using backend.Infrastructure;
+using backend.infrastructure;
 using backend.services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -17,10 +17,6 @@ namespace backend
 {
     public class Startup
     {
-        //public Startup()
-        //{
-        //    DotNetEnv.Env.Load();
-        //}
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -44,35 +40,15 @@ namespace backend
             services.AddControllers();
 
 
-            services.AddSingleton<MQTTNetTopicClient>(services =>
+            services.AddSingleton<MqttNetTopicClient>(services =>
             {
-                string? borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI");
-                string? username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME");
-                string? password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD");
+                string borkerUri = DotNetEnv.Env.GetString("MQTT_CLIENT_BROKER_URI") ?? throw new ArgumentException("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_BROKER_URI' not provided.");
+                string username = DotNetEnv.Env.GetString("MQTT_CLIENT_USERNAME") ?? throw new ArgumentException("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_USERNAME' not provided. Must be at least an empty string.");
+                string password = DotNetEnv.Env.GetString("MQTT_CLIENT_PASSWORD") ?? throw new ArgumentException("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_PASSWORD' not provided. Must be at least an empty string.");
 
-                //bool hasValidConfigData = true;
-                //if (string.IsNullOrEmpty(borkerUri))
-                //{
-                //    _logger.LogCritical("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_BROKER_URI' not provided.");
-                //    hasValidConfigData = false;
-                //}
-                //if (username == null)
-                //{
-                //    _logger.LogCritical("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_USERNAME' not provided. Must be at least an empty string.");
-                //    hasValidConfigData = false;
-                //}
-                //if (password == null)
-                //{
-                //    _logger.LogCritical("Not able to configure MQTTNetTopicClient. 'MQTT_CLIENT_PASSWORD' not provided. Must be at least an empty string.");
-                //    hasValidConfigData = false;
-                //}
-
-                //if (!hasValidConfigData)
-                //    throw new ArgumentException("Configration for MQTTNetTopicClient is correct.");
-
-                return new MQTTNetTopicClient(borkerUri, username!, password!);
+                return new MqttNetTopicClient(borkerUri, username, password);
             });
-            services.AddSingleton<RoboterAPI, MQTTRoboterAPI>();
+            services.AddSingleton<RoboterApi, MqttRoboterApi>();
 
             services.AddDbContext<BackendDbContext>(options =>
             {
@@ -232,7 +208,5 @@ namespace backend
 
             services.AddScoped<Func<UserManager<PlayerIdentity>>>(s => () => s.GetRequiredService<UserManager<PlayerIdentity>>());
         }
-
-        //private readonly ILogger<Startup> _logger;
     }
 }

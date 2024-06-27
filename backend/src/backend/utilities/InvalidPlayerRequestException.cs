@@ -1,5 +1,5 @@
 ﻿namespace backend.utilities
 {
-    internal class InvalidPlayerRequestException(string message) : Exception(message)
+    public class InvalidPlayerRequestException(string message) : Exception(message)
     { }
 }
