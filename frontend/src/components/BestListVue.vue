@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="listing-container">
+    <div class="listing-container bestList-container">
       <h2>Bestlist</h2>
       <input class="bestlist-search" v-model="searchTerm" placeholder="Search..." @blur="clearSearch" />
       <span v-if="filteredBestlist.length === 0">There are no entries on the leaderboard yet.</span>
