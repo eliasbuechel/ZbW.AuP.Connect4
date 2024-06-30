@@ -7,6 +7,7 @@
     font-size: 1rem;
     transition: border-color 0.2s;
 }
+
 .bestlist-search:focus {
     border-color: var(--color-orange); 
     outline: none; 
@@ -15,10 +16,10 @@
 .bestlist-table {
     width: 100%;
     max-width: 100%;
-    /* overflow-x: auto; */
     border-collapse: collapse;
     table-layout: fixed;
     display: block;
+    overflow: auto;
 }
 
 .bestlist-table-header-row {

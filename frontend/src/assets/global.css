@@ -113,6 +113,7 @@ ul {
   justify-content: stretch;
   flex-direction: column;
 }
+
 li {
   list-style: none;
   width: 100%;
@@ -126,18 +127,28 @@ li {
   width: 100%;
 }
 
+.home-view-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: min(100%, 1920px); 
+  width: min(100%, 2560px); 
+  overflow-y: scroll; 
+}
+
 .main-board-container {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+  align-self: center;
   column-gap: 5vw;
   row-gap: 5vh;
-  padding: 2rem;
-  height: min(100%, 1920px);
-  width: min(100%, 2560x);
-  overflow-y: scroll;
+  height: min(100%, 1080px);
+  width: min(100%, 1920px);
   margin-top: 120px;
+  margin-bottom: 10px;
+  padding: 2rem;
 }
 
 @media (max-width: 800px) {
@@ -154,6 +165,9 @@ li {
     max-width: 30vw;
     max-height: 90px;
     margin-right: 1rem;
+    object-fit: contain; 
+    height: auto; 
+    width: auto; 
   }
 
   .username {
@@ -201,11 +215,9 @@ li {
   background: linear-gradient(to bottom, var(--color-dark) 85%, transparent 100%);
   position: absolute;
   top: 0;
-}
-
-.header-container {
   display: flex;
   justify-content: space-between;
+  flex: wrap;
 }
 
 .grid-container {
@@ -228,6 +240,7 @@ li {
   background-color: var(--color-container-bg);
   border-radius: 0.5rem;
   overflow-x: auto;
+  margin-bottom: 0;
 }
 
 .listing-container > span {
@@ -250,6 +263,11 @@ li {
 .listing-container > h2 {
   align-self: center;
   margin: 0;
+}
+
+.listing-container.bestList-container {
+  max-height: 500px;
+  margin-bottom: 6%;
 }
 
 button {
@@ -482,6 +500,7 @@ button:active:enabled {
   justify-content: flex-end;
   align-items: center;
 }
+
 .loading {
   width: 20px;
   height: 20px;
