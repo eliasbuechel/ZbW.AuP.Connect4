@@ -65,23 +65,14 @@ namespace backend.game
             if (column < 0 || column >= COLUMNS)
                 throw new InvalidPlayerRequestException($"Exception while playing move. {column} is not a valid column for a move.");
 
-            Player?[] col = _gameBoard[column];
-            if (col[^1] != null)
+            int row;
+            if (!new BoardValidator(_gameBoard).GetNextFreeRow(column, out row))
                 throw new InvalidPlayerRequestException($"Exception while playing move. Cannot play move in full column {column}.");
 
-            for (int i = 0; i < col.Length; i++)
-            {
-                if (col[i] != null)
-                    continue;
-
-                col[i] = player;
-                Field field = new(column, i);
-                PlacingField = field;
-                _roboterAPI.PlaceStone(player, field);
-                return;
-            }
-
-            throw new InvalidPlayerRequestException("Exception while playing move. Something went wrong while placing stone.");
+            _gameBoard[column][row] = player;
+            Field field = new(column, row);
+            PlacingField = field;
+            _roboterAPI.PlaceStone(player, field);
         }
         public void Reset()
         {

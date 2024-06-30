@@ -146,7 +146,7 @@ namespace backend.game
             int col = lastPlacedStone.Column - 1;
             while (col >= 0 && count < 4)
             {
-                if (_gameBoard[col][lastPlacedStone.Row] != player)
+                if (!player.Equals(_gameBoard[col][lastPlacedStone.Row]))
                     break;
 
                 line[count++] = new Field(col, lastPlacedStone.Row);
@@ -422,7 +422,7 @@ namespace backend.game
         private readonly Player?[][] _gameBoard = gameBoard;
 
         private const int INVALID_BEST_MOVE = -1;
-        private const int LOOK_AHEAD_MOVES = 10;
+        private const int LOOK_AHEAD_MOVES = 12;
         private static readonly int[][] PROPABILITY_MATRIX = [[3, 4, 5, 5, 4, 3], [4, 6, 8, 8, 6, 4], [5, 8, 11, 11, 8, 5], [7, 10, 13, 13, 10, 7], [5, 8, 11, 11, 8, 5], [4, 6, 8, 8, 6, 4], [3, 4, 5, 5, 4, 3]];
         private static readonly int[] COLUMN_ORDER = [3, 2, 4, 1, 5, 0, 6];
     }

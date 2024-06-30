@@ -131,11 +131,12 @@ namespace backend.game
             SwapActivePlayer();
             LastPlacedStone = field;
             Logger.Log(LogLevel.Debug, LogContext.GAME_PLAY, $"Invoke playing move in game. Player: {player.Username} Column: {field.Column}");
-            if (OnMovePlayed != null)
-                await OnMovePlayed.Invoke(player, field);
 
             BoardValidator validator = new(_board.GameBoard);
             validator.CheckForWin(field, player, OnNoMoveLeft, (line) => OnConnect4(line, player));
+
+            if (OnMovePlayed != null)
+                await OnMovePlayed.Invoke(player, field);
         }
         private void SwapActivePlayer()
         {
