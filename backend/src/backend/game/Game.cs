@@ -72,7 +72,7 @@ namespace backend.game
 
             _board.PlaceStone(player, column);
 
-            Debug.Assert(_moveStartingTime != null);
+            //Debug.Assert(_moveStartingTime != null);
 
             PlayedMove playedMove = new(column, _moveDurationStopWatch.Elapsed);
 

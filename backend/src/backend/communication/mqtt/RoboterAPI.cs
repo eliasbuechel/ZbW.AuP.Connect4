@@ -18,17 +18,17 @@ namespace backend.communication.mqtt
         {
             OnPlacingStone?.Invoke(player, field);
 
-            StartRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS, () => StonePlaced(player, field));
-
             if (IsVisualizingOnRoboter)
                 PlaceStoneOnApi(player, field);
+
+            StartPlayMoveRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS, () => StonePlaced(player, field));
         }
         public void ResetConnect4Board()
         {
-            StartRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_RESET_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS , () => BoardReset());
-
             if (IsVisualizingOnRoboter)
                 ResetConnect4BoardOnApi();
+
+            StartResetRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_RESET_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS , () => BoardReset());
         }
 
         protected abstract void ResetConnect4BoardOnApi();
@@ -46,7 +46,7 @@ namespace backend.communication.mqtt
             }
             finally
             {
-                _currentRequestId = Guid.Empty;
+                _placeStoneRequestId = Guid.Empty;
             }
         }
         protected void BoardReset()
@@ -61,7 +61,7 @@ namespace backend.communication.mqtt
             }
             finally
             {
-                _currentRequestId = Guid.Empty;
+                _resetRequestId = Guid.Empty;
             }
         }
         protected void ManualMove(int column)
@@ -76,28 +76,49 @@ namespace backend.communication.mqtt
             }
         }
 
-        private void StartRequestTimeout(int timeoutDelay, Action onTimeout)
+        private void StartResetRequestTimeout(int timeoutDelay, Action onTimeout)
         {
             Guid requestId = Guid.NewGuid();
-            lock (_lock)
+            lock (_resetLock)
             {
-                _currentRequestId = requestId;
+                _resetRequestId = requestId;
             }
 
             Thread thread = new(async () =>
             {
                 await Task.Delay(timeoutDelay);
-                lock (_lock)
+                lock (_resetLock)
                 {
-                    if (_currentRequestId == requestId)
+                    if (_resetRequestId == requestId)
+                        onTimeout();
+                }
+            });
+            thread.Start();
+        }
+        private void StartPlayMoveRequestTimeout(int timeoutDelay, Action onTimeout)
+        {
+            Guid requestId = Guid.NewGuid();
+            lock (_placeStoneLock)
+            {
+                _placeStoneRequestId = requestId;
+            }
+
+            Thread thread = new(async () =>
+            {
+                await Task.Delay(timeoutDelay);
+                lock (_placeStoneLock)
+                {
+                    if (_placeStoneRequestId == requestId)
                         onTimeout();
                 }
             });
             thread.Start();
         }
 
-        private readonly object _lock = new();
-        private Guid _currentRequestId = Guid.Empty;
+        private readonly object _resetLock = new();
+        private readonly object _placeStoneLock = new();
+        private Guid _resetRequestId = Guid.Empty;
+        private Guid _placeStoneRequestId = Guid.Empty;
         private const int TESTING_REQUEST_TIMOUT_TIME_IN_MS = 500; // .5s
         private const int ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS = 10000; // 10s
         private const int ROBOTER_RESET_REQUEST_TIMOUT_TIME_IN_MS = 60000; // 60s

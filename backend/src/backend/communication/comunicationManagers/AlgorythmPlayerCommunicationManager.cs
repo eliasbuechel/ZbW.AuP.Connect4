@@ -31,7 +31,7 @@ namespace backend.communication.comunicationManagers
                 return;
 
             int column = _gameManager.GetBestMove(_algorythmPlayer);
-            _gameManager.PlayMove(_algorythmPlayer, column);
+            ExecutePlayerRequest(() => _gameManager.PlayMove(_algorythmPlayer, column));
         }
         private void OnRequestedMatch(Player requester, Player opponent)
         {
