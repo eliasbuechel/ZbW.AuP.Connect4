@@ -6,8 +6,8 @@
         <h2>Connect Four</h2>
         <ToggleButton
           label="visualize on roboter"
-          :state="game.gameBoard.isVisualizingOnRoboter"
-          @toggle-state="toggleVisualizeOnRoboter"
+          :state="isVisualizingOnRoboter"
+          @toggle-state="visualizingOnRoboterChanged"
         />
         <button v-if="!isGameParticipant" class="button-light" @click="stopWatchingGame">Back home</button>
         <button v-if="isYourTurn || game.isQuittableByEveryone" @click="quitGame" class="button-light">
@@ -27,7 +27,7 @@
       <div class="game-board">
         <div class="game-board-bar">
           <label v-if="game.gameStartTime != null" class="total-game-time">{{ formattedGameTime }}</label>
-          <div v-if="placingField != null" class="playing-move-info-container">
+          <div v-if="placingField != null && hasGameStarted" class="playing-move-info-container">
             <div
               :class="{
                 loadingCube: true,
@@ -79,6 +79,10 @@ export default defineComponent({
     identity: {
       required: true,
       type: Object as PropType<PlayerIdentity>,
+    },
+    isVisualizingOnRoboter: {
+      required: true,
+      type: Boolean,
     },
   },
   data(): {
@@ -132,17 +136,8 @@ export default defineComponent({
       signalRHub.invoke("StopWatchingGame");
       this.$emit("stop-watching-game");
     },
-    toggleVisualizeOnRoboter(state: boolean): void {
-      state ? this.visualizeOnRoboter() : this.stopVisualizingOnRoboter();
-      console.log("change");
-    },
-    visualizeOnRoboter(): void {
-      signalRHub.invoke("VisualizeOnRoboter");
-      this.$emit("visualize-on-roboter");
-    },
-    stopVisualizingOnRoboter(): void {
-      signalRHub.invoke("StopVisualizingOnRoboter");
-      this.$emit("stop-visualizing-on-roboter");
+    visualizingOnRoboterChanged(state: boolean): void {
+      this.$emit("visualizing-on-roboter-changed", state);
     },
     startGameTimer(): void {
       this.gameTimerId = setInterval(() => {
@@ -213,9 +208,6 @@ export default defineComponent({
     },
     showHintRequesting(): boolean {
       return this.hasGameStarted && this.isYourTurn && this.placingField == null;
-    },
-    isVisualizingOnRoboter(): boolean {
-      return this.game.gameBoard.isVisualizingOnRoboter;
     },
   },
 });

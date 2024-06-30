@@ -13,10 +13,4 @@ namespace backend.communication.dtos
         public FieldDto? LastPlacedStone { get; } = game.LastPlacedStone == null ? null : new(game.LastPlacedStone);
         public bool IsQuittableByEveryone { get; } = game.IsQuittableByEveryone;
     }
-
-    internal class GameBoardDto(Board board)
-    {
-        public string[][] Board { get; } = board.FieldAsIds;
-        public bool IsVisualizingOnRoboter { get; } = board.IsVisualizingOnRoboter;
-    }
 }

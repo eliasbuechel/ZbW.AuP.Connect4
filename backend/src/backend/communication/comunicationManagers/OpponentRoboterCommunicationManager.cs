@@ -143,10 +143,33 @@ namespace backend.communication.comunicationManagers
                 Player? player1 = _playerConnectionService.GetPlayerOrDefault(gameResult.Match.Player1.Id);
                 Player? player2 = _playerConnectionService.GetPlayerOrDefault(gameResult.Match.Player2.Id);
 
-                if (player1 != null && gameResult.Match.Player2.Id == gameResult.WinnerId && player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
-                    OnQuitGame(opponentRboboterPlayer1);
-                else if (player2 != null && gameResult.Match.Player1.Id == gameResult.WinnerId && player2 is OpponentRoboterPlayer opponentRboboterPlayer2)
-                    OnQuitGame(opponentRboboterPlayer2);
+                AlgorythmPlayer algorythmPlayer;
+                OpponentRoboterPlayer opponentRoboterPlayer;
+
+                if (player1 is AlgorythmPlayer algorythmPlayer1 && player2 is OpponentRoboterPlayer opponentRoboterPlayer2)
+                {
+                    algorythmPlayer = algorythmPlayer1;
+                    opponentRoboterPlayer = opponentRoboterPlayer2;
+                }
+                else if (player2 is AlgorythmPlayer algorythmPlayer2 && player1 is OpponentRoboterPlayer opponentRoboterPlayer1)
+                {
+                    algorythmPlayer = algorythmPlayer2;
+                    opponentRoboterPlayer = opponentRoboterPlayer1;
+                }
+                else
+                {
+                    return;
+                }
+
+                if (opponentRoboterPlayer.Id == gameResult.WinnerId)
+                    OnQuitGame(opponentRoboterPlayer);
+
+                //if (player1 is OpponentRoboterPlayer opponentRoboterPlayer1 && )
+
+                //if (player1 != null && gameResult.Match.Player2.Id == gameResult.WinnerId && player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
+                //    OnQuitGame(opponentRboboterPlayer1);
+                //else if (player2 != null && gameResult.Match.Player1.Id == gameResult.WinnerId && player2 is OpponentRoboterPlayer opponentRboboterPlayer2)
+                //    OnQuitGame(opponentRboboterPlayer2);
             }
         }
         private async void OnQuitGame(OpponentRoboterPlayer opponentRoboterPlayer)

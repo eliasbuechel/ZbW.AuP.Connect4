@@ -16,7 +16,13 @@
       :identity="identity"
       class="content-card"
     />
-    <GamePlan class="content-card" :gamePlan="gamePlan" :identity="identity" />
+    <GamePlan
+      class="content-card"
+      :gamePlan="gamePlan"
+      :identity="identity"
+      :isVisualizingOnRoboter="isVisualizingOnRoboter"
+      @visualizing-on-roboter-changed="visualizingOnRoboterChanged"
+    />
     <BestList :bestlist="bestlist" @show-replay="showReplay" class="content-card" />
   </div>
 </template>
@@ -57,8 +63,12 @@ export default defineComponent({
       required: true,
       type: Array as PropType<GameResult[]>,
     },
+    isVisualizingOnRoboter: {
+      required: true,
+      type: Boolean,
+    },
   },
-  emits: ["show-replay"],
+  emits: ["show-replay", "visualizing-on-roboter-changed"],
   data(): MainBoardState {
     return {
       isSubscribed: false,
@@ -75,6 +85,9 @@ export default defineComponent({
   methods: {
     showReplay(gameResult: GameResult): void {
       this.$emit("show-replay", gameResult);
+    },
+    visualizingOnRoboterChanged(state: boolean): void {
+      this.$emit("visualizing-on-roboter-changed", state);
     },
   },
   computed: {

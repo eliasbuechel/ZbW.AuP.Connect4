@@ -34,6 +34,10 @@ namespace backend.communication.signalR.frontendApi
         {
             ExecuteWithRedirectToLoginOnException(() => _frontendApi.GetHint(Identification, Context.ConnectionId));
         }
+        public void GetVisualisationState()
+        {
+            ExecuteWithRedirectToLoginOnException(() => _frontendApi.GetVisualisationState(Identification, Context.ConnectionId));
+        }
 
         public void RequestMatch(string requestingPlayerId)
         {
@@ -87,13 +91,9 @@ namespace backend.communication.signalR.frontendApi
         {
             ExecuteWithRedirectToLoginOnException(() => _frontendApi.ConnectToOpponentRoboterPlayer(Identification, hubUrl, Context.ConnectionId));
         }
-        public void VisualizeOnRoboter()
+        public void VisualizeOnRoboterChanged(bool isVisualizingOnRoboter)
         {
-            ExecuteWithRedirectToLoginOnException(() => _frontendApi.VisualizeOnRoboter(Identification, Context.ConnectionId));
-        }
-        public void StopVisualizingOnRoboter()
-        {
-            ExecuteWithRedirectToLoginOnException(() => _frontendApi.StopVisualizingOnRoboter(Identification, Context.ConnectionId));
+            ExecuteWithRedirectToLoginOnException(() => _frontendApi.VisualizeOnRoboterChanged(Identification, Context.ConnectionId, isVisualizingOnRoboter));
         }
 
         public override Task OnConnectedAsync()

@@ -40,6 +40,7 @@ namespace backend.communication.signalR.frontendApi
         public event GetGame? OnGetGame;
         public event GetBestlist? OnGetBestlist;
         public event GetHint? OnGetHint;
+        public event Action<string>? OnGetVisualisationState;
 
         public event RequestMatch? OnRequestMatch;
         public event AcceptMatch? OnAcceptMatch;
@@ -57,8 +58,7 @@ namespace backend.communication.signalR.frontendApi
         public event AcceptOppoenntRoboterPlyerMatch? OnAcceptOppoenntRoboterPlyerMatch;
         public event RejectOppoenntRoboterPlyerMatch? OnRejectOppoenntRoboterPlyerMatch;
 
-        public event Action<string>? OnVisualizeOnRoboter;
-        public event Action<string>? OnStopVisualizingOnRoboter;
+        public event Action<bool>? OnVisualizeOnRoboterChanged;
 
         // reciving
         public void GetUserData(PlayerIdentity playerIdentity, string connectionId)
@@ -116,6 +116,16 @@ namespace backend.communication.signalR.frontendApi
             Task methode()
             {
                 OnGetHint?.Invoke(playerIdentity);
+                return Task.CompletedTask;
+            }
+
+            Request(playerIdentity, methode, connectionId);
+        }
+        internal void GetVisualisationState(PlayerIdentity playerIdentity, string connectionId)
+        {
+            Task methode()
+            {
+                OnGetVisualisationState?.Invoke(connectionId);
                 return Task.CompletedTask;
             }
 
@@ -255,25 +265,15 @@ namespace backend.communication.signalR.frontendApi
             Request(initiatorPlayerIdentity, methode, connectionId);
         }
 
-        public void VisualizeOnRoboter(PlayerIdentity playerIdentity, string connectionId)
+        public void VisualizeOnRoboterChanged(PlayerIdentity playerIdentity, string connectionId, bool isVisualizingOnRoboter)
         {
             Task Methode()
             {
-                OnVisualizeOnRoboter?.Invoke(connectionId);
+                OnVisualizeOnRoboterChanged?.Invoke(isVisualizingOnRoboter);
                 return Task.CompletedTask;
             }
 
             Request(playerIdentity, Methode, connectionId);
-        }
-        public void StopVisualizingOnRoboter(PlayerIdentity playerIdentity, string connectionId)
-        {
-            Task methode()
-            {
-                OnStopVisualizingOnRoboter?.Invoke(connectionId);
-                return Task.CompletedTask;
-            }
-
-            Request(playerIdentity, methode, connectionId);
         }
 
         // sending
@@ -300,6 +300,10 @@ namespace backend.communication.signalR.frontendApi
         public async Task SendHint(string connectionId, int column)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendHint), column);
+        }
+        internal async Task SendVisualisationState(bool isVisualizingOnRoboter, string connectionId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendVisualisationState), isVisualizingOnRoboter);
         }
 
         public async Task PlayerConnected(string connectionId, ConnectedPlayerDto onlinePlayer)
@@ -362,14 +366,6 @@ namespace backend.communication.signalR.frontendApi
         public async Task YouStoppedWatchingGame(string connectionId)
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouStoppedWatchingGame));
-        }
-        public async Task SendVisualizeOnRoboter(string connectionId)
-        {
-            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendVisualizeOnRoboter));
-        }
-        public async Task SendStopVisualizingOnRoboter(string connectionId)
-        {
-            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendStopVisualizingOnRoboter));
         }
 
         public async Task NotAbleToConnectToOpponentRoboterPlayer(string connectionId, string errorMessage)

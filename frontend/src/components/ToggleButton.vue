@@ -41,25 +41,24 @@ export default defineComponent({
 .switch {
   position: relative;
   display: block;
-  width: 60px;
-  height: 34px;
+  width: 56px;
+  height: 30px;
   background-color: var(--color-light);
-  border-radius: 24px;
+  border-radius: 20px;
   cursor: pointer;
-  margin-bottom: 0.5rem;
 }
 
 .slider {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
+  height: 22px;
+  width: 22px;
   left: 4px;
   bottom: 4px;
   background-color: var(--color-orange);
   -webkit-transition: 0.4s;
   transition: 0.4s;
-  border-radius: 24px;
+  border-radius: 20px;
 }
 
 .switch.active {
@@ -67,9 +66,9 @@ export default defineComponent({
 }
 
 .switch.active > .slider {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
+  -webkit-transform: translateX(22px);
+  -ms-transform: translateX(22px);
+  transform: translateX(22px);
   background-color: var(--color-light);
 }
 </style>

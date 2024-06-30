@@ -30,7 +30,8 @@ namespace backend.communication.comunicationManagers
             GameManager gameManager,
             GameResultsService gameResultsService,
             OpponentRoboterClientApiManager opponentRoboterClientApiManager,
-            RoboterApi roboterApi
+            RoboterApi roboterApi,
+            Board board
             )
         {
             _frontendApi = frontendApi;
@@ -39,6 +40,7 @@ namespace backend.communication.comunicationManagers
             _gameResultsService = gameResultsService;
             _opponentRoboterClientApiManager = opponentRoboterClientApiManager;
             _roboterApi = roboterApi;
+            _board = board;
 
             _playerConnectionService.WebPlayerConnectionManager.OnPlayerDisconnected += PlayerDisconnected;
 
@@ -47,6 +49,7 @@ namespace backend.communication.comunicationManagers
             _frontendApi.OnGetGame += GetGame;
             _frontendApi.OnGetBestlist += GetBestlist;
             _frontendApi.OnGetHint += GetHint;
+            _frontendApi.OnGetVisualisationState += GetVisualisationState;
 
             _frontendApi.OnGetUserData += GetUserData;
             _frontendApi.OnRequestMatch += RequestMatch;
@@ -65,8 +68,7 @@ namespace backend.communication.comunicationManagers
             _frontendApi.OnAcceptOppoenntRoboterPlyerMatch += AcceptOppoenntRoboterPlyerMatch;
             _frontendApi.OnRejectOppoenntRoboterPlyerMatch += RejectOppoenntRoboterPlyerMatch;
 
-            _frontendApi.OnVisualizeOnRoboter += VisualizeOnRoboter;
-            _frontendApi.OnStopVisualizingOnRoboter += StopVisualizingOnRoboter;
+            _frontendApi.OnVisualizeOnRoboterChanged += VisualizeOnRoboterChanged;
 
             _gameManager.OnRequestedMatch += OnRequestedMatch;
             _gameManager.OnRejectedMatch += OnRejectedMatch;
@@ -88,6 +90,7 @@ namespace backend.communication.comunicationManagers
             _frontendApi.OnGetGame -= GetGame;
             _frontendApi.OnGetBestlist -= GetBestlist;
             _frontendApi.OnGetHint -= GetHint;
+            _frontendApi.OnGetVisualisationState -= GetVisualisationState;
 
             _frontendApi.OnGetUserData -= GetUserData;
             _frontendApi.OnRequestMatch -= RequestMatch;
@@ -106,8 +109,7 @@ namespace backend.communication.comunicationManagers
             _frontendApi.OnAcceptOppoenntRoboterPlyerMatch -= AcceptOppoenntRoboterPlyerMatch;
             _frontendApi.OnRejectOppoenntRoboterPlyerMatch -= RejectOppoenntRoboterPlyerMatch;
 
-            _frontendApi.OnVisualizeOnRoboter -= VisualizeOnRoboter;
-            _frontendApi.OnStopVisualizingOnRoboter -= StopVisualizingOnRoboter;
+            _frontendApi.OnVisualizeOnRoboterChanged -= VisualizeOnRoboterChanged;
 
             _gameManager.OnRequestedMatch -= OnRequestedMatch;
             _gameManager.OnRejectedMatch -= OnRejectedMatch;
@@ -160,6 +162,10 @@ namespace backend.communication.comunicationManagers
         {
             WebPlayer webPlayer = _playerConnectionService.WebPlayerConnectionManager.GetConnectedPlayerByIdentification(playerIdentity);
             _gameManager.GetHint(webPlayer);
+        }
+        private void GetVisualisationState(string connectionId)
+        {
+            SendVisualisationState(_board.IsVisualizingOnRoboter, connectionId);
         }
 
         private void RequestMatch(PlayerIdentity requestingPlayerIdentity, string opponentPlayerId)
@@ -281,15 +287,10 @@ namespace backend.communication.comunicationManagers
             _gameManager.RequestMatch(requestingPlayer, algorythmPlayer);
         }
 
-        private void VisualizeOnRoboter(string connectionId)
+        private void VisualizeOnRoboterChanged(bool isVisualizingOnRoboter)
         {
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async (c) => await _frontendApi.SendVisualizeOnRoboter(c));
-            _roboterApi.IsVisualizingOnRoboter = true;
-        }
-        private void StopVisualizingOnRoboter(string connectionId)
-        {
-            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async (c) => await _frontendApi.SendStopVisualizingOnRoboter(c));
-            _roboterApi.IsVisualizingOnRoboter = false;
+            _playerConnectionService.WebPlayerConnectionManager.ForeachConnectedPlayerConnection(async (c) => await _frontendApi.SendVisualisationState(isVisualizingOnRoboter, c));
+            _roboterApi.IsVisualizingOnRoboter = isVisualizingOnRoboter;
         }
 
 
@@ -318,6 +319,10 @@ namespace backend.communication.comunicationManagers
         {
             IEnumerable<MatchDto> gamePlanDTO = gamePlan.Select(x => new MatchDto(x));
             await _frontendApi.SendGamePlan(connectionId, gamePlanDTO);
+        }
+        private async void SendVisualisationState(bool isVisualizingOnRoboter, string connectionId)
+        {
+            await _frontendApi.SendVisualisationState(isVisualizingOnRoboter, connectionId);
         }
 
         private void OnRequestedMatch(Player requester, Player opponent)
@@ -400,6 +405,7 @@ namespace backend.communication.comunicationManagers
         private readonly GameResultsService _gameResultsService;
         private readonly OpponentRoboterClientApiManager _opponentRoboterClientApiManager;
         private readonly RoboterApi _roboterApi;
+        private readonly Board _board;
         private readonly Func<WebPlayer, bool> _sendGameInformationCondition = (p) => p.IsInGame || p.IsWatchingGame;
     }
 }

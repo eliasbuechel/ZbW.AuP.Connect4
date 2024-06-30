@@ -9,6 +9,12 @@
       >
         Watch
       </button>
+      <ToggleButton
+        label="show on robot"
+        :state="isVisualizingOnRoboter"
+        @toggle-state="visualizingOnRoboterChanged"
+        class="visualize-on-roboter-toggle-button"
+      />
       <span v-if="gamePlan.length <= 0">No game planed.</span>
       <ul v-else>
         <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
@@ -27,6 +33,7 @@ import signalRHub from "@/services/signalRHub";
 import { Match } from "@/types/Match";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { defineComponent, PropType } from "vue";
+import ToggleButton from "./ToggleButton.vue";
 
 interface GamePlanState {
   isSubscribed: boolean;
@@ -43,11 +50,18 @@ export default defineComponent({
       required: true,
       type: Object as PropType<PlayerIdentity>,
     },
+    isVisualizingOnRoboter: {
+      required: true,
+      type: Boolean,
+    },
   },
   data(): GamePlanState {
     return {
       isSubscribed: false,
     };
+  },
+  components: {
+    ToggleButton,
   },
   methods: {
     watchGame(): void {
@@ -56,6 +70,9 @@ export default defineComponent({
     isGameParticipant(idx: number): boolean {
       if (this.identity == null) return false;
       return this.gamePlan[idx].player1.id === this.identity.id || this.gamePlan[idx].player2.id === this.identity.id;
+    },
+    visualizingOnRoboterChanged(state: boolean): void {
+      this.$emit("visualizing-on-roboter-changed", state);
     },
   },
 });
@@ -84,6 +101,8 @@ export default defineComponent({
 
 .match > .player {
   width: 240px;
+  overflow: hidden;
+  text-wrap: nowrap;
 }
 
 .match > .player1 {
@@ -100,8 +119,14 @@ export default defineComponent({
 .watch-button {
   position: absolute;
   width: fit-content;
-  top: 2rem;
-  right: 2rem;
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.visualize-on-roboter-toggle-button {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
 }
 </style>
 @/types/DataTransferObjects@/types/GameResultMatch
