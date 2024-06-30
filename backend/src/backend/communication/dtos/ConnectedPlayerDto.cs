@@ -1,4 +1,4 @@
-﻿using backend.game;
+﻿using backend.game.players;
 
 namespace backend.communication.dtos
 {

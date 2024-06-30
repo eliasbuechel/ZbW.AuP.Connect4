@@ -14,6 +14,8 @@
     @quit-game="quitGame"
     @confirm-game-start="confirmGameStart"
     @stop-watching-game="stopWatchingGame"
+    @visualize-on-roboter="visualizeOnRoboter"
+    @stop-visualizing-on-roboter="stopVisualizingOnRoboter"
   />
   <MainBoard
     v-else-if="bestlist != null"
@@ -118,6 +120,8 @@ export default defineComponent({
       signalRHub.on("NotAbleToConnectToOpponentRoboterPlayer", this.onNotAbleToConnectToOpponentRoboterPlayer);
       signalRHub.on("RequestErrorOccured", this.onRequestErrorOccured);
       signalRHub.on("RedirectToLogin", this.onRedirectToLogin);
+      signalRHub.on("SendVisualizeOnRoboter", this.onSendVisualizeOnRoboter);
+      signalRHub.on("SendStopVisualizingOnRoboter", this.onSendStopVisualizingOnRoboter);
     },
     unsubscribe(): void {
       if (!this.isSubscribed) return;
@@ -130,7 +134,7 @@ export default defineComponent({
       signalRHub.off("Matched", this.onMatched);
       signalRHub.off("MatchingEnded", this.onMatchingEnded);
       signalRHub.off("MovePlayed", this.onMovePlayed);
-      signalRHub.on("PlacingStone", this.onPlacingStone);
+      signalRHub.off("PlacingStone", this.onPlacingStone);
       signalRHub.off("GameStarted", this.onGameStarted);
       signalRHub.off("GameEnded", this.onGameEnded);
       signalRHub.off("SendUserData", this.updateUserIdentity);
@@ -144,8 +148,10 @@ export default defineComponent({
       signalRHub.off("SendBestlist", this.onSendBestlist);
       signalRHub.off("YouStoppedWatchingGame", this.onYouStoppedWatchingGame);
       signalRHub.off("NotAbleToConnectToOpponentRoboterPlayer", this.onNotAbleToConnectToOpponentRoboterPlayer);
-      signalRHub.off("RequestError", this.onRequestErrorOccured);
+      signalRHub.off("RequestErrorOccured", this.onRequestErrorOccured);
       signalRHub.off("RedirectToLogin", this.onRedirectToLogin);
+      signalRHub.off("SendVisualizeOnRoboter", this.onSendVisualizeOnRoboter);
+      signalRHub.off("SendStopVisualizingOnRoboter", this.onSendStopVisualizingOnRoboter);
     },
     leaveGameResultView(): void {
       this.gameResult = undefined;
@@ -155,6 +161,14 @@ export default defineComponent({
     },
     stopWatchingGame(): void {
       this.game = undefined;
+    },
+    visualizeOnRoboter(): void {
+      if (this.game == null) return;
+      this.game.gameBoard.isVisualizingOnRoboter = true;
+    },
+    stopVisualizingOnRoboter(): void {
+      if (this.game == null) return;
+      this.game.gameBoard.isVisualizingOnRoboter = false;
     },
     placeStone(column: number, playerId: string): void {
       signalRHub.invoke("PlayMove", column);
@@ -286,7 +300,7 @@ export default defineComponent({
       this.game.moveStartTime = Date.now();
       this.game.match.player1.currentHint = undefined;
       this.game.match.player2.currentHint = undefined;
-      this.game.board[field.column][field.row] = playerId;
+      this.game.gameBoard.board[field.column][field.row] = playerId;
       this.switchActivePlayer();
     },
     onPlacingStone(playerId: string, field: Field): void {
@@ -440,6 +454,14 @@ export default defineComponent({
     onRedirectToLogin(): void {
       this.$router.push({ name: "Login" });
     },
+    onSendVisualizeOnRoboter(): void {
+      if (this.game == null) return;
+      this.game.gameBoard.isVisualizingOnRoboter = true;
+    },
+    onSendStopVisualizingOnRoboter(): void {
+      if (this.game == null) return;
+      this.game.gameBoard.isVisualizingOnRoboter = false;
+    },
     onSignalRConnected(): void {
       this.subscribe();
       signalRHub.invoke("GetUserData");
@@ -461,4 +483,3 @@ export default defineComponent({
 </script>
 
 <style scoped></style>
-@/types/GameResultMatch

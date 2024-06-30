@@ -1,4 +1,4 @@
-﻿namespace backend.game
+﻿namespace backend.game.players
 {
     internal class OpponentRoboterPlayer(string identification) : Player(Guid.NewGuid().ToString(), identification)
     {

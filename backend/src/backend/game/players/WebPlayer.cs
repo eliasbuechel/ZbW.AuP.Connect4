@@ -1,6 +1,6 @@
 ﻿using backend.data;
 
-namespace backend.game
+namespace backend.game.players
 {
     internal class WebPlayer(PlayerIdentity playerIdentity) : Player(playerIdentity.Id, playerIdentity.UserName ?? "User with no username")
     {

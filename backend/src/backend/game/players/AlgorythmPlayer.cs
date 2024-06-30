@@ -1,4 +1,4 @@
-﻿namespace backend.game
+﻿namespace backend.game.players
 {
     internal class AlgorythmPlayer(Player opponentPlayer) : Player(Guid.NewGuid().ToString(), "R4D4-Algorythm")
     {

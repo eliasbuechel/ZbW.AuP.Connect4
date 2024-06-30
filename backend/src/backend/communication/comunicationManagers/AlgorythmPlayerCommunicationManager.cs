@@ -1,8 +1,11 @@
 ﻿using backend.infrastructure;
 using backend.services;
 using backend.game.entities;
+using backend.game;
+using backend.game.players;
+using backend.utilities;
 
-namespace backend.game
+namespace backend.communication.comunicationManagers
 {
     internal class AlgorythmPlayerCommunicationManager : DisposingObject
     {
@@ -34,7 +37,7 @@ namespace backend.game
         private void OnRequestedMatch(Player requester, Player opponent)
         {
             if (opponent is AlgorythmPlayer && requester is WebPlayer)
-                _gameManager.AcceptMatch(opponent, requester);
+                ExecutePlayerRequest(() => _gameManager.AcceptMatch(opponent, requester));
         }
         private void OnGameStarted(Game game)
         {
@@ -45,7 +48,7 @@ namespace backend.game
 
                 _opponentPlayer = game.Match.Player2;
                 _algorythmPlayer = algorythmPlayer1;
-                _gameManager.ConfirmGameStart(algorythmPlayer1);
+                ExecutePlayerRequest(() => _gameManager.ConfirmGameStart(algorythmPlayer1));
             }
 
             if (game.Match.Player2 is AlgorythmPlayer algorythmPlayer2)
@@ -55,7 +58,7 @@ namespace backend.game
 
                 _opponentPlayer = game.Match.Player1;
                 _algorythmPlayer = algorythmPlayer2;
-                _gameManager.ConfirmGameStart(algorythmPlayer2);
+                ExecutePlayerRequest(() => _gameManager.ConfirmGameStart(algorythmPlayer2));
             }
         }
         private void OnConfirmedGameStart(Player player)
@@ -71,7 +74,18 @@ namespace backend.game
 
             _algorythmPlayerIsStartingPlayer = false;
             int column = _gameManager.GetBestMove(_algorythmPlayer);
-            _gameManager.PlayMove(_algorythmPlayer, column);
+            ExecutePlayerRequest(() => _gameManager.PlayMove(_algorythmPlayer, column));
+        }
+        private void ExecutePlayerRequest(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (InvalidPlayerRequestException e)
+            {
+                Logger.Log(LogLevel.Error, LogContext.ALGORYTHM_PLAYER, "Invalid player request from algorythm player.", e);
+            }
         }
 
         protected override void OnDispose()

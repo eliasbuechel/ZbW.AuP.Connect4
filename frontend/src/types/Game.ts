@@ -1,5 +1,6 @@
 import Entity, { IEntity } from "./Entity";
 import { Field } from "./Field";
+import { GameBoard } from "./GameBoard";
 import { InGamePlayer } from "./InGamePlayer";
 import { Match } from "./Match";
 import { PlayerIdentity } from "./PlayerIdentity";
@@ -7,7 +8,7 @@ import { PlayerIdentity } from "./PlayerIdentity";
 export interface IGame extends IEntity {
   match: Match;
   activePlayerId: string;
-  board: string[][];
+  gameBoard: GameBoard;
   moveStartTime?: number;
   gameStartTime?: number;
   placingField?: Field;
@@ -20,7 +21,7 @@ export default class Game extends Entity implements IGame {
     super(game.id);
     this.match = game.match;
     this.activePlayerId = game.activePlayerId;
-    this.board = game.board;
+    this.gameBoard = game.gameBoard;
     this.moveStartTime = game.moveStartTime;
     this.gameStartTime = game.gameStartTime;
     this.placingField = game.placingField;
@@ -30,7 +31,7 @@ export default class Game extends Entity implements IGame {
 
   public match: Match;
   public activePlayerId: string;
-  public board: string[][];
+  public gameBoard: GameBoard;
   public moveStartTime?: number;
   public gameStartTime?: number;
   public placingField?: Field;

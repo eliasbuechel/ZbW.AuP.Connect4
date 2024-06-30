@@ -1,14 +1,10 @@
-﻿namespace backend.game.entities
-{
-    internal class Match : Entity
-    {
-        public Match(Player player1, Player player2)
-        {
-            Player1 = player1;
-            Player2 = player2;
-        }
+﻿using backend.game.players;
 
-        public Player Player1 { get; }
-        public Player Player2 { get; }
+namespace backend.game.entities
+{
+    internal class Match(Player player1, Player player2) : Entity
+    {
+        public Player Player1 { get; } = player1;
+        public Player Player2 { get; } = player2;
     }
 }

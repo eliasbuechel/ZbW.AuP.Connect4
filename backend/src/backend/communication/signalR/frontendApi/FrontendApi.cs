@@ -1,6 +1,5 @@
 ﻿using backend.communication.dtos;
 using backend.data;
-using backend.game;
 using backend.utilities;
 using Microsoft.AspNetCore.SignalR;
 
@@ -34,6 +33,7 @@ namespace backend.communication.signalR.frontendApi
         RequestHandlerManager<PlayerIdentity> requestHandlerManager
             ) : SignalRApi<FrontendHub, PlayerIdentity>(hubClient, requestHandlerManager)
     {
+
         public event GetUserData? OnGetUserData;
         public event GetConnectedPlayers? OnGetConnectedPlayers;
         public event GetGamePlan? OnGetGamePlan;
@@ -56,6 +56,9 @@ namespace backend.communication.signalR.frontendApi
         public event RequestMatchFromOpponentRoboterPlayer? OnRequestOppoenntRoboterPlyerMatch;
         public event AcceptOppoenntRoboterPlyerMatch? OnAcceptOppoenntRoboterPlyerMatch;
         public event RejectOppoenntRoboterPlyerMatch? OnRejectOppoenntRoboterPlyerMatch;
+
+        public event Action<string>? OnVisualizeOnRoboter;
+        public event Action<string>? OnStopVisualizingOnRoboter;
 
         // reciving
         public void GetUserData(PlayerIdentity playerIdentity, string connectionId)
@@ -252,6 +255,26 @@ namespace backend.communication.signalR.frontendApi
             Request(initiatorPlayerIdentity, methode, connectionId);
         }
 
+        public void VisualizeOnRoboter(PlayerIdentity playerIdentity, string connectionId)
+        {
+            Task Methode()
+            {
+                OnVisualizeOnRoboter?.Invoke(connectionId);
+                return Task.CompletedTask;
+            }
+
+            Request(playerIdentity, Methode, connectionId);
+        }
+        public void StopVisualizingOnRoboter(PlayerIdentity playerIdentity, string connectionId)
+        {
+            Task methode()
+            {
+                OnStopVisualizingOnRoboter?.Invoke(connectionId);
+                return Task.CompletedTask;
+            }
+
+            Request(playerIdentity, methode, connectionId);
+        }
 
         // sending
         public async Task SendUserData(string connectionId, PlayerInfoDto userData)
@@ -340,6 +363,14 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(YouStoppedWatchingGame));
         }
+        public async Task SendVisualizeOnRoboter(string connectionId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendVisualizeOnRoboter));
+        }
+        public async Task SendStopVisualizingOnRoboter(string connectionId)
+        {
+            await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(SendStopVisualizingOnRoboter));
+        }
 
         public async Task NotAbleToConnectToOpponentRoboterPlayer(string connectionId, string errorMessage)
         {
@@ -350,6 +381,5 @@ namespace backend.communication.signalR.frontendApi
         {
             await _hubConetext.Clients.Client(connectionId).SendAsync(nameof(RequestError));
         }
-
     }
 }

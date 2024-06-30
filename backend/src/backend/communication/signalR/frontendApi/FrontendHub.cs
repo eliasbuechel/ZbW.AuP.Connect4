@@ -87,6 +87,15 @@ namespace backend.communication.signalR.frontendApi
         {
             ExecuteWithRedirectToLoginOnException(() => _frontendApi.ConnectToOpponentRoboterPlayer(Identification, hubUrl, Context.ConnectionId));
         }
+        public void VisualizeOnRoboter()
+        {
+            ExecuteWithRedirectToLoginOnException(() => _frontendApi.VisualizeOnRoboter(Identification, Context.ConnectionId));
+        }
+        public void StopVisualizingOnRoboter()
+        {
+            ExecuteWithRedirectToLoginOnException(() => _frontendApi.StopVisualizingOnRoboter(Identification, Context.ConnectionId));
+        }
+
         public override Task OnConnectedAsync()
         {
             ExecuteWithRedirectToLoginOnException(() => _frontendApi.Connected(Identification, Context.ConnectionId));

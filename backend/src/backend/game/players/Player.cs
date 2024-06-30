@@ -1,4 +1,6 @@
-﻿namespace backend.game
+﻿using backend.game.entities;
+
+namespace backend.game.players
 {
     internal abstract class Player(string playerId, string username) : IEquatable<Player>
     {

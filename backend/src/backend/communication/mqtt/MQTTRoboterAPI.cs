@@ -1,8 +1,10 @@
 ﻿using backend.game;
 using backend.game.entities;
+using backend.game.players;
 using backend.infrastructure;
 using backend.utilities;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.communication.mqtt
 {
@@ -14,48 +16,32 @@ namespace backend.communication.mqtt
             Connect().Wait();
         }
 
-        public override async void ResetConnect4Board()
+        protected override async void ResetConnect4BoardOnApi()
         {
-            StartRequestTimeout(async () =>
+            if (!_mqttTopicClient.IsConnected)
             {
-                try
-                {
-                    await TopicResetChanged(false.ToString());
-                }
-                catch (InvalidPlayerRequestException e)
-                {
-                    Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "BoardReset reqeust after timeout failed.", e);
-                }
-            });
-
-            _resettingBoard = true;
-            if (_mqttTopicClient.IsConnected)
-            {
-                await _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString());
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, "Not able to reset roboter because mqtt-client is not connect.");
+                BoardReset();
                 return;
             }
 
-            _mqttTopicClient.OnConnected += RequestConnect4BoardReset;
-        }
+            if (_resettingBoard)
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, "Request overlapping while resetting board.");
 
+            _resettingBoard = true;
+            await _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString());
+        }
         protected override async void PlaceStoneOnApi(Player player, Field field)
         {
-            StartRequestTimeout(() =>
+            if (!_mqttTopicClient.IsConnected)
             {
-                _placingField = null;
-                _placingPlayer = null;
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Not able to place stone on roboter because mqtt-client is not connect. Player: '{player.Username}' Column: '{field.Column}'");
+                BoardReset();
+                return;
+            }
 
-                try
-                {
-                    StonePlaced(player, field);
-                }
-                catch (InvalidPlayerRequestException e)
-                {
-                    Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "StonePlaced reqeust after timeout failed.", e);
-                }
-            });
-
-            Debug.Assert(_placingPlayer == null && _placingField == null);
+            if (_placingPlayer != null || _placingField != null)
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Request overlapping while placing stone. Player: '{player.Username}' Column: '{field.Column}'");
 
             _placingPlayer = player;
             _placingField = field;
@@ -76,11 +62,6 @@ namespace backend.communication.mqtt
             await _mqttTopicClient.SubscribeToAsync(TOPIC_MANUAL_COLUMN, TopicManualColumnChanged);
             await _mqttTopicClient.ConnectAsync();
         }
-        private async void RequestConnect4BoardReset()
-        {
-            await _mqttTopicClient.PublishAsync(TOPIC_RESET, true.ToString());
-            _mqttTopicClient.OnConnected -= RequestConnect4BoardReset;
-        }
         private Task TopicColumnChanged(string value)
         {
             int column;
@@ -90,7 +71,7 @@ namespace backend.communication.mqtt
             }
             catch
             {
-                Debug.Assert(false);
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Not able to parse message on topic '{TOPIC_COLUMN}'. Message: '{value}'");
                 return Task.CompletedTask;
             }
 
@@ -106,7 +87,6 @@ namespace backend.communication.mqtt
                 _placingPlayer = null;
 
                 StonePlaced(placingPlayer, placingField);
-                _currentRequestId = Guid.Empty;
                 return Task.CompletedTask;
             }
 
@@ -121,7 +101,7 @@ namespace backend.communication.mqtt
             }
             catch
             {
-                Debug.Assert(false);
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Not able to parse message on topic '{TOPIC_RESET}'. Message: '{value}'");
                 return Task.CompletedTask;
             }
 
@@ -135,7 +115,6 @@ namespace backend.communication.mqtt
             }
 
             BoardReset();
-            _currentRequestId = Guid.Empty;
             _resettingBoard = false;
             return Task.CompletedTask;
         }
@@ -148,53 +127,37 @@ namespace backend.communication.mqtt
             }
             catch
             {
-                Debug.Assert(false);
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Reciving message on topic '{TOPIC_MANUAL_COLUMN}'. Not able to parse message '{value}'");
                 return;
             }
 
-            if (column >= 0 && column <= 6)
+            if (column == -1)
+                return;
+
+            if (column < 0 || column >= Board.Columns)
             {
-                await _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1");
-                try
-                {
-                    ManualMove(column);
-                }
-                catch (InvalidPlayerRequestException e)
-                {
-                    Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "Not able to process manual move from roboter.", e);
-                }
-            }
-        }
-        private void StartRequestTimeout(Action onTimeout)
-        {
-            Guid requestId = Guid.NewGuid();
-            lock (_lock)
-            {
-                _currentRequestId = requestId;
+                Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Reciving message on topic '{TOPIC_MANUAL_COLUMN}'. Message is not in the valid range. Message: '{value}'");
+                return;
             }
 
-            Thread thread = new(async () =>
+            await _mqttTopicClient.PublishAsync(TOPIC_MANUAL_COLUMN, "-1");
+            try
             {
-                await Task.Delay(TIMOUT_TIME_IN_MS);
-                lock(_lock)
-                {
-                    if (_currentRequestId == requestId)
-                        onTimeout();
-                }
-            });
-            thread.Start();
+                ManualMove(column);
+            }
+            catch (InvalidPlayerRequestException e)
+            {
+                Logger.Log(LogLevel.Warning, LogContext.MQTT_CLIENT, "Not able to process manual move from roboter.", e);
+            }
         }
 
-        private const int TIMOUT_TIME_IN_MS = 500;
         private const string TOPIC_COLUMN = "column";
         private const string TOPIC_RESET = "reset";
         private const string TOPIC_MANUAL_COLUMN = "manualColumn";
 
-        private readonly object _lock = new();
         private bool _resettingBoard;
         private Field? _placingField;
         private Player? _placingPlayer;
         private readonly MqttNetTopicClient _mqttTopicClient;
-        private Guid _currentRequestId = Guid.Empty;
     }
 }

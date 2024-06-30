@@ -1,17 +1,13 @@
 ﻿using backend.game.entities;
+using backend.game.players;
 using backend.infrastructure;
 using System.Diagnostics;
 using System.Numerics;
 
 namespace backend.game
 {
-    internal class BoardValidator
+    internal class BoardValidator(Player?[][] gameBoard)
     {
-        public BoardValidator(Player?[][] gameBoard)
-        {
-            _gameBoard = gameBoard;
-        }
-
         public bool HasWon(Player player, Field field)
         {
             return HasWonVertically(player, field) ||
@@ -423,7 +419,7 @@ namespace backend.game
             return count >= 4;
         }
 
-        private readonly Player?[][] _gameBoard;
+        private readonly Player?[][] _gameBoard = gameBoard;
 
         private const int INVALID_BEST_MOVE = -1;
         private const int LOOK_AHEAD_MOVES = 10;

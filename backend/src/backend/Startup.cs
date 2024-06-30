@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using backend.services.player;
 using backend.communication.signalR.frontendApi;
 using backend.communication.signalR.opponentRoboterApi;
 using backend.utilities;
+using backend.communication.comunicationManagers;
+using backend.communication.connectionManager;
 
 namespace backend
 {

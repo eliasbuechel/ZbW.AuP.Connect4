@@ -1,8 +1,8 @@
 ﻿using backend.communication.signalR.opponentRoboterApi;
-using backend.game;
+using backend.game.players;
 using System.ComponentModel;
 
-namespace backend.services.player
+namespace backend.communication.connectionManager
 {
     internal class OpponentRoboterPlayerConnectionManager : PlayerConnectionManager<OpponentRoboterPlayer, string>
     {

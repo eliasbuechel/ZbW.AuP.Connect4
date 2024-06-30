@@ -4,6 +4,11 @@
       <InGamePlayerInfoVue class="player-info-left" :game="game" :identity="identity" :player="playerLeft!" />
       <div class="game-info-container">
         <h2>Connect Four</h2>
+        <ToggleButton
+          label="visualize on roboter"
+          :state="game.gameBoard.isVisualizingOnRoboter"
+          @toggle-state="toggleVisualizeOnRoboter"
+        />
         <button v-if="!isGameParticipant" class="button-light" @click="stopWatchingGame">Back home</button>
         <button v-if="isYourTurn || game.isQuittableByEveryone" @click="quitGame" class="button-light">
           Quit game
@@ -62,6 +67,7 @@ import signalRHub from "@/services/signalRHub";
 import InGamePlayerInfoVue from "./InGamePlayerInfoVue.vue";
 import TimeFormatter from "@/services/timeFormatter";
 import { Field } from "@/types/Field";
+import ToggleButton from "./ToggleButton.vue";
 
 export default defineComponent({
   name: "GameVue",
@@ -91,8 +97,9 @@ export default defineComponent({
     };
   },
   components: {
-    BoardVue: BoardVue,
-    InGamePlayerInfoVue: InGamePlayerInfoVue,
+    BoardVue,
+    InGamePlayerInfoVue,
+    ToggleButton,
   },
   mounted(): void {
     this.startGameTimer();
@@ -124,6 +131,18 @@ export default defineComponent({
     stopWatchingGame(): void {
       signalRHub.invoke("StopWatchingGame");
       this.$emit("stop-watching-game");
+    },
+    toggleVisualizeOnRoboter(state: boolean): void {
+      state ? this.visualizeOnRoboter() : this.stopVisualizingOnRoboter();
+      console.log("change");
+    },
+    visualizeOnRoboter(): void {
+      signalRHub.invoke("VisualizeOnRoboter");
+      this.$emit("visualize-on-roboter");
+    },
+    stopVisualizingOnRoboter(): void {
+      signalRHub.invoke("StopVisualizingOnRoboter");
+      this.$emit("stop-visualizing-on-roboter");
     },
     startGameTimer(): void {
       this.gameTimerId = setInterval(() => {
@@ -194,6 +213,9 @@ export default defineComponent({
     },
     showHintRequesting(): boolean {
       return this.hasGameStarted && this.isYourTurn && this.placingField == null;
+    },
+    isVisualizingOnRoboter(): boolean {
+      return this.game.gameBoard.isVisualizingOnRoboter;
     },
   },
 });

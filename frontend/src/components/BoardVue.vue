@@ -53,7 +53,7 @@ export default defineComponent({
       this.$emit("place-stone", column);
     },
     columnIsFull(colIdx: number): boolean {
-      return this.game.board[colIdx][this.game.board[colIdx].length - 1] != "";
+      return this.game.gameBoard.board[colIdx][this.game.gameBoard.board[colIdx].length - 1] != "";
     },
     isHint(colIdx: number): boolean {
       if (this.activePlayer.currentHint == null) return false;
@@ -63,9 +63,9 @@ export default defineComponent({
       return false;
     },
     isNextPlacableCell(colIdx: number, rowIdx: number): boolean {
-      if (this.game.board[colIdx][rowIdx] != "") return false;
+      if (this.game.gameBoard.board[colIdx][rowIdx] != "") return false;
       if (rowIdx <= 0) return true;
-      return this.game.board[colIdx][rowIdx - 1] != "";
+      return this.game.gameBoard.board[colIdx][rowIdx - 1] != "";
     },
     isPlacingCell(colIdx: number, rowIdx: number): boolean {
       if (this.placingField == null) return false;
@@ -111,7 +111,7 @@ export default defineComponent({
       return this.game.placingField;
     },
     board(): string[][] {
-      return this.game.board;
+      return this.game.gameBoard.board;
     },
   },
 });

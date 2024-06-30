@@ -1,4 +1,5 @@
 ﻿using backend.game.entities;
+using backend.game.players;
 using backend.infrastructure;
 using backend.utilities;
 using System.Diagnostics;
@@ -40,6 +41,7 @@ namespace backend.game
         public bool GameEnded => _gameEnded;
         public DateTime? MoveStartTime => _moveStartingTime;
         public DateTime? GameStartTime => _gameStartTime;
+        public Board Board => _board;
 
 
         public Field? PlacingField => _board.PlacingField;

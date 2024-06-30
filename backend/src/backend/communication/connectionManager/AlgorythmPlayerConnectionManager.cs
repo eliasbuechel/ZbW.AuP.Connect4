@@ -1,6 +1,6 @@
-﻿using backend.game;
+﻿using backend.game.players;
 
-namespace backend.services.player
+namespace backend.communication.connectionManager
 {
     internal class AlgorythmPlayerConnectionManager : PlayerConnectionManager<AlgorythmPlayer, Player>
     {

@@ -1,9 +1,9 @@
 ﻿using backend.communication.dtos;
 using backend.communication.signalR.frontendApi;
 using backend.data;
-using backend.game;
+using backend.game.players;
 
-namespace backend.services.player
+namespace backend.communication.connectionManager
 {
     internal class WebPlayerConnectionManager : PlayerConnectionManager<WebPlayer, PlayerIdentity>
     {

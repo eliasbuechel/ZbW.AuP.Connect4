@@ -1,5 +1,6 @@
 ﻿using backend.communication.mqtt;
 using backend.game.entities;
+using backend.game.players;
 using backend.infrastructure;
 using backend.utilities;
 
@@ -51,6 +52,7 @@ namespace backend.game
         public static int Rows => ROWS;
         public Player?[][] GameBoard => _gameBoard;
         public Field? PlacingField { get; private set; }
+        public bool IsVisualizingOnRoboter => _roboterAPI.IsVisualizingOnRoboter;
 
 
         public Player?[] this[int index]

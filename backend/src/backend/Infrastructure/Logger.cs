@@ -9,7 +9,9 @@
         PLAYER_REQUEST,
         GAME_PLAY,
         EMAIL_SENDER,
-        CONNECTION_MANAGER
+        CONNECTION_MANAGER,
+        ROBOTER_API,
+        ALGORYTHM_PLAYER
     }
 
     internal static class Logger

@@ -1,8 +1,8 @@
 ﻿using backend.communication.mqtt;
 using backend.game;
 using backend.game.entities;
+using backend.game.players;
 using backend.infrastructure;
-using backend.services.player;
 using backend.utilities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Collections.Concurrent;

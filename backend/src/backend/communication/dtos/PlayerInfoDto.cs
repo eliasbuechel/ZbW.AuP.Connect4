@@ -1,5 +1,5 @@
-﻿using backend.game;
-using backend.game.entities;
+﻿using backend.game.entities;
+using backend.game.players;
 
 namespace backend.communication.dtos
 {

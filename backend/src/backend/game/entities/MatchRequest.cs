@@ -1,4 +1,6 @@
-﻿namespace backend.game
+﻿using backend.game.players;
+
+namespace backend.game.entities
 {
     internal class MatchRequest(Player player)
     {

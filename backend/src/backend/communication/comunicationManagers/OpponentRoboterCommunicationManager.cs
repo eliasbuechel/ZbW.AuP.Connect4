@@ -1,10 +1,10 @@
 ﻿using backend.communication.signalR.opponentRoboterApi;
 using backend.game.entities;
+using backend.game.players;
 using backend.infrastructure;
 using backend.services;
-using backend.services.player;
 
-namespace backend.game
+namespace backend.communication.comunicationManagers
 {
     internal class OpponentRoboterCommunicationManager : DisposingObject
     {

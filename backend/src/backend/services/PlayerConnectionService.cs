@@ -1,9 +1,10 @@
-﻿using backend.communication.dtos;
-using backend.game;
+﻿using backend.communication.connectionManager;
+using backend.communication.dtos;
+using backend.game.players;
 using backend.infrastructure;
 using System.Diagnostics;
 
-namespace backend.services.player
+namespace backend.services
 {
     internal class PlayerConnectionService : DisposingObject
     {
@@ -27,7 +28,7 @@ namespace backend.services.player
         public AlgorythmPlayerConnectionManager AlgorythmPlayerConnectionManager { get; }
         public OpponentRoboterPlayerConnectionManager OpponentRoboterPlayerConnectionManager { get; }
 
-        public IEnumerable<Player> Players => WebPlayers.Concat<Player>(OpponentRoboterePlayers).Concat<Player>(AlgorythmPlayers);
+        public IEnumerable<Player> Players => WebPlayers.Concat<Player>(OpponentRoboterePlayers).Concat(AlgorythmPlayers);
         public IEnumerable<WebPlayer> WebPlayers => WebPlayerConnectionManager.ConnectedPlayers;
         public IEnumerable<OpponentRoboterPlayer> OpponentRoboterePlayers => OpponentRoboterPlayerConnectionManager.ConnectedPlayers;
         public IEnumerable<AlgorythmPlayer> AlgorythmPlayers => AlgorythmPlayerConnectionManager.ConnectedPlayers;
@@ -46,7 +47,7 @@ namespace backend.services.player
                 if (player.Id == playerId)
                     return player;
 
-           throw new ArgumentException($"The PlayerId {playerId} is not contained in the player connections.");
+            throw new ArgumentException($"The PlayerId {playerId} is not contained in the player connections.");
         }
         public Player? GetPlayerOrDefault(string playerId)
         {

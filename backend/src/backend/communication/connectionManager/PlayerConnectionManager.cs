@@ -1,10 +1,10 @@
-﻿using backend.game;
+﻿using backend.game.players;
 using backend.infrastructure;
 using backend.utilities;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace backend.services.player
+namespace backend.communication.connectionManager
 {
     internal abstract class PlayerConnectionManager<TPlayer, TIdentitfication> : DisposingObject where TPlayer : Player where TIdentitfication : notnull
     {
