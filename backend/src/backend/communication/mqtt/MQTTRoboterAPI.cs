@@ -36,7 +36,7 @@ namespace backend.communication.mqtt
             if (!_mqttTopicClient.IsConnected)
             {
                 Logger.Log(LogLevel.Error, LogContext.MQTT_CLIENT, $"Not able to place stone on roboter because mqtt-client is not connect. Player: '{player.Username}' Column: '{field.Column}'");
-                BoardReset();
+                StonePlaced(player, field);
                 return;
             }
 

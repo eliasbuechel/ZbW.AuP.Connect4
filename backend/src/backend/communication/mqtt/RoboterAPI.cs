@@ -17,17 +17,18 @@ namespace backend.communication.mqtt
         public void PlaceStone(Player player, Field field)
         {
             OnPlacingStone?.Invoke(player, field);
+
+            StartRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS, () => StonePlaced(player, field));
+
             if (IsVisualizingOnRoboter)
                 PlaceStoneOnApi(player, field);
-
-            StartRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS, () => OnStonePlaced?.Invoke(player, field));
         }
         public void ResetConnect4Board()
         {
+            StartRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_RESET_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS , () => BoardReset());
+
             if (IsVisualizingOnRoboter)
                 ResetConnect4BoardOnApi();
-
-            StartRequestTimeout(IsVisualizingOnRoboter ? ROBOTER_RESET_REQUEST_TIMOUT_TIME_IN_MS : TESTING_REQUEST_TIMOUT_TIME_IN_MS , () => OnBoardReset?.Invoke());
         }
 
         protected abstract void ResetConnect4BoardOnApi();
@@ -43,6 +44,10 @@ namespace backend.communication.mqtt
             {
                 Logger.Log(LogLevel.Warning, LogContext.ROBOTER_API, "Not able to process OnStonePlaced requst from roboter.", e);
             }
+            finally
+            {
+                _currentRequestId = Guid.Empty;
+            }
         }
         protected void BoardReset()
         {
@@ -53,6 +58,10 @@ namespace backend.communication.mqtt
             catch (InvalidPlayerRequestException e)
             {
                 Logger.Log(LogLevel.Warning, LogContext.ROBOTER_API, "Not able to process OnBoardReset requst from roboter.", e);
+            }
+            finally
+            {
+                _currentRequestId = Guid.Empty;
             }
         }
         protected void ManualMove(int column)

@@ -216,9 +216,9 @@ namespace backend.communication.comunicationManagers
             _gameManager.OnGameEnded -= OnGameEnded;
         }
 
-        private readonly OpponentRoboterHubApi _opponentRoboterHubApi;
-        private readonly OpponentRoboterClientApiManager _opponentRoboterClientApiManager;
-        private readonly PlayerConnectionService _playerConnectionService;
         private readonly GameManager _gameManager;
+        private readonly OpponentRoboterHubApi _opponentRoboterHubApi;
+        private readonly PlayerConnectionService _playerConnectionService;
+        private readonly OpponentRoboterClientApiManager _opponentRoboterClientApiManager;
     }
 }

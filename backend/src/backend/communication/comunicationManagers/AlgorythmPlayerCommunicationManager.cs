@@ -33,7 +33,6 @@ namespace backend.communication.comunicationManagers
             int column = _gameManager.GetBestMove(_algorythmPlayer);
             _gameManager.PlayMove(_algorythmPlayer, column);
         }
-
         private void OnRequestedMatch(Player requester, Player opponent)
         {
             if (opponent is AlgorythmPlayer && requester is WebPlayer)
