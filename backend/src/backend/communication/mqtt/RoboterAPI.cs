@@ -44,10 +44,10 @@ namespace backend.communication.mqtt
             {
                 Logger.Log(LogLevel.Warning, LogContext.ROBOTER_API, "Not able to process OnStonePlaced requst from roboter.", e);
             }
-            finally
-            {
-                _placeStoneRequestId = Guid.Empty;
-            }
+            //finally
+            //{
+            //    _placeStoneRequestId = Guid.Empty;
+            //}
         }
         protected void BoardReset()
         {
@@ -59,10 +59,10 @@ namespace backend.communication.mqtt
             {
                 Logger.Log(LogLevel.Warning, LogContext.ROBOTER_API, "Not able to process OnBoardReset requst from roboter.", e);
             }
-            finally
-            {
-                _resetRequestId = Guid.Empty;
-            }
+            //finally
+            //{
+            //    _resetRequestId = Guid.Empty;
+            //}
         }
         protected void ManualMove(int column)
         {
