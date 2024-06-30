@@ -58,8 +58,8 @@ namespace backend.communication.signalR.opponentRoboterApi
         // sending
         public async Task Send_RequestMatch()
         {
-            LogSend(nameof(RequestMatch), _hubUrl);
-            await _connection.SendAsync(nameof(RequestMatch), _hubUrl);
+            LogSend(nameof(RequestMatch));
+            await _connection.SendAsync(nameof(RequestMatch));
         }
         public async Task Send_AcceptMatch()
         {
