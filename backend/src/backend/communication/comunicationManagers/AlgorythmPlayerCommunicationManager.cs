@@ -65,7 +65,7 @@ namespace backend.communication.comunicationManagers
             if (_opponentPlayer == null || _algorythmPlayer == null)
                 return;
 
-            if (player != _opponentPlayer)
+            if (player != _algorythmPlayer)
                 return;
 
             if (!_algorythmPlayerIsStartingPlayer)
