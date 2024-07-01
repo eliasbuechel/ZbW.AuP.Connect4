@@ -311,6 +311,12 @@ li {
   transition: 0.1s ease-in-out;
 }
 
+@media (max-width: 800px) {
+  .playableColumn:hover > .nextPlacingCell {
+    background-color: transparent;
+  }
+}
+
 .playableColumn:hover {
   cursor: grab;
 }
