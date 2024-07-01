@@ -1,84 +1,88 @@
-.bestlist-search {
-    color: var(--color-light);
-    background-color: transparent;
-    border: 2px solid var(--color-light);
-    border-radius: 0.5em;
-    padding: 0.2rem 0.8rem;
-    font-size: 1rem;
-    transition: border-color 0.2s;
+.button-replay {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
 }
 
-.bestlist-search:focus {
-    border-color: var(--color-orange); 
-    outline: none; 
+table {
+  border-collapse: collapse;
+  border-radius: 0.3rem;
 }
 
-.bestlist-table {
-    width: 100%;
-    max-width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    display: block;
-    overflow: auto;
+table,
+th,
+td {
+  border: none;
 }
 
-.bestlist-table-header-row {
-user-select: none;
-white-space: nowrap;
-border-bottom: 1.2rem solid transparent;
+th,
+td {
+  padding: 0.5rem;
+  text-align: left;
 }
 
-.header-content {
-display: flex;
-align-items: center;
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--color-container-bg);
 }
 
-.winner, .loser {
-    width: 35%;
+.table-header-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
-
-.bestlist-table td {
-    overflow: hidden;
-    text-overflow: ellipsis;
+.playerName {
+  max-width: 170px;
+  overflow: hidden;
+  text-wrap: nowrap;
 }
 
-.winner-time-column {
-    width: 25%;
-    text-align: right;
-    padding-right: 1rem;
+.gameResultRow {
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+
+.gameResultRow.selected {
+  background-color: var(--color-dark);
+  border-color: var(--color-orange);
+}
+
+.gameResultRow:hover {
+  background-color: var(--color-dark);
+}
+
+table {
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
 }
 
 .active {
-color: var(--color-orange);
+  color: var(--color-orange);
 }
 
-.sort-arrows {
-padding: 0.3rem;
-vertical-align: super;
-display: inline-block;
-margin-left: 0.2rem;
+.winner-time-column {
+  text-align: end;
+  padding-right: 2rem;
 }
 
-.arrow-up {
-position: relative;
-border-left: 0.4em solid transparent;
-border-right: 0.4em solid transparent;
-border-bottom: 0.6em solid var(--color-player-2);
+.scrollable-container {
+  position: relative;
+  overflow-y: scroll;
+  max-height: 30vh;
 }
 
-.arrow-up.asc {
-border-bottom: 0.6em solid var(--color-orange);
-}
-
-.arrow-down {
-position: relative;
-top: 0.3em;
-border-left: 0.4em solid transparent;
-border-right: 0.4em solid transparent;
-border-top: 0.6em solid var(--color-player-2);
-}
-
-.arrow-down.desc {
-border-top: 0.6em solid var(--color-orange);
+.bestlist-search {
+  color: var(--color-light);
+  background-color: transparent;
+  border: 2px solid var(--color-light);
+  border-radius: 0.5em;
+  padding: 0.2rem 0.8rem;
+  font-size: 1rem;
+  transition: border-color 0.2s;
 }

@@ -17,11 +17,11 @@
       />
       <span v-if="gamePlan.length <= 0">No game planed.</span>
       <ul v-else>
-        <li v-for="(player, idx) in gamePlan" :key="player.id" class="match">
-          <div class="player player1">{{ player.player1.username }}</div>
+        <li v-for="(game, idx) in gamePlan" :key="game.id" class="match">
+          <div class="player player1"><TextDisplayer :text="game.player1.username" :maxCaracters="20" /></div>
           <div v-if="idx == 0" class="battle-icon">&#9876;</div>
           <div v-else class="handshake-icon">&#129309;</div>
-          <div class="player player2">{{ player.player2.username }}</div>
+          <div class="player player2"><TextDisplayer :text="game.player2.username" :maxCaracters="20" /></div>
         </li>
       </ul>
     </div>
@@ -34,6 +34,7 @@ import { Match } from "@/types/Match";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import { defineComponent, PropType } from "vue";
 import ToggleButton from "./ToggleButton.vue";
+import TextDisplayer from "./TextDisplayer.vue";
 
 interface GamePlanState {
   isSubscribed: boolean;
@@ -62,6 +63,7 @@ export default defineComponent({
   },
   components: {
     ToggleButton,
+    TextDisplayer,
   },
   methods: {
     watchGame(): void {

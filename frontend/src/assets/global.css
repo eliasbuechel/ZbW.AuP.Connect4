@@ -33,13 +33,12 @@ h1 {
 }
 
 body {
+  position: relative;
   margin: 0;
   padding: 0;
   background-color: var(--color-dark);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+
   height: 100vh;
   width: 100vw;
   overflow: hidden;
@@ -131,9 +130,9 @@ li {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  height: min(100%, 1920px); 
-  width: min(100%, 2560px); 
-  overflow-y: scroll; 
+  height: 100%;
+  width: 100%;
+  overflow-y: scroll;
 }
 
 .main-board-container {
@@ -144,15 +143,14 @@ li {
   align-self: center;
   column-gap: 5vw;
   row-gap: 5vh;
-  height: min(100%, 1080px);
+  height: fit-content;
   width: min(100%, 1920px);
-  margin-top: 120px;
-  margin-bottom: 10px;
   padding: 2rem;
 }
 
 @media (max-width: 800px) {
-  html, body {
+  html,
+  body {
     height: 100%;
     overflow-y: auto;
   }
@@ -165,20 +163,19 @@ li {
     max-width: 30vw;
     max-height: 90px;
     margin-right: 1rem;
-    object-fit: contain; 
-    height: auto; 
-    width: auto; 
+    object-fit: contain;
+    height: auto;
+    width: auto;
   }
 
   .username {
     max-width: 60vw;
-   margin-right: 0.8rem;
+    margin-right: 0.8rem;
   }
   .user-data {
     max-width: 60vw;
     margin-right: 1rem;
   }
-
 }
 
 .main-board-container::-webkit-scrollbar-track {
@@ -211,9 +208,9 @@ li {
   width: 100%;
   height: 160px;
   padding: 2rem;
-  z-index: 100;
+  z-index: 1;
   background: linear-gradient(to bottom, var(--color-dark) 85%, transparent 100%);
-  position: absolute;
+  position: sticky;
   top: 0;
   display: flex;
   justify-content: space-between;
@@ -232,15 +229,17 @@ li {
 }
 
 .listing-container {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
   padding: 6% 8%;
   width: 100%;
   background-color: var(--color-container-bg);
   border-radius: 0.5rem;
-  overflow-x: auto;
+  overflow: hidden;
   margin-bottom: 0;
+  max-height: 30rem;
 }
 
 .listing-container > span {
@@ -250,10 +249,14 @@ li {
 
 .listing-container > ul {
   overflow-y: scroll;
-  max-height: 30vh;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.listing-container > table {
+  overflow-y: scroll;
+  max-height: 30vh;
 }
 
 .listing-container > ul > li {

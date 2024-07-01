@@ -1,7 +1,7 @@
 <template>
   <div class="player-info">
     <div class="player-info-card">
-      <label class="player-info-name">{{ playerName }}</label>
+      <TextDisplayer :text="playerName" :maxCaracters="20" class="player-info-name" />
       <label v-if="showCurrentMoveTime"> Current move time: {{ formattedGameTime }}</label>
       <label v-if="gameHasStarted">Total play time: {{ formattedTotalPlayedMoveTime }} s </label>
     </div>
@@ -15,6 +15,7 @@ import { InGamePlayer } from "@/types/InGamePlayer";
 import Game from "@/types/Game";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import TimeFormatter from "@/services/timeFormatter";
+import TextDisplayer from "./TextDisplayer.vue";
 
 export default defineComponent({
   name: "InGamePlayerInfoVue",
@@ -42,6 +43,9 @@ export default defineComponent({
       playedMoveTime: 0,
       totalPlayedMoveTime: 0,
     };
+  },
+  components: {
+    TextDisplayer,
   },
   mounted(): void {
     this.startMoveTimer();

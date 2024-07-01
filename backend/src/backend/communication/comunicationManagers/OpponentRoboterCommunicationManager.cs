@@ -163,13 +163,6 @@ namespace backend.communication.comunicationManagers
 
                 if (opponentRoboterPlayer.Id == gameResult.WinnerId)
                     OnQuitGame(opponentRoboterPlayer);
-
-                //if (player1 is OpponentRoboterPlayer opponentRoboterPlayer1 && )
-
-                //if (player1 != null && gameResult.Match.Player2.Id == gameResult.WinnerId && player1 is OpponentRoboterPlayer opponentRboboterPlayer1)
-                //    OnQuitGame(opponentRboboterPlayer1);
-                //else if (player2 != null && gameResult.Match.Player1.Id == gameResult.WinnerId && player2 is OpponentRoboterPlayer opponentRboboterPlayer2)
-                //    OnQuitGame(opponentRboboterPlayer2);
             }
         }
         private async void OnQuitGame(OpponentRoboterPlayer opponentRoboterPlayer)

@@ -1,7 +1,7 @@
 <template>
   <div class="player-info">
     <div class="player-info-card">
-      <label class="player-info-name">{{ playerName }}</label>
+      <TextDisplayer :text="playerName" :maxCaracters="20" class="player-info-name" />
       <label>Total play time: {{ formattedTotalPlayedMoveTime }} s </label>
     </div>
   </div>
@@ -12,6 +12,7 @@ import { PropType, defineComponent } from "vue";
 import { PlayerIdentity } from "@/types/PlayerIdentity";
 import TimeFormatter from "@/services/timeFormatter";
 import { GameResult } from "@/types/GameResult";
+import TextDisplayer from "./TextDisplayer.vue";
 
 export default defineComponent({
   name: "GameResultPlayerInfoVue",
@@ -28,6 +29,9 @@ export default defineComponent({
       required: true,
       type: Object as PropType<PlayerIdentity>,
     },
+  },
+  components: {
+    TextDisplayer,
   },
   computed: {
     playerName(): string {
