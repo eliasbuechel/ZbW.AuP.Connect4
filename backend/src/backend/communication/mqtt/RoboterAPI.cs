@@ -120,7 +120,7 @@ namespace backend.communication.mqtt
         private Guid _resetRequestId = Guid.Empty;
         private Guid _placeStoneRequestId = Guid.Empty;
         private const int TESTING_REQUEST_TIMOUT_TIME_IN_MS = 500; // .5s
-        private const int ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS = 10000; // 10s
+        private const int ROBOTER_MOVE_REQUEST_TIMOUT_TIME_IN_MS = 30000; // 30s
         private const int ROBOTER_RESET_REQUEST_TIMOUT_TIME_IN_MS = 60000; // 60s
     }
 }

@@ -46,9 +46,6 @@
             if (context == LogContext.ENTITY_FRAMEWORK && (logLevel == LogLevel.Information || logLevel == LogLevel.Debug))
                 return;
 
-            if (context == LogContext.MQTT_CLIENT)
-                return;
-
             Log(logLevel, $"{Convert.ToString(context)}: {message}");
         }
         public static void Log(LogLevel logCase, LogContext context, string message, Exception exception)
