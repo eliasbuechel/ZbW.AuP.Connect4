@@ -39,7 +39,7 @@
           </div>
           <button
             v-else-if="showHintRequesting"
-            class="button-glowing"
+            class="button-glowing button-hint"
             @click="getHint"
             :disabled="!hintRequestEnabled"
           >

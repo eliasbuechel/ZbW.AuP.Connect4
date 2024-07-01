@@ -1,7 +1,10 @@
+@import "@/assets/button.css";
+
 :root {
   --color-light: #cfcfcf;
   --color-light-gray: #727e88;
   --color-yellow: #d7cc00;
+  --color-yellow-transparent: #fff20088;
   --color-orange: #c58300;
   --color-orange-transparent: #c5830088;
   --color-green: #61c200;
@@ -45,33 +48,6 @@ body {
   font-size: 1rem;
 }
 
-.login-container {
-  padding: 2rem;
-  border-radius: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-}
-
-.login-container > form {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 1.5em;
-  background-color: var(--color-orange);
-  border-radius: 1em;
-}
-
-.login-container > form > h2 {
-  color: var(--color-dark);
-}
-
-.login-container > form > button {
-  margin-top: 1rem;
-}
 .input-field {
   display: flex;
   flex-direction: column;
@@ -134,6 +110,7 @@ li {
   height: 100%;
   width: 100%;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .main-board-container {
@@ -158,24 +135,6 @@ li {
 
   .main-board-container {
     padding: 0.5rem;
-  }
-
-  #logo-home {
-    max-width: 30vw;
-    max-height: 90px;
-    margin-right: 1rem;
-    object-fit: contain;
-    height: auto;
-    width: auto;
-  }
-
-  .username {
-    max-width: 60vw;
-    margin-right: 0.8rem;
-  }
-  .user-data {
-    max-width: 60vw;
-    margin-right: 1rem;
   }
 }
 
@@ -205,19 +164,6 @@ li {
   width: 100%;
 }
 
-.header-container {
-  width: 100%;
-  height: 160px;
-  padding: 2rem;
-  z-index: 1;
-  background: linear-gradient(to bottom, var(--color-dark) 85%, transparent 100%);
-  position: sticky;
-  top: 0;
-  display: flex;
-  justify-content: space-between;
-  flex: wrap;
-}
-
 .grid-container {
   display: grid;
   grid-column-gap: 2vw;
@@ -234,13 +180,38 @@ li {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 6% 8%;
+  padding: 4% 6%;
   width: 100%;
   background-color: var(--color-container-bg);
   border-radius: 0.5rem;
   overflow: hidden;
-  margin-bottom: 0;
   max-height: 30rem;
+}
+@media (max-width: 800px) {
+  .listing-container {
+    gap: 1rem;
+  }
+}
+
+.listing-container > .fixed-top-left {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+.listing-container > .fixed-top-right {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+@media (max-width: 800px) {
+  .listing-container > .fixed-top-left {
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+  .listing-container > .fixed-top-right {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
 }
 
 .listing-container > span {
@@ -272,142 +243,6 @@ li {
 .listing-container.bestList-container {
   max-height: 500px;
   margin-bottom: 6%;
-}
-
-button {
-  padding: 0.4rem 0.8rem;
-  color: var(--color-dark);
-  font-size: 1rem;
-  font-weight: bolder;
-  border: 2.5px solid var(--color-dark);
-  border-radius: 50vmin;
-  background-color: transparent;
-  margin: 0;
-  transition: 0.2s ease-in-out;
-}
-
-button:hover:enabled,
-button:focus:enabled {
-  background-color: var(--color-dark);
-  color: var(--color-light);
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
-}
-
-button:disabled {
-  opacity: 30%;
-}
-
-button:active:enabled {
-  transform: translateY(2px);
-}
-
-.button-white {
-  color: var(--color-light-gray);
-  border-color: var(--color-light-gray);
-}
-
-.button-white:hover:enabled,
-.button-white:focus:enabled {
-  background-color: var(--color-light-gray);
-  color: var(--color-dark);
-}
-
-.button-white:disabled {
-  color: var(--color-light-gray);
-  border-color: var(--color-light-gray);
-}
-
-.button-light {
-  color: var(--color-orange);
-  border-color: var(--color-orange);
-}
-
-.button-light:hover:enabled,
-.button-light:focus:enabled {
-  background-color: var(--color-orange);
-  color: var(--color-light);
-}
-
-.button-light:disabled {
-  color: var(--color-orange);
-  border-color: var(--color-orange);
-}
-
-.button-danger {
-  height: 36px;
-  width: 36px;
-  padding: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 3.5px solid var(--color-red);
-}
-
-.button-danger:hover:enabled,
-.button-danger:focus:enabled {
-  background-color: var(--color-red);
-}
-
-.button-danger:hover:enabled > .cross > line,
-.button-danger:focus:enabled > .cross > line {
-  color: var(--color-light);
-}
-
-.button-accept {
-  height: 36px;
-  width: 36px;
-  padding: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 3.5px solid var(--color-green);
-  color: var(--color-green);
-}
-
-.button-accept:hover:enabled,
-.button-accept:focus:enabled {
-  background-color: var(--color-green);
-}
-
-.button-accept:hover:enabled > .checkmark > polyline,
-.button-accept:focus:enabled > .checkmark > polyline {
-  color: var(--color-light);
-}
-
-.button-glowing {
-  color: whitesmoke;
-  border: 2px solid #fff20088;
-  background-color: #fff20088;
-}
-
-.button-glowing:hover:enabled,
-.button-glowing:focus:enabled {
-  border: 2px solid whitesmoke;
-  background-color: #fff200aa;
-  color: whitesmoke;
-}
-
-.button-glowing:disabled {
-  color: #fff20088;
-  border-color: #fff20088;
-  background-color: transparent;
-}
-
-.button-link:hover:enabled,
-.button-link:focus:enabled {
-  color: var(--color-container-bg);
-  text-decoration: underline;
-  background-color: transparent;
-}
-
-.button-link {
-  background: none;
-  border: none;
-  color: var(--color-dark);
-  font-style: italic;
-  font-size: 0.9rem;
-  padding: 0;
 }
 
 .error {

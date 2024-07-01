@@ -1,6 +1,6 @@
 <template>
-  <div class="user-data">
-    <div :class="{ username: true, usernameExpanded: dropdownVisible }" @click="toggleDropdown">
+  <div :class="{ userData: true, expanded: dropdownVisible }">
+    <div class="username" @click="toggleDropdown">
       {{ identity.username }}
     </div>
     <div v-if="dropdownVisible" class="user-actions-container">
@@ -36,159 +36,177 @@
 </template>
 
 <script lang="ts">
-  import { PlayerIdentity } from "@/types/PlayerIdentity";
-  import { PropType, defineComponent } from "vue";
-  import signalRHub from "@/services/signalRHub";
+import { PlayerIdentity } from "@/types/PlayerIdentity";
+import { PropType, defineComponent } from "vue";
+import signalRHub from "@/services/signalRHub";
 
-  export default defineComponent({
-    name: "UserInfoVue",
-    props: {
-      identity: {
-        required: true,
-        type: Object as PropType<PlayerIdentity>,
-      },
+export default defineComponent({
+  name: "UserInfoVue",
+  props: {
+    identity: {
+      required: true,
+      type: Object as PropType<PlayerIdentity>,
     },
-    data() {
-      return {
-        dropdownVisible: false,
-        credentials: {
-          oldPassword: "",
-          newPassword: "",
-        },
-        errors: {
-          oldPassword: "",
-          newPassword: "",
-          resetPassword: "",
-        },
-      };
-    },
-    methods: {
-      toggleDropdown() {
-        if (!this.dropdownVisible) {
-          this.errors.oldPassword = "";
-          this.errors.newPassword = "";
-          this.errors.resetPassword = "";
-          this.credentials.oldPassword = "";
-          this.credentials.newPassword = "";
-        }
-
-        this.dropdownVisible = !this.dropdownVisible;
-        if (this.dropdownVisible) {
-          document.addEventListener("click", this.handleClickOutside);
-        } else {
-          document.removeEventListener("click", this.handleClickOutside);
-        }
+  },
+  data() {
+    return {
+      dropdownVisible: false,
+      credentials: {
+        oldPassword: "",
+        newPassword: "",
       },
-      closeDropdown() {
-        this.dropdownVisible = false;
-        document.removeEventListener("click", this.handleClickOutside);
+      errors: {
+        oldPassword: "",
+        newPassword: "",
+        resetPassword: "",
       },
-      handleClickOutside(event: Event) {
-        if (this.$el && !this.$el.contains(event.target as Node)) {
-          this.closeDropdown();
-        }
-      },
-      async changePassword() {
-        try {
-          const response = await this.$axios.post("/account/manage/info", this.credentials, {
-            withCredentials: true,
-          });
-          if (response.status === 200) {
-            this.errors.resetPassword = "";
-          }
-        } catch (error) {
-          this.errors.resetPassword = "Invalid password!";
-        }
-
+    };
+  },
+  methods: {
+    toggleDropdown() {
+      if (!this.dropdownVisible) {
+        this.errors.oldPassword = "";
+        this.errors.newPassword = "";
+        this.errors.resetPassword = "";
         this.credentials.oldPassword = "";
         this.credentials.newPassword = "";
-      },
-      async validateOldPassword() {
-        const passwordInput: HTMLInputElement = document.getElementById("oldPassword") as HTMLInputElement;
-        if (!passwordInput.checkValidity()) {
-          this.errors.oldPassword = passwordInput.validationMessage;
-          return;
-        }
-        this.errors.oldPassword = "";
-        // missing validation logic for password
-      },
-      async validateNewPassword() {
-        const passwordInput: HTMLInputElement = document.getElementById("newPassword") as HTMLInputElement;
-        if (!passwordInput.checkValidity()) {
-          this.errors.newPassword = passwordInput.validationMessage;
-          return;
-        }
-        this.errors.newPassword = "";
-        // missing validation logic for password
-      },
-      async logout() {
-        try {
-          await this.$axios.post("/account/logout?useCookies=true", {}, { withCredentials: true });
-          this.$router.push("/login");
-          this.dropdownVisible = false;
-          signalRHub.stop();
-        } catch (error) {
-          console.log("Logout failed:", error);
-        }
-      },
+      }
+
+      this.dropdownVisible = !this.dropdownVisible;
+      if (this.dropdownVisible) {
+        document.addEventListener("click", this.handleClickOutside);
+      } else {
+        document.removeEventListener("click", this.handleClickOutside);
+      }
     },
-  });
+    closeDropdown() {
+      this.dropdownVisible = false;
+      document.removeEventListener("click", this.handleClickOutside);
+    },
+    handleClickOutside(event: Event) {
+      if (this.$el && !this.$el.contains(event.target as Node)) {
+        this.closeDropdown();
+      }
+    },
+    async changePassword() {
+      try {
+        const response = await this.$axios.post("/account/manage/info", this.credentials, {
+          withCredentials: true,
+        });
+        if (response.status === 200) {
+          this.errors.resetPassword = "";
+        }
+      } catch (error) {
+        this.errors.resetPassword = "Invalid password!";
+      }
+
+      this.credentials.oldPassword = "";
+      this.credentials.newPassword = "";
+    },
+    async validateOldPassword() {
+      const passwordInput: HTMLInputElement = document.getElementById("oldPassword") as HTMLInputElement;
+      if (!passwordInput.checkValidity()) {
+        this.errors.oldPassword = passwordInput.validationMessage;
+        return;
+      }
+      this.errors.oldPassword = "";
+      // missing validation logic for password
+    },
+    async validateNewPassword() {
+      const passwordInput: HTMLInputElement = document.getElementById("newPassword") as HTMLInputElement;
+      if (!passwordInput.checkValidity()) {
+        this.errors.newPassword = passwordInput.validationMessage;
+        return;
+      }
+      this.errors.newPassword = "";
+      // missing validation logic for password
+    },
+    async logout() {
+      try {
+        await this.$axios.post("/account/logout?useCookies=true", {}, { withCredentials: true });
+        this.$router.push("/login");
+        this.dropdownVisible = false;
+        signalRHub.stop();
+      } catch (error) {
+        console.log("Logout failed:", error);
+      }
+    },
+  },
+});
 </script>
 
 <style scoped>
-  .user-data {
-    color: var(--color-light);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 3px solid var(--color-orange);
-    border-radius: 1rem;
-    height: fit-content;
-    transition: 0.2s ease-in-out;
-    background-color: var(--color-dark);
-  }
+.userData {
+  color: var(--color-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 3px solid var(--color-orange);
+  border-radius: 1rem;
+  height: fit-content;
+  transition: 0.2s ease-in-out;
+  background-color: var(--color-dark);
+}
 
-  .user-data:hover:enabled {
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
-  }
+.userData:hover:enabled {
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
 
+.username {
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+  padding: 1rem;
+  width: 100%;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
   .username {
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
-    padding: 1rem;
-    width: 100%;
-    text-align: center;
+    padding: 0.5rem;
   }
+}
 
-  .usernameExpanded {
-    color: var(--color-orange);
-    transition: 0.2s ease-in-out;
+.userData.expanded {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+}
+@media (max-width: 800px) {
+  .userData.expanded {
+    top: 1rem;
+    right: 1rem;
   }
+}
 
-  .username:hover {
-    color: var(--color-orange);
-    transition: 0.2s ease-in-out;
-  }
+.userData.expanded > .username {
+  color: var(--color-orange);
+  transition: 0.2s ease-in-out;
+}
 
-  .user-actions-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0 1rem 1rem 1rem;
-  }
+.username:hover {
+  color: var(--color-orange);
+  transition: 0.2s ease-in-out;
+}
 
-  .align-right {
-    align-self: flex-end;
-  }
+.user-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1rem 1rem 1rem;
+}
 
-  form {
-    display: flex;
-    flex-direction: column;
-  }
+.align-right {
+  align-self: flex-end;
+}
 
-  form > button {
-    align-self: stretch;
-    margin-top: 0.5rem;
-  }
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form > button {
+  align-self: stretch;
+  margin-top: 0.5rem;
+}
 </style>

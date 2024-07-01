@@ -1,0 +1,27 @@
+.login-container {
+  padding: 2rem;
+  border-radius: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.login-container > form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 1.5em;
+  background-color: var(--color-orange);
+  border-radius: 1em;
+}
+
+.login-container > form > h2 {
+  color: var(--color-dark);
+}
+
+.login-container > form > button {
+  margin-top: 1rem;
+}

@@ -71,4 +71,29 @@ export default defineComponent({
   transform: translateX(22px);
   background-color: var(--color-light);
 }
+
+@media (max-width: 800px) {
+  .toggle-button {
+    gap: 0.2rem;
+  }
+  label {
+    font-size: 0.8rem;
+  }
+  .switch {
+    width: 40px;
+    height: 24px;
+  }
+  .slider {
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+  }
+
+  .switch.active > .slider {
+    -webkit-transform: translateX(16px);
+    -ms-transform: translateX(16px);
+    transform: translateX(16px);
+  }
+}
 </style>

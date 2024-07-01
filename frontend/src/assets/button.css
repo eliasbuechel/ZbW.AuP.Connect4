@@ -1,0 +1,156 @@
+button {
+  padding: 0.4rem 0.8rem;
+  color: var(--color-dark);
+  font-size: 1rem;
+  font-weight: bolder;
+  border: 2.5px solid var(--color-dark);
+  border-radius: 50vmin;
+  background-color: transparent;
+  margin: 0;
+  transition: 0.2s ease-in-out;
+}
+
+button:hover:enabled,
+button:focus:enabled {
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+button:disabled {
+  opacity: 30%;
+}
+
+button:active:enabled {
+  transform: translateY(2px);
+}
+
+.button-white {
+  color: var(--color-light-gray);
+  border-color: var(--color-light-gray);
+}
+
+.button-white:hover:enabled,
+.button-white:focus:enabled {
+  background-color: var(--color-light-gray);
+  color: var(--color-dark);
+}
+
+.button-white:disabled {
+  color: var(--color-light-gray);
+  border-color: var(--color-light-gray);
+}
+
+.button-light {
+  color: var(--color-orange);
+  border-color: var(--color-orange);
+}
+
+.button-light:hover:enabled,
+.button-light:focus:enabled {
+  background-color: var(--color-orange);
+  color: var(--color-light);
+}
+
+.button-light:disabled {
+  color: var(--color-orange);
+  border-color: var(--color-orange);
+}
+
+.button-danger {
+  height: 36px;
+  width: 36px;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 3.5px solid var(--color-red);
+}
+
+.button-danger:hover:enabled,
+.button-danger:focus:enabled {
+  background-color: var(--color-red);
+}
+
+.button-danger:hover:enabled > .cross > line,
+.button-danger:focus:enabled > .cross > line {
+  color: var(--color-light);
+}
+
+.button-accept {
+  height: 36px;
+  width: 36px;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 3.5px solid var(--color-green);
+  color: var(--color-green);
+}
+
+.button-accept:hover:enabled,
+.button-accept:focus:enabled {
+  background-color: var(--color-green);
+}
+
+.button-accept:hover:enabled > .checkmark > polyline,
+.button-accept:focus:enabled > .checkmark > polyline {
+  color: var(--color-light);
+}
+
+.button-glowing {
+  color: var(--color-light);
+  border-color: var(--color-yellow-transparent);
+  background-color: var(--color-yellow-transparent);
+}
+
+.button-glowing:hover:enabled,
+.button-glowing:focus:enabled {
+  border-color: var(--color-light);
+  background-color: var(--color-yellow-transparent);
+  color: var(--color-light);
+}
+
+.button-glowing:disabled {
+  color: var(--color-yellow-transparent);
+  border-color: var(--color-yellow-transparent);
+  background-color: transparent;
+}
+
+.button-link:hover:enabled,
+.button-link:focus:enabled {
+  color: var(--color-container-bg);
+  text-decoration: underline;
+  background-color: transparent;
+}
+
+.button-link {
+  background: none;
+  border: none;
+  color: var(--color-dark);
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+@media (max-width: 800px) {
+  button {
+    font-size: 0.8rem;
+    border-width: 2px;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .button-danger {
+    height: 30px;
+    width: 30px;
+    padding: 3px;
+  }
+
+  .button-accept {
+    height: 30px;
+    width: 30px;
+    padding: 3px;
+    font-size: 1em;
+  }
+}

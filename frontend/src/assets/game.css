@@ -111,3 +111,22 @@
   font-size: x-large;
   margin: 1rem;
 }
+
+@media (max-width: 800px) {
+  .total-game-time {
+    font-size: 1rem;
+    margin: 0.5rem;
+  }
+  .game-board-bar {
+    min-height: 80px;
+  }
+  .game-board-bar > button {
+    margin-bottom: 0;
+  }
+
+  .game-header > .game-info-container {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+  }
+}

@@ -2,7 +2,7 @@
   <div class="container">
     <div class="listing-container">
       <h2>Bestlist</h2>
-      <button class="button-light button-replay" @click="showReplay()" :disabled="selectedGameResult == null">
+      <button class="button-light fixed-top-right" @click="showReplay()" :disabled="selectedGameResult == null">
         Replay
       </button>
       <input class="bestlist-search" v-model="searchTerm" placeholder="Search..." @blur="clearSearch" />
@@ -11,7 +11,7 @@
         <table class="bestlist-table">
           <thead v-if="filteredBestlist.length > 0">
             <tr>
-              <th>
+              <th class="winner-time">
                 <div
                   class="table-header-column"
                   @click="sortBy('winnerTime')"
@@ -52,7 +52,7 @@
                   draw: checkIfGameHasWinningRow(gameResult),
                 }"
               >
-                <TextDisplayer :text="showWinner(gameResult).username" :maxCaracters="25" />
+                <TextDisplayer :text="showWinner(gameResult).username" :maxCaracters="30" />
               </td>
               <td
                 :class="{
@@ -61,7 +61,7 @@
                   draw: checkIfGameHasWinningRow(gameResult),
                 }"
               >
-                <TextDisplayer :text="showLoser(gameResult).username" :maxCaracters="25" />
+                <TextDisplayer :text="showLoser(gameResult).username" :maxCaracters="30" />
               </td>
             </tr>
           </tbody>
@@ -209,5 +209,96 @@ export default defineComponent({
 </script>
 
 <style scoped>
-@import "@/assets/bestlist.css";
+table {
+  border-collapse: collapse;
+  border-radius: 0.3rem;
+}
+
+table,
+th,
+td {
+  border: none;
+}
+
+th,
+td {
+  padding: 0.5rem;
+  text-align: left;
+  width: 35%;
+}
+
+th:first-child,
+td:first-child {
+  width: 95px; /* Adjust this value as needed */
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--color-container-bg);
+}
+
+.table-header-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.table-header-column.winner-time {
+  max-width: 95px;
+}
+
+.playerName {
+  max-width: 170px;
+  overflow: hidden;
+  text-wrap: nowrap;
+}
+
+.gameResultRow {
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+
+.gameResultRow.selected {
+  background-color: var(--color-dark);
+  border-color: var(--color-orange);
+}
+
+.gameResultRow:hover {
+  background-color: var(--color-dark);
+}
+
+table {
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+}
+
+.active {
+  color: var(--color-orange);
+}
+
+.winner-time-column {
+  text-align: end;
+  padding-right: 2rem;
+}
+
+.scrollable-container {
+  position: relative;
+  overflow-y: scroll;
+  max-height: 30vh;
+}
+
+.bestlist-search {
+  color: var(--color-light);
+  background-color: transparent;
+  border: 2px solid var(--color-light);
+  border-radius: 0.5em;
+  padding: 0.2rem 0.8rem;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
 </style>

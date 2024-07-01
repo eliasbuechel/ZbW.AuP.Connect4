@@ -4,16 +4,16 @@
       <h2>Game plan</h2>
       <button
         v-if="gamePlan.length > 0 && !isGameParticipant(0)"
-        class="button-light watch-button"
+        class="button-light fixed-top-right"
         @click="watchGame()"
       >
         Watch
       </button>
       <ToggleButton
-        label="show on robot"
+        label="on roboter"
         :state="isVisualizingOnRoboter"
         @toggle-state="visualizingOnRoboterChanged"
-        class="visualize-on-roboter-toggle-button"
+        class="fixed-top-left"
       />
       <span v-if="gamePlan.length <= 0">No game planed.</span>
       <ul v-else>
@@ -118,17 +118,17 @@ export default defineComponent({
   position: relative;
 }
 
-.watch-button {
+/* .watch-button {
   position: absolute;
   width: fit-content;
   top: 1.5rem;
   right: 1.5rem;
-}
+} */
 
-.visualize-on-roboter-toggle-button {
+/* .visualize-on-roboter-toggle-button {
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
-}
+} */
 </style>
 @/types/DataTransferObjects@/types/GameResultMatch

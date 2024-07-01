@@ -101,3 +101,30 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+.header-container {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: fit-content;
+  padding: 2rem;
+  background: linear-gradient(to bottom, var(--color-dark) 85%, transparent 100%);
+}
+
+.header-container > img {
+  width: 13vw;
+  height: 13vw;
+  max-height: 6rem;
+  max-width: 6rem;
+}
+
+@media (max-width: 800px) {
+  .header-container {
+    padding: 1rem;
+  }
+}
+</style>
