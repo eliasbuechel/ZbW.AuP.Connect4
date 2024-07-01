@@ -10,7 +10,7 @@
           @toggle-state="visualizingOnRoboterChanged"
         />
         <button v-if="!isGameParticipant" class="button-light" @click="stopWatchingGame">Back home</button>
-        <button v-if="isYourTurn || game.isQuittableByEveryone" @click="quitGame" class="button-light">
+        <button v-if="isGameParticipant || game.isQuittableByEveryone" @click="quitGame" class="button-light">
           Quit game
         </button>
       </div>
